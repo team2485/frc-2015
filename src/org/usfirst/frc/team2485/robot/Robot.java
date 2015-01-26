@@ -1,41 +1,83 @@
 
 package org.usfirst.frc.team2485.robot;
 
-import edu.wpi.first.wpilibj.IterativeRobot;
+import org.usfirst.frc.team2485.subsystems.DriveTrain;
+import org.usfirst.frc.team2485.util.Controllers;
 
-/**
- * The VM is configured to automatically run this class, and to call the
- * functions corresponding to each mode, as described in the IterativeRobot
- * documentation. If you change the name of this class or the package after
- * creating this project, you must also update the manifest file in the resource
- * directory.
- */
+import edu.wpi.first.wpilibj.AnalogPotentiometer;
+import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.VictorSP;
+
 public class Robot extends IterativeRobot {
-    /**
-     * This function is run when the robot is first started up and should be
-     * used for any initialization code.
-     */
+	
+	private VictorSP left, left2, right, right2, center;
+	public static DriveTrain drive;
+	private Solenoid suspension;
+	
     public void robotInit() {
 
+    	left 	= new VictorSP(7); //left: 7,8
+    	left2 	= new VictorSP(8);
+    	right   = new VictorSP(0); //right: 0, 1
+    	right2 	= new VictorSP(1);
+    	center  = new VictorSP(9); //center: 9
+    	suspension = new Solenoid(0); //may need two solenoids
+    	drive = new DriveTrain(left, left2, right, right2, center, suspension);
+
+    	Controllers.set(new Joystick(0), new Joystick(1));
+    	System.out.println("initialized");
     }
 
-    /**
-     * This function is called periodically during autonomous
-     */
+    public void autonomousInit() {
+    }
+  
     public void autonomousPeriodic() {
-
-    }
-
-    /**
-     * This function is called periodically during operator control
-     */
-    public void teleopPeriodic() {
-        
     }
     
-    /**
-     * This function is called periodically during test mode
-     */
+    public void teleopInit() {
+    	System.out.println("teleop init");
+    }
+
+    public void teleopPeriodic() {
+    	
+        drive.warlordDrive(Controllers.getAxis(Controllers.XBOX_AXIS_LX, 0.2f),
+        					Controllers.getAxis(Controllers.XBOX_AXIS_LY, 0.2f),
+                			Controllers.getAxis(Controllers.XBOX_AXIS_RX, 0.2f));
+    	
+//        if(Controllers.getButton(Controllers.XBOX_BTN_RBUMP)) {
+//        		drive.setQuickTurn(true);
+//        }
+//        else
+//        	drive.setQuickTurn(false);
+//        
+//        if(Controllers.getButton(Controllers.XBOX_BTN_LBUMP)) {
+//        	
+//        	drive.setLowSpeed();
+//        }
+//        
+//        if(Controllers.getButton(Controllers.XBOX_BTN_A)) {
+//        	drive.setSolenoid(true);
+//        }
+//        else {
+//        	drive.setSolenoid(false);
+//        }
+//        
+//    	System.out.println("Pot value: " + pot.get());
+//    	System.out.println("Enc value: " + encoder.get());
+//    	System.out.println("IMU pitch: " + imu.getPitch());
+//    	System.out.println("IMU yaw: " + imu.getYaw());
+//    	System.out.println("IMU roll: " + imu.getRoll());
+    	
+    }
+    
+    public void disabledPeriodic(){
+
+    }
+    
     public void testPeriodic() {
     
     }
