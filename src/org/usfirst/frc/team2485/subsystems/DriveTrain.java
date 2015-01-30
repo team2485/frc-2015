@@ -187,21 +187,21 @@ public class DriveTrain {
 	}
 
 	public void strafeDrive(double xInput, double yInput) {
+		
+		if (yInput == 0 && xInput == 0) {
+			setLeftRight(0,0);
+			setCenterWheel(0);
+			return;
+		}
 
-		double yOutput = 0,
-				xOutput = 0; 
+		double yOutput = 0, xOutput = 0; 
 
 		//		suspension.set(true);
 		//		double pidOut = dummyImuOutput.get(); 
 
 		this.translateX = xInput; 
 		this.translateY = yInput; 
-
-		//		if (yInput == 0 && xInput == 0) {
-		//			yOutput = 0;
-		//			xOutput = 0;
-		//		}
-		//		
+				
 		//		if(xInput == 0) {
 		//			xOutput = 0;
 		//		}
@@ -213,7 +213,7 @@ public class DriveTrain {
 		//		else 
 		//			yOutput = yInput; 
 
-		
+
 		/*
 		 * Code for strafe driving at any angle
 		 * 
@@ -221,7 +221,7 @@ public class DriveTrain {
 		 * Divides by larger input to normalize one component
 		 * Multiply by magnitude of controller input to set correct output values [0, 1]  
 		 */
-		
+
 		double scaledYOutput = yInput / STRAFE_TUNING_PARAMETER; 
 
 		yOutput = scaledYOutput / Math.max(Math.abs(xInput), Math.abs(scaledYOutput)) * 
@@ -326,7 +326,8 @@ public class DriveTrain {
 	}
 
 	public double getAngle() {
-		if (imu == null) return 0;
+		if (imu == null) 
+			return 0;
 		return imu.getYaw();
 	}
 
