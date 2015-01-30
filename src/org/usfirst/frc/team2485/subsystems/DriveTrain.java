@@ -51,7 +51,7 @@ public class DriveTrain {
 	private double translateX = 0, translateY = 0, outputTX = 0, outputTY = 0;
 
 	public DriveTrain(VictorSP leftDrive, VictorSP leftDrive2, VictorSP rightDrive, 
-			VictorSP rightDrive2, VictorSP centerDrive, IMU imu, Encoder centerEnc, 
+			VictorSP rightDrive2, VictorSP centerDrive, Solenoid suspension, IMU imu, Encoder centerEnc, 
 			Encoder leftEnc, Encoder rightEnc) {
 
 		this.leftDrive      = leftDrive;
