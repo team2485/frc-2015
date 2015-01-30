@@ -50,9 +50,14 @@ public class DriveTrain {
 
 	private double translateX = 0, translateY = 0, outputTX = 0, outputTY = 0;
 
-	public DriveTrain(VictorSP leftDrive, VictorSP rightDrive, VictorSP centerDrive, IMU imu, Encoder centerEnc, Encoder leftEnc, Encoder rightEnc) {
+	public DriveTrain(VictorSP leftDrive, VictorSP leftDrive2, VictorSP rightDrive, 
+			VictorSP rightDrive2, VictorSP centerDrive, IMU imu, Encoder centerEnc, 
+			Encoder leftEnc, Encoder rightEnc) {
+
 		this.leftDrive      = leftDrive;
+		this.leftDrive2		= leftDrive2; 
 		this.rightDrive     = rightDrive;
+		this.rightDrive2	= rightDrive2; 
 		this.centerDrive	= centerDrive;
 		this.imu            = imu;
 		this.centerEnc		= centerEnc;
@@ -66,7 +71,9 @@ public class DriveTrain {
 		}
 	}
 
-	public DriveTrain(VictorSP leftDrive, VictorSP leftDrive2, VictorSP rightDrive, VictorSP rightDrive2, VictorSP centerDrive, Solenoid suspension) {
+	public DriveTrain(VictorSP leftDrive, VictorSP leftDrive2, VictorSP rightDrive, 
+			VictorSP rightDrive2, VictorSP centerDrive, Solenoid suspension) {
+
 		this.leftDrive      = leftDrive;
 		this.leftDrive2     = leftDrive2;
 		this.rightDrive     = rightDrive;
@@ -75,8 +82,11 @@ public class DriveTrain {
 		this.suspension 	= suspension;
 	}
 
-	public DriveTrain(int leftDrivePort, int leftDrivePort2, int rightDrivePort, int rightDrivePort2, int centerDrivePort, int suspensionPort) {
-		this(new VictorSP(leftDrivePort), new VictorSP(leftDrivePort2), new VictorSP(rightDrivePort), new VictorSP(rightDrivePort2), new VictorSP(centerDrivePort), new Solenoid(suspensionPort));
+	public DriveTrain(int leftDrivePort, int leftDrivePort2, int rightDrivePort, int rightDrivePort2, 
+			int centerDrivePort, int suspensionPort) {
+
+		this(new VictorSP(leftDrivePort), new VictorSP(leftDrivePort2), new VictorSP(rightDrivePort),
+				new VictorSP(rightDrivePort2), new VictorSP(centerDrivePort), new Solenoid(suspensionPort));
 	}
 
 	public void warlordDrive(double translateX, double translateY, double rotation) {
