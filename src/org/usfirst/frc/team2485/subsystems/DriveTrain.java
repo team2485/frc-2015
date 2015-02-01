@@ -1,21 +1,25 @@
+
 package org.usfirst.frc.team2485.subsystems;
 
 import org.usfirst.frc.com.kauailabs.nav6.frc.IMU;
+import org.usfirst.frc.com.kauailabs.nav6.frc.IMUAdvanced;
 import org.usfirst.frc.team2485.util.DummyOutput;
 
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.PIDController;
+import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.VictorSP;
 
 public class DriveTrain {
+
 	private VictorSP leftDrive, leftDrive2, rightDrive, rightDrive2, centerDrive, test1, test2, test3, test4;
 	private Solenoid suspension;
 	private Encoder centerEnc, leftEnc, rightEnc;
 	private DummyOutput dummyImuOutput;
 	private PIDController imuPID;
 	public static double
-	kP_G_Rotate = 0.028,
+	kP_G_Rotate = 0.0175,
 	kI_G_Rotate = 0.0,
 	kD_G_Rotate = 0.0;
 
@@ -28,13 +32,13 @@ public class DriveTrain {
 
 	private double oldWheel = 0.0;
 	private double quickStopAccumulator = 0.0;
-	private final double TRANSLATE_Y_DEADBAND = 0.1;
-	private final double TRANSLATE_X_DEADBAND = 0.1;
-	private final double ROTATION_DEADBAND = 0.1;
+	private final double TRANSLATE_Y_DEADBAND = 0.125;
+	private final double TRANSLATE_X_DEADBAND = 0.125;
+	private final double ROTATION_DEADBAND = 0.2;
 	private final double STRAFE_TUNING_PARAMETER = 3;
 
 	private final double SENSITIVITY_HIGH = 0.85;
-	//	private final double SENSITIVITY_LOW = 0.75;
+	private final double SENSITIVITY_LOW = 0.55;
 	private final double MUCH_TOO_HIGH_SENSITIVITY = 1.7;
 	private boolean isQuickTurn = false;
 
@@ -50,6 +54,8 @@ public class DriveTrain {
 
 	private double translateX = 0, translateY = 0, outputTX = 0, outputTY = 0;
 
+	private boolean buttonClicked = false; 
+
 	public DriveTrain(VictorSP leftDrive, VictorSP leftDrive2, VictorSP rightDrive, 
 			VictorSP rightDrive2, VictorSP centerDrive, Solenoid suspension, IMU imu, Encoder centerEnc, 
 			Encoder leftEnc, Encoder rightEnc) {
@@ -59,6 +65,7 @@ public class DriveTrain {
 		this.rightDrive     = rightDrive;
 		this.rightDrive2	= rightDrive2; 
 		this.centerDrive	= centerDrive;
+		this.suspension 	= suspension;
 		this.imu            = imu;
 		this.centerEnc		= centerEnc;
 		this.leftEnc		= leftEnc;
@@ -72,7 +79,7 @@ public class DriveTrain {
 	}
 
 	public DriveTrain(VictorSP leftDrive, VictorSP leftDrive2, VictorSP rightDrive, 
-			VictorSP rightDrive2, VictorSP centerDrive, Solenoid suspension) {
+			VictorSP rightDrive2, VictorSP centerDrive, Solenoid suspension, IMUAdvanced imu) {
 
 		this.leftDrive      = leftDrive;
 		this.leftDrive2     = leftDrive2;
@@ -80,13 +87,20 @@ public class DriveTrain {
 		this.rightDrive2    = rightDrive2;
 		this.centerDrive	= centerDrive;
 		this.suspension 	= suspension;
+		this.imu 			= imu;
+
+		if (imu != null) {
+			dummyImuOutput = new DummyOutput();
+			imuPID = new PIDController(kP_G_Rotate, kI_G_Rotate, kD_G_Rotate, imu, dummyImuOutput);
+			imuPID.setAbsoluteTolerance(AbsTolerance_Imu_DriveStraight);
+		}
 	}
 
 	public DriveTrain(int leftDrivePort, int leftDrivePort2, int rightDrivePort, int rightDrivePort2, 
-			int centerDrivePort, int suspensionPort) {
+			int centerDrivePort, int suspensionPort, SerialPort imuPort) {
 
 		this(new VictorSP(leftDrivePort), new VictorSP(leftDrivePort2), new VictorSP(rightDrivePort),
-				new VictorSP(rightDrivePort2), new VictorSP(centerDrivePort), new Solenoid(suspensionPort));
+				new VictorSP(rightDrivePort2), new VictorSP(centerDrivePort), new Solenoid(suspensionPort), new IMUAdvanced(new SerialPort(57600, SerialPort.Port.kUSB)));
 	}
 
 	public void warlordDrive(double translateX, double translateY, double rotation) {
@@ -100,7 +114,7 @@ public class DriveTrain {
 		if(rotation != 0) {
 			if (maintainingHeading) {
 				maintainingHeading = false; 
-				//				imuPID.disable(); 
+				imuPID.disable(); 
 			}
 			rotationalDrive(translateY, rotation);
 		}
@@ -108,17 +122,17 @@ public class DriveTrain {
 		else {
 			if (!maintainingHeading) {
 				maintainingHeading = true; 
-				//				desiredHeading = imu.getYaw(); 
-				//				
-				//				imuPID.enable();
-				//				imuPID.setSetpoint(desiredHeading);
+				desiredHeading = imu.getYaw(); 
+
+				imuPID.enable();
+				imuPID.setSetpoint(desiredHeading);
 			}
 			strafeDrive(translateX, translateY);
 		}
 	}
 
 	public void rotationalDrive(double throttle, double wheel) {
-		//		suspension.set(false);
+		suspension.set(false);
 
 		double negInertia = wheel - oldWheel;
 		oldWheel = wheel;
@@ -144,7 +158,7 @@ public class DriveTrain {
 		double negInertiaScalar;
 
 		negInertiaScalar = 5.0;
-		sensitivity = SENSITIVITY_HIGH;
+		sensitivity = SENSITIVITY_LOW;
 
 		double negInertiaPower = negInertia * negInertiaScalar;
 		negInertiaAccumulator += negInertiaPower;
@@ -178,6 +192,10 @@ public class DriveTrain {
 		leftPwm  += angularPower;
 		rightPwm -= angularPower;
 
+		//lower sensitivity -- 1/31/15 debugging 
+		leftPwm  *= Math.abs(leftPwm); 
+		rightPwm *= Math.abs(rightPwm); 
+
 		if (leftPwm > 1.0) {
 			rightPwm -= overPower * (leftPwm - 1.0);
 			leftPwm = 1.0;
@@ -197,7 +215,7 @@ public class DriveTrain {
 	}
 
 	public void strafeDrive(double xInput, double yInput) {
-		
+
 		if (yInput == 0 && xInput == 0) {
 			setLeftRight(0,0);
 			setCenterWheel(0);
@@ -206,22 +224,11 @@ public class DriveTrain {
 
 		double yOutput = 0, xOutput = 0; 
 
-		//		suspension.set(true);
-		//		double pidOut = dummyImuOutput.get(); 
+		suspension.set(true);
+		double pidOut = dummyImuOutput.get(); 
 
 		this.translateX = xInput; 
 		this.translateY = yInput; 
-				
-		//		if(xInput == 0) {
-		//			xOutput = 0;
-		//		}
-		//		
-		//		else{
-		//		if (xInput != 0)
-		//			yOutput = yInput / STRAFE_TUNING_PARAMETER / Math.max(Math.abs(xInput), Math.abs(yInput)) *
-		//			Math.sqrt(Math.pow(xInput, 2) + Math.pow(yInput, 2)); 
-		//		else 
-		//			yOutput = yInput; 
 
 
 		/*
@@ -244,8 +251,10 @@ public class DriveTrain {
 		this.outputTY = yOutput; 
 		//		}
 		// check the signs of this
-		//		setMotors(yOutput + pidOut, yOutput - pidOut, xOutput);
-		setMotors(yOutput, yOutput, xOutput);
+		setMotors(yOutput - pidOut, yOutput + pidOut, xOutput);
+		//		setMotors(yOutput, yOutput, xOutput);
+		System.out.println(imu.getYaw() + " : " + imuPID.getSetpoint());
+		System.out.println("current kP is: " + kP_G_Rotate);
 
 	}
 
@@ -272,10 +281,10 @@ public class DriveTrain {
 	 * @param rightOutput
 	 */
 	private void setLeftRight(double leftOutput, double rightOutput) {
-		leftDrive.set(leftOutput * driveSpeed);
-		leftDrive2.set(leftOutput * driveSpeed);
-		rightDrive.set(-rightOutput * driveSpeed);
-		rightDrive2.set(-rightOutput * driveSpeed);
+		leftDrive.set(-leftOutput * driveSpeed);
+		leftDrive2.set(-leftOutput * driveSpeed);
+		rightDrive.set(rightOutput * driveSpeed);
+		rightDrive2.set(rightOutput * driveSpeed);
 	}
 
 	private void setCenterWheel(double val){
@@ -290,7 +299,12 @@ public class DriveTrain {
 	 * @return
 	 */
 	private double handleThreshold(double val, double threshold) {
-		return (Math.abs(val) > Math.abs(threshold)) ? val : 0.0;
+
+		double returnValue = (Math.abs(val) > Math.abs(threshold)) ? (val/Math.abs(val)*(Math.abs(val)-threshold)/(1-threshold)) : 0.0;
+		//System.out.println(val + " : " + returnValue);
+		return returnValue;
+
+		//return (Math.abs(val) > Math.abs(threshold)) ? val : 0.0;
 	}
 
 	/**
@@ -350,11 +364,21 @@ public class DriveTrain {
 	}
 
 	public void printLog() {
-		//    	System.out.print("Heading Error: " + Math.abs(imu.getYaw() - desiredHeading) + " ");
-		//    	System.out.println("Maintaining Heading: " + maintainingHeading);
-		System.out.println("xInput: " + translateX + " yInput: " + translateY + 
-				" xOutput:" + outputTX + " yOutput: " + outputTY);
+		//		System.out.print("Heading Error: " + Math.abs(imu.getYaw() - desiredHeading) + " ");
+		//		System.out.println("Maintaining Heading: " + maintainingHeading);
+		//		System.out.println("xInput: " + translateX + " yInput: " + translateY + 
+		//				" xOutput:" + outputTX + " yOutput: " + outputTY);
 
+		//System.out.println("Pos: " + imu.getYaw() + " Pos Target: " + imuPID.getSetpoint()); 
+	}
+	public void tuneKP(double d) {
+		if (buttonClicked) {
+			kP_G_Rotate += d; 
+			buttonClicked = false; 
+		}
+	}
+	public void resetButtonClicked() {
+		buttonClicked = true; 
 	}
 }
 
