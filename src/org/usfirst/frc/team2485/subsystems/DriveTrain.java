@@ -132,7 +132,22 @@ public class DriveTrain {
 	}
 
 	public void rotationalDrive(double throttle, double wheel) {
-		suspension.set(false);
+		//suspension.set(true);
+		
+//		double maxDelta = 0.05;
+//		if(Math.abs(wheel - oldWheel) > maxDelta)
+//			if(wheel > oldWheel)
+//				wheel = oldWheel + maxDelta;
+//			else
+//				wheel = oldWheel - maxDelta;
+//		if(wheel > 1)
+//			wheel = 1;
+//		else if (wheel < -1)
+//			wheel = -1;
+//		oldWheel = wheel;
+//		
+//		setLeftRight(wheel, -wheel);
+//		return;
 
 		double negInertia = wheel - oldWheel;
 		oldWheel = wheel;
@@ -224,7 +239,7 @@ public class DriveTrain {
 
 		double yOutput = 0, xOutput = 0; 
 
-		suspension.set(true);
+		//suspension.set(true);
 		double pidOut = dummyImuOutput.get(); 
 
 		this.translateX = xInput; 
