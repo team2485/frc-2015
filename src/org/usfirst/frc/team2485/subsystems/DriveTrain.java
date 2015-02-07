@@ -16,49 +16,79 @@ public class DriveTrain {
 	private VictorSP leftDrive, leftDrive2, rightDrive, rightDrive2, centerDrive, test1, test2, test3, test4;
 	private Solenoid suspension;
 	private Encoder centerEnc, leftEnc, rightEnc;
-	private DummyOutput dummyImuOutput;
-	private PIDController imuPID;
-	public static double
-	kP_G_Rotate = 0.0175,
-	kI_G_Rotate = 0.0,
-	kD_G_Rotate = 0.0;
 
 	private final double 
-	NORMAL_SPEED_RATING = 1.0,
+	NORMAL_SPEED_RATING = 0.75,
 	FAST_SPEED_RATING = 1.0,
-	SLOW_SPEED_RATING = 0.6;
+	SLOW_SPEED_RATING = 0.5;
 
-	private double driveSpeed = NORMAL_SPEED_RATING;
+	private double driveSpeed = SLOW_SPEED_RATING;
 
 	private double oldWheel = 0.0;
 	private double quickStopAccumulator = 0.0;
 	private final double TRANSLATE_Y_DEADBAND = 0.125;
 	private final double TRANSLATE_X_DEADBAND = 0.125;
 	private final double ROTATION_DEADBAND = 0.2;
-	private final double STRAFE_TUNING_PARAMETER = 3;
+	private double STRAFE_TUNING_PARAMETER = 3;
 
 	private final double SENSITIVITY_HIGH = 0.85;
 	private final double SENSITIVITY_LOW = 0.55;
 	private final double MUCH_TOO_HIGH_SENSITIVITY = 1.7;
 	private boolean isQuickTurn = false;
+	
 
-	//driving straight
+	//PID 
 	private double desiredHeading = 0.0; 
 	private boolean maintainingHeading = true; //use for auto and while !rotating  
-	private final double AbsTolerance_Imu_TurnTo = 3.0;
-	private final double AbsTolerance_Imu_DriveStraight = 2.0;
 
 	private IMU imu;
 
-	private String logString = ""; 
-
 	private double translateX = 0, translateY = 0, outputTX = 0, outputTY = 0;
 
-	private boolean buttonClicked = false; 
+	private boolean buttonClicked = false;
+
+	private DualEncoder dualEncoder;
+
+	private PIDController driveStraightPID;
+	private PIDController strafePID;
+	private PIDController imuPID;
+
+	private DummyOutput dummyEncoderOutput;
+	private DummyOutput dummyImuOutput;
+
+	private double lowEncRate = 5;
+	private int imuOnTargetCounter = 0;
+	private final int MINIMUM_IMU_ON_TARGET_ITERATIONS = 6;
+	
+	private final double
+		absTolerance_Imu_TurnTo = 1.0,
+		absTolerance_Imu_DriveStraight = 2.0,
+		absTolerance_Enc_DriveStraight = 3.0,
+		absTolerance_Enc_Strafe = 3.0; 
+
+	public static double 
+		driveStraightEncoder_Kp = 0.06, 
+		driveStraightEnvoder_Ki = 0.0, 
+		driveStraightEncoder_Kd = 0.0;
+
+	public static double 
+		strafeEncoder_Kp = 0.005,
+		strafeEncoder_Ki = 0.0,
+		strafeEncoder_Kd = 0.0;
+	
+	public static double
+		driveStraightImu_Kp = 0.05, 
+		driveStraightImu_Ki = 0.0,
+		driveStraightImu_Kd = 0.0; 
+
+	public static double
+		rotateImu_kP = 0.045,
+		rotateImu_kI = 0.0,
+		rotateImu_kD = 0.005;
 
 	public DriveTrain(VictorSP leftDrive, VictorSP leftDrive2, VictorSP rightDrive, 
-			VictorSP rightDrive2, VictorSP centerDrive, Solenoid suspension, IMU imu, Encoder centerEnc, 
-			Encoder leftEnc, Encoder rightEnc) {
+			VictorSP rightDrive2, VictorSP centerDrive, Solenoid suspension, IMU imu, Encoder leftEnc, 
+			Encoder rightEnc, Encoder centerEnc) {
 
 		this.leftDrive      = leftDrive;
 		this.leftDrive2		= leftDrive2; 
@@ -71,45 +101,47 @@ public class DriveTrain {
 		this.leftEnc		= leftEnc;
 		this.rightEnc		= rightEnc;
 
-		if (imu != null) {
-			dummyImuOutput = new DummyOutput();
-			imuPID = new PIDController(kP_G_Rotate, kI_G_Rotate, kD_G_Rotate, imu, dummyImuOutput);
-			imuPID.setAbsoluteTolerance(AbsTolerance_Imu_DriveStraight);
+		if (this.imu != null) {
+			setImu(this.imu);
+		}
+
+		if(leftEnc != null && rightEnc != null) {	
+			dummyEncoderOutput = new DummyOutput();
+			dualEncoder = new DualEncoder(leftEnc, rightEnc);
+			driveStraightPID = new PIDController(driveStraightEncoder_Kp, driveStraightEnvoder_Ki, driveStraightEncoder_Kd, dualEncoder, dummyEncoderOutput);
+			driveStraightPID.setAbsoluteTolerance(absTolerance_Enc_DriveStraight);
+		}
+
+		if(centerEnc != null) {
+			strafePID = new PIDController(strafeEncoder_Kp, strafeEncoder_Ki, strafeEncoder_Kd, centerEnc, centerDrive);
+			strafePID.setAbsoluteTolerance(absTolerance_Enc_Strafe);
 		}
 	}
-
+	/*
 	public DriveTrain(VictorSP leftDrive, VictorSP leftDrive2, VictorSP rightDrive, 
 			VictorSP rightDrive2, VictorSP centerDrive, Solenoid suspension, IMUAdvanced imu) {
 
-		this.leftDrive      = leftDrive;
-		this.leftDrive2     = leftDrive2;
-		this.rightDrive     = rightDrive;
-		this.rightDrive2    = rightDrive2;
-		this.centerDrive	= centerDrive;
-		this.suspension 	= suspension;
-		this.imu 			= imu;
-
-		if (imu != null) {
-			dummyImuOutput = new DummyOutput();
-			imuPID = new PIDController(kP_G_Rotate, kI_G_Rotate, kD_G_Rotate, imu, dummyImuOutput);
-			imuPID.setAbsoluteTolerance(AbsTolerance_Imu_DriveStraight);
-		}
+		this(leftDrive, leftDrive2, rightDrive, rightDrive2, centerDrive, suspension, imu,
+				null, null, null);
 	}
 
 	public DriveTrain(int leftDrivePort, int leftDrivePort2, int rightDrivePort, int rightDrivePort2, 
 			int centerDrivePort, int suspensionPort, SerialPort imuPort) {
 
 		this(new VictorSP(leftDrivePort), new VictorSP(leftDrivePort2), new VictorSP(rightDrivePort),
-				new VictorSP(rightDrivePort2), new VictorSP(centerDrivePort), new Solenoid(suspensionPort), new IMUAdvanced(new SerialPort(57600, SerialPort.Port.kUSB)));
+				new VictorSP(rightDrivePort2), new VictorSP(centerDrivePort), new Solenoid(suspensionPort),
+				new IMUAdvanced(new SerialPort(57600, SerialPort.Port.kUSB)));
 	}
-
+	 */
 	public void warlordDrive(double translateX, double translateY, double rotation) {
 
 		translateX = -handleThreshold(translateX, TRANSLATE_X_DEADBAND);
-		translateY = handleThreshold(translateY, TRANSLATE_Y_DEADBAND);
+		translateY = -handleThreshold(translateY, TRANSLATE_Y_DEADBAND);
 		rotation = handleThreshold(rotation, ROTATION_DEADBAND);
 
-		printLog(); 
+		System.out.println("x, y \t\t" + translateX + ",\t" + translateY);
+
+		printLog();    
 
 		if(rotation != 0) {
 			if (maintainingHeading) {
@@ -124,8 +156,9 @@ public class DriveTrain {
 				maintainingHeading = true; 
 				desiredHeading = imu.getYaw(); 
 
-				imuPID.enable();
+				setImuForDrivingStraight(); 
 				imuPID.setSetpoint(desiredHeading);
+				imuPID.enable();			 	
 			}
 			strafeDrive(translateX, translateY);
 		}
@@ -133,21 +166,21 @@ public class DriveTrain {
 
 	public void rotationalDrive(double throttle, double wheel) {
 		//suspension.set(true);
-		
-//		double maxDelta = 0.05;
-//		if(Math.abs(wheel - oldWheel) > maxDelta)
-//			if(wheel > oldWheel)
-//				wheel = oldWheel + maxDelta;
-//			else
-//				wheel = oldWheel - maxDelta;
-//		if(wheel > 1)
-//			wheel = 1;
-//		else if (wheel < -1)
-//			wheel = -1;
-//		oldWheel = wheel;
-//		
-//		setLeftRight(wheel, -wheel);
-//		return;
+
+		//		double maxDelta = 0.05;
+		//		if(Math.abs(wheel - oldWheel) > maxDelta)
+		//			if(wheel > oldWheel)
+		//				wheel = oldWheel + maxDelta;
+		//			else
+		//				wheel = oldWheel - maxDelta;
+		//		if(wheel > 1)
+		//			wheel = 1;
+		//		else if (wheel < -1)
+		//			wheel = -1;
+		//		oldWheel = wheel;
+		//		
+		//		setLeftRight(wheel, -wheel);   
+		//		return;   
 
 		double negInertia = wheel - oldWheel;
 		oldWheel = wheel;
@@ -226,12 +259,21 @@ public class DriveTrain {
 		}
 
 		setLeftRight(leftPwm, rightPwm);
-
+	}
+	
+	public void setImuForDrivingStraight() {
+		imuPID.setPID(driveStraightImu_Kp, driveStraightImu_Ki, driveStraightImu_Kd);
+		imuPID.setAbsoluteTolerance(absTolerance_Imu_DriveStraight);
+	}
+	
+	public void setImuForRotating() {
+		imuPID.setPID(rotateImu_kP, rotateImu_kI, rotateImu_kD);
+		imuPID.setAbsoluteTolerance(absTolerance_Imu_TurnTo);
 	}
 
 	public void strafeDrive(double xInput, double yInput) {
 
-		if (yInput == 0 && xInput == 0) {
+		if (Math.abs(yInput) <= .1 && Math.abs(xInput) <= .1) {
 			setLeftRight(0,0);
 			setCenterWheel(0);
 			return;
@@ -246,8 +288,10 @@ public class DriveTrain {
 		this.translateY = yInput; 
 
 
-		/*
-		 * Code for strafe driving at any angle
+
+
+
+		/* Code for strafe driving at any angle
 		 * 
 		 * Scales y input by tuning parameter to account for the varying speeds of for/rev and strafe wheels
 		 * Divides by larger input to normalize one component
@@ -264,12 +308,15 @@ public class DriveTrain {
 
 		this.outputTX = xOutput; 
 		this.outputTY = yOutput; 
+		System.out.println("IMU PID enabled" + imuPID.isEnable());
+
+		System.out.println("xOut, yOut, pidOut \t" + xOutput + ", " + yOutput + ", " + pidOut);
 		//		}
 		// check the signs of this
-		setMotors(yOutput - pidOut, yOutput + pidOut, xOutput);
+		setMotors(yOutput + pidOut, yOutput - pidOut, xOutput);
 		//		setMotors(yOutput, yOutput, xOutput);
 		System.out.println(imu.getYaw() + " : " + imuPID.getSetpoint());
-		System.out.println("current kP is: " + kP_G_Rotate);
+		System.out.println("current kP is: " + imuPID.getP());
 
 	}
 
@@ -284,8 +331,10 @@ public class DriveTrain {
 		this.imu = imu;
 
 		dummyImuOutput = new DummyOutput();
-		imuPID = new PIDController(kP_G_Rotate, kI_G_Rotate, kD_G_Rotate, imu, dummyImuOutput);
-		imuPID.setAbsoluteTolerance(AbsTolerance_Imu_DriveStraight);
+		imuPID = new PIDController(rotateImu_kP, rotateImu_kI, rotateImu_kD, imu, dummyImuOutput);
+		imuPID.setAbsoluteTolerance(absTolerance_Imu_DriveStraight);
+		imuPID.setInputRange(-180, 180);
+		imuPID.setContinuous(true);
 	}
 
 	/**
@@ -295,11 +344,11 @@ public class DriveTrain {
 	 * @param leftOutput
 	 * @param rightOutput
 	 */
-	private void setLeftRight(double leftOutput, double rightOutput) {
-		leftDrive.set(-leftOutput * driveSpeed);
-		leftDrive2.set(-leftOutput * driveSpeed);
-		rightDrive.set(rightOutput * driveSpeed);
-		rightDrive2.set(rightOutput * driveSpeed);
+	public void setLeftRight(double leftOutput, double rightOutput) {
+		leftDrive.set(leftOutput * driveSpeed);
+		leftDrive2.set(leftOutput * driveSpeed);
+		rightDrive.set(-rightOutput * driveSpeed);
+		rightDrive2.set(-rightOutput * driveSpeed);
 	}
 
 	private void setCenterWheel(double val){
@@ -360,8 +409,8 @@ public class DriveTrain {
 	}
 
 	public void initPIDGyroRotate() {
-		imuPID.setPID(kP_G_Rotate, kI_G_Rotate, kD_G_Rotate);
-		imuPID.setAbsoluteTolerance(AbsTolerance_Imu_TurnTo);
+		imuPID.setPID(rotateImu_kP, rotateImu_kI, rotateImu_kD);
+		imuPID.setAbsoluteTolerance(absTolerance_Imu_TurnTo);
 	}
 
 	public double getAngle() {
@@ -372,6 +421,15 @@ public class DriveTrain {
 
 	public void disableIMUPID() {
 		imuPID.disable();
+		maintainingHeading = false;
+	}
+
+	public void disableDriveStraightPID() {
+		driveStraightPID.disable();
+	}
+
+	public void disableStrafePID() {
+		strafePID.disable();
 	}
 
 	public void setSolenoid(boolean solValue) {
@@ -386,14 +444,109 @@ public class DriveTrain {
 
 		//System.out.println("Pos: " + imu.getYaw() + " Pos Target: " + imuPID.getSetpoint()); 
 	}
-	public void tuneKP(double d) {
+	public void tuneStrafeParam(double d) {
 		if (buttonClicked) {
-			kP_G_Rotate += d; 
+			//			kP_G_Rotate += d; 
+			STRAFE_TUNING_PARAMETER += Math.abs(d)/d; 
 			buttonClicked = false; 
+			System.out.println("new strafe param: " + STRAFE_TUNING_PARAMETER);
 		}
 	}
 	public void resetButtonClicked() {
 		buttonClicked = true; 
+	}
+
+
+	/**
+	 * Rotates the robot so that the IMU matches the angle
+	 * @param angle
+	 * @return
+	 */
+	public boolean rotateTo(double angle) { //may need to check for moving to fast when pid is on target
+		if (imuPID == null) 
+			throw new IllegalStateException("can't rotateTo when imu is null"); 
+		
+
+		if (!imuPID.isEnable()) {
+			setImuForRotating();
+			imuPID.setSetpoint(angle);
+			imuPID.enable();
+		}
+		if (driveStraightPID != null && driveStraightPID.isEnable())
+			driveStraightPID.disable();
+
+		// Check to see if we're on target
+		
+		if (imuPID.onTarget()) {
+			imuOnTargetCounter++;
+			System.out.println("On target with count: " + imuOnTargetCounter);
+		} else {
+			imuOnTargetCounter = 0;
+		}
+		
+		if (imuOnTargetCounter >= MINIMUM_IMU_ON_TARGET_ITERATIONS){
+			setLeftRight(0, 0);
+			imuPID.disable();
+			System.out.println("Disabling PID with count: " + imuOnTargetCounter);
+			return true;
+		}
+
+		System.out.println("IMUval: " + imu.getYaw() + " IMUdsetPoint: " + imuPID.getSetpoint() + " IMU Error: " + imuPID.getError() + " IMU enabled: " + imuPID.isEnable());
+		
+		double imuOutput = dummyImuOutput.get();
+		setLeftRight(imuOutput, -imuOutput);
+		return false;
+	}
+	/**
+	 * Rotates angle degrees off of current angle.
+	 * @param angle
+	 * @return
+	 */
+	public boolean rotate(double angle){
+		return rotateTo(imu.getYaw()+angle);
+	}
+	public boolean driveTo(double inches) {
+
+		if(driveStraightPID == null)
+			throw new IllegalStateException("Attempting to driveTo but no PID controller");
+
+		if (!driveStraightPID.isEnable()) {
+			dualEncoder.reset();
+			driveStraightPID.enable();
+			driveStraightPID.setSetpoint(inches);
+		}
+
+		if(imuPID != null && !imuPID.isEnable()) {
+			setImuForDrivingStraight();
+			imuPID.setSetpoint(imu.getYaw());
+			imuPID.enable();
+		}
+
+		double encoderOutput = dummyEncoderOutput.get();
+		double leftOutput  = encoderOutput;
+		double rightOutput = encoderOutput;
+
+		double imuOutput = 0.0;
+		if(imuPID != null)
+			imuOutput = dummyImuOutput.get();
+
+//		System.out.println("leftEnc value: " + leftEnc.getDistance() + " rightEnc value: " + rightEnc.getDistance());
+//		System.out.println("dualEncoder: " + dualEncoder.getDistance());
+//
+//		System.out.println("encoderPID output: " + encoderOutput + " imuPID output: " + imuOutput);
+//		System.out.println("error from enc PID " + driveStraightPID.getError() + " from imu PID " + imuPID.getError());
+//		System.out.println("Kp from enc PID " + driveStraightPID.getP());
+
+		setLeftRight(leftOutput - imuOutput, rightOutput + imuOutput);
+
+		// Check to see if we're on target
+		if (driveStraightPID.onTarget() && Math.abs(dualEncoder.getRate()) < lowEncRate) {
+			setLeftRight(0.0, 0.0);
+			driveStraightPID.disable();
+			imuPID.disable();
+			return true;
+		}
+		return false;
 	}
 }
 

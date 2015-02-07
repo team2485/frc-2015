@@ -4,6 +4,7 @@ package org.usfirst.frc.team2485.robot;
 import org.usfirst.frc.com.kauailabs.nav6.frc.IMU;
 import org.usfirst.frc.com.kauailabs.nav6.frc.IMUAdvanced;
 import org.usfirst.frc.team2485.subsystems.DriveTrain;
+import org.usfirst.frc.team2485.subsystems.DualEncoder;
 import org.usfirst.frc.team2485.util.Controllers;
 
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
@@ -22,6 +23,8 @@ public class Robot extends IterativeRobot {
 	
 	private VictorSP left, left2, right, right2, center;
 	public static DriveTrain drive;
+	private Encoder leftEnc, rightEnc, centerEnc;
+	private DualEncoder dualEncoder;
 	private Solenoid suspension;
 	private Compressor compressor;
 	private DoubleSolenoid ds;
@@ -30,12 +33,19 @@ public class Robot extends IterativeRobot {
 	
     public void robotInit() {
 
-    	left 	= new VictorSP(14); //left: 7,8
+    	left 	= new VictorSP(14); //left: 14,15
     	left2 	= new VictorSP(15);
     	right   = new VictorSP(0); //right: 0, 1
     	right2 	= new VictorSP(1);
     	center  = new VictorSP(13); //center: 9   changed to 13 1/31/15
     	suspension = new Solenoid(7); //may need two solenoids
+    	
+    	leftEnc = new Encoder(0, 1);
+    	rightEnc = new Encoder(4, 5);
+    	dualEncoder = new DualEncoder(leftEnc, rightEnc);
+    	
+    	leftEnc.setDistancePerPulse(.0414221608);
+    	rightEnc.setDistancePerPulse(.0414221608); 
     	
 //    	ds = new DoubleSolenoid(7, 7);
 
@@ -53,7 +63,7 @@ public class Robot extends IterativeRobot {
     		LiveWindow.addSensor("IMU", "Gyro", imu);
     	}
     	
-    	drive = new DriveTrain(left, left2, right, right2, center, suspension, imu);
+    	drive = new DriveTrain(left, left2, right, right2, center, suspension, imu, leftEnc, rightEnc, centerEnc);
     	drive.setSolenoid(false);
 
     	Controllers.set(new Joystick(0), new Joystick(1));
@@ -61,18 +71,29 @@ public class Robot extends IterativeRobot {
     }
 
     public void autonomousInit() {
+    	leftEnc.reset();
+    	rightEnc.reset();
+    	dualEncoder.reset();
     }
   
     public void autonomousPeriodic() {
+    	System.out.println("left/right " + leftEnc.getDistance() + "\t\t" + rightEnc.getDistance());
+    	System.out.println("dualEnc " + dualEncoder.getDistance());
+    	
+    	drive.setLeftRight(-.7, -.7);
     }
     
     public void teleopInit() {
     	System.out.println("teleop init");
     	
     	drive.setSolenoid(false);
+    	
+    	leftEnc.reset();
+    	rightEnc.reset();
     }
 
     public void teleopPeriodic() {
+    	
     	
         drive.warlordDrive(Controllers.getAxis(Controllers.XBOX_AXIS_LX, 0.2f),
         					Controllers.getAxis(Controllers.XBOX_AXIS_LY, 0.2f),
@@ -99,9 +120,9 @@ public class Robot extends IterativeRobot {
         }
         
         if (Controllers.getButton(Controllers.XBOX_BTN_START))
-        	drive.tuneKP(.005);
+        	drive.tuneStrafeParam(.005);
         if (Controllers.getButton(Controllers.XBOX_BTN_BACK))
-        	drive.tuneKP(-.005);
+        	drive.tuneStrafeParam(-.005);
         if (Controllers.getButton(Controllers.XBOX_BTN_Y)) 
         	drive.resetButtonClicked(); 
         
@@ -119,12 +140,31 @@ public class Robot extends IterativeRobot {
     	
     }
     
-    public void disabledPeriodic(){
+    public void disabledPeriodic() {
 
     }
     
+    public void testInit() {
+    	leftEnc.reset();
+    	rightEnc.reset();
+    	drive.disableDriveStraightPID();
+    	drive.disableIMUPID();
+    	imu.zeroYaw();
+    	done = false;
+    }
+    
+    private boolean done = false;
     public void testPeriodic() {
-    	compressor.start();
+//    	compressor.start();
+
+    	if(!done && drive.rotateTo(-173))
+    		done = true;
+    	System.out.println("Imu yaw: " + imu.getYaw());
+//    	
+//    	left.set(-.5);
+//    	left2.set(-.5); 
+//    	right.set(.5);
+//    	right2.set(.5);
     }
     
 }
