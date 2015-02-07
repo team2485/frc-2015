@@ -121,12 +121,12 @@ public class Robot extends IterativeRobot {
         /*clapper.handleTote(Controllers.getAxis(Controllers.JOYSTICK_AXIS_Y,
         			Controllers.getAxis(Controllers.JOYSTICK_AXIS_Z);
         	
-        	if (Controllers.getJoystickButton(1)) {
-        		clapper.openClapper();
-        	}
-        	if (Controllers.getJoystickButton(2)) {
-        		clapper.closeClapper();
-    		}*/
+      	if (Controllers.getJoystickButton(1)) {
+       		clapper.openClapper();
+       	}
+       	if (Controllers.getJoystickButton(2)) {
+        	clapper.closeClapper();
+    	}*/
     }
     
     public void disabledPeriodic(){
