@@ -138,6 +138,16 @@ public class Robot extends IterativeRobot {
 //    	System.out.println("IMU yaw: " + imu.getYaw());
 //    	System.out.println("IMU roll: " + imu.getRoll());
     	
+    	//basic controls for intake arm
+        /*clapper.handleTote(Controllers.getAxis(Controllers.JOYSTICK_AXIS_Y,
+        			Controllers.getAxis(Controllers.JOYSTICK_AXIS_Z);
+        	
+      	if (Controllers.getJoystickButton(1)) {
+       		clapper.openClapper();
+       	}
+       	if (Controllers.getJoystickButton(2)) {
+        	clapper.closeClapper();
+    	}*/
     }
     
     public void disabledPeriodic() {
