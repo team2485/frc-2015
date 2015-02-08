@@ -22,7 +22,7 @@ public class DriveTrain {
 	FAST_SPEED_RATING = 1.0,
 	SLOW_SPEED_RATING = 0.5;
 
-	private double driveSpeed = SLOW_SPEED_RATING;
+	private double driveSpeed = NORMAL_SPEED_RATING;
 
 	private double oldWheel = 0.0;
 	private double quickStopAccumulator = 0.0;
@@ -38,10 +38,10 @@ public class DriveTrain {
 	
 
 	//PID 
-	private double desiredHeading = 0.0; 
-	private boolean maintainingHeading = true; //use for auto and while !rotating  
+	public double desiredHeading = 0.0; 
+	public boolean maintainingHeading = true; //use for auto and while !rotating  
 
-	private IMU imu;
+	public IMU imu;
 
 	private double translateX = 0, translateY = 0, outputTX = 0, outputTY = 0;
 
@@ -51,7 +51,7 @@ public class DriveTrain {
 
 	private PIDController driveStraightPID;
 	private PIDController strafePID;
-	private PIDController imuPID;
+	public PIDController imuPID;
 
 	private DummyOutput dummyEncoderOutput;
 	private DummyOutput dummyImuOutput;
@@ -77,7 +77,7 @@ public class DriveTrain {
 		strafeEncoder_Kd = 0.0;
 	
 	public static double
-		driveStraightImu_Kp = 0.05, 
+		driveStraightImu_Kp = 0.05, //0.05 - for floor work, 0.07 for bump (tentatively)
 		driveStraightImu_Ki = 0.0,
 		driveStraightImu_Kd = 0.0; 
 
@@ -158,7 +158,7 @@ public class DriveTrain {
 
 				setImuForDrivingStraight(); 
 				imuPID.setSetpoint(desiredHeading);
-				imuPID.enable();			 	
+				imuPID.enable();
 			}
 			strafeDrive(translateX, translateY);
 		}

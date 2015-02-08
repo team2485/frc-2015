@@ -77,6 +77,7 @@ public class Robot extends IterativeRobot {
     }
 
     public void autonomousInit() {
+    	imu.zeroYaw();
     	leftEnc.reset();
     	rightEnc.reset();
     	dualEncoder.reset();
@@ -91,6 +92,8 @@ public class Robot extends IterativeRobot {
     
     public void teleopInit() {
     	System.out.println("teleop init");
+//    	imu.zeroYaw();
+
     	
 //    	drive.setSolenoid(false);
     	
@@ -133,7 +136,9 @@ public class Robot extends IterativeRobot {
         if (Controllers.getButton(Controllers.XBOX_BTN_Y)) 
         	drive.resetButtonClicked(); 
         
-//    	System.out.println("current kP is: " + drive.kP_G_Rotate);
+    	System.out.println("current setpoint is: " + drive.imuPID.getSetpoint());
+    	System.out.println("current error is: " + drive.imuPID.getError());
+    
 
 //        else {
 //        	drive.setSolenoid(false);
