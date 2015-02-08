@@ -5,6 +5,7 @@ import org.usfirst.frc.com.kauailabs.nav6.frc.IMU;
 import org.usfirst.frc.com.kauailabs.nav6.frc.IMUAdvanced;
 import org.usfirst.frc.team2485.subsystems.DriveTrain;
 import org.usfirst.frc.team2485.subsystems.DualEncoder;
+import org.usfirst.frc.team2485.subsystems.Strongback;
 import org.usfirst.frc.team2485.util.Controllers;
 
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
@@ -21,8 +22,9 @@ import edu.wpi.first.wpilibj.VictorSP;
 
 public class Robot extends IterativeRobot {
 	
-	private VictorSP left, left2, right, right2, center;
+	private VictorSP left, left2, right, right2, center, leadScrewMotor;
 	public static DriveTrain drive;
+//	public static Strongback strongback; 
 	private Encoder leftEnc, rightEnc, centerEnc;
 	private DualEncoder dualEncoder;
 	private Solenoid suspension;
@@ -43,6 +45,8 @@ public class Robot extends IterativeRobot {
     	leftEnc = new Encoder(0, 1);
     	rightEnc = new Encoder(4, 5);
     	dualEncoder = new DualEncoder(leftEnc, rightEnc);
+    	
+//    	leadScrewMotor = new VictorSP(2); 
     	
     	leftEnc.setDistancePerPulse(.0414221608);
     	rightEnc.setDistancePerPulse(.0414221608); 
@@ -65,6 +69,8 @@ public class Robot extends IterativeRobot {
     	
     	drive = new DriveTrain(left, left2, right, right2, center, suspension, imu, leftEnc, rightEnc, centerEnc);
     	drive.setSolenoid(false);
+    	
+//    	strongback = new Strongback(leadScrewMotor, imu); 
 
     	Controllers.set(new Joystick(0), new Joystick(1));
     	System.out.println("initialized");
@@ -86,7 +92,7 @@ public class Robot extends IterativeRobot {
     public void teleopInit() {
     	System.out.println("teleop init");
     	
-    	drive.setSolenoid(false);
+//    	drive.setSolenoid(false);
     	
     	leftEnc.reset();
     	rightEnc.reset();
@@ -94,6 +100,7 @@ public class Robot extends IterativeRobot {
 
     public void teleopPeriodic() {
     	
+//		strongback.enablePid();
     	
         drive.warlordDrive(Controllers.getAxis(Controllers.XBOX_AXIS_LX, 0.2f),
         					Controllers.getAxis(Controllers.XBOX_AXIS_LY, 0.2f),
@@ -151,7 +158,7 @@ public class Robot extends IterativeRobot {
     }
     
     public void disabledPeriodic() {
-
+    	
     }
     
     public void testInit() {
@@ -165,16 +172,23 @@ public class Robot extends IterativeRobot {
     
     private boolean done = false;
     public void testPeriodic() {
-//    	compressor.start();
+    	compressor.start();
 
-    	if(!done && drive.rotateTo(-173))
-    		done = true;
-    	System.out.println("Imu yaw: " + imu.getYaw());
+//    	if(!done && drive.rotateTo(-173))
+//    		done = true;
+//    	System.out.println("Imu yaw: " + imu.getYaw());
+//    	System.out.println("Imu pitch: " + imu.getPitch());
 //    	
 //    	left.set(-.5);
 //    	left2.set(-.5); 
 //    	right.set(.5);
 //    	right2.set(.5);
+    	
+//    	leadScrewMotor.set(-.05);
+//    	System.out.println(strongback.leadScrewImuPID.isEnable());
+//		strongback.enablePid(); 
+//		System.out.println(strongback.getError() + " output " + strongback.leadScrewImuPID.get());
+
     }
     
 }

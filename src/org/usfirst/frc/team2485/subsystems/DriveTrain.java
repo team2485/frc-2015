@@ -442,7 +442,10 @@ public class DriveTrain {
 		//		System.out.println("xInput: " + translateX + " yInput: " + translateY + 
 		//				" xOutput:" + outputTX + " yOutput: " + outputTY);
 
-		//System.out.println("Pos: " + imu.getYaw() + " Pos Target: " + imuPID.getSetpoint()); 
+		//System.out.println("Pos: " + imu.getYaw() + " Pos Target: " + imuPID.getSetpoint());
+		
+		System.out.println("Imu yaw: " + imu.getYaw());
+    	System.out.println("Imu pitch: " + imu.getPitch());
 	}
 	public void tuneStrafeParam(double d) {
 		if (buttonClicked) {
@@ -537,7 +540,8 @@ public class DriveTrain {
 //		System.out.println("error from enc PID " + driveStraightPID.getError() + " from imu PID " + imuPID.getError());
 //		System.out.println("Kp from enc PID " + driveStraightPID.getP());
 
-		setLeftRight(leftOutput - imuOutput, rightOutput + imuOutput);
+//		just changed this sign
+		setLeftRight(leftOutput + imuOutput, rightOutput - imuOutput);
 
 		// Check to see if we're on target
 		if (driveStraightPID.onTarget() && Math.abs(dualEncoder.getRate()) < lowEncRate) {
@@ -547,6 +551,9 @@ public class DriveTrain {
 			return true;
 		}
 		return false;
+	}
+	public IMU getIMU() {
+		return imu;
 	}
 }
 
