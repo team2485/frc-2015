@@ -1,4 +1,4 @@
-package org.usfirst.frc.team2485.robot;
+package org.usfirst.frc.team2485.subsystems;
 
 import edu.wpi.first.wpilibj.Solenoid;
 
