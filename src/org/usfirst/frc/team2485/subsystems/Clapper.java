@@ -1,49 +1,66 @@
 package org.usfirst.frc.team2485.subsystems;
 
+import edu.wpi.first.wpilibj.AnalogPotentiometer;
+import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.VictorSP;
 
 public class Clapper {
 
-	private VictorSP leftBelt, rightBelt;	
+	private VictorSP
+	leftBelt, 
+	rightBelt, 
+	clapperLifter1, 
+	clapperLifter2;	
 
 	private Solenoid
-			leftFingerActuator0,
-			leftFingerActuator1,
-			rightFingerActuator0,
-			rightFingerActuator1,
-			clapperActuator, 
-			intakeBeltsActuator;
+	leftFingerActuator1,
+	leftFingerActuator2,
+	rightFingerActuator1,
+	rightFingerActuator2,
+	clapperActuator1,
+	clapperActuator2;
+
+	private PIDController clapperPID;
+	private AnalogPotentiometer pot;
+	private static final int POT_OFFSET = 0;
+	private boolean open;
 
 	private double intakeSpeed, reverseSpeed;
 
-	private boolean isOpen;
+	public Clapper(VictorSP leftBelt, VictorSP rightBelt,
+			VictorSP clapperLifter1, VictorSP clapperLifter2,
+			Solenoid leftFingerActuator1, Solenoid leftFingerActuator2,
+			Solenoid rightFingerActuator1, Solenoid rightFingerActuator2,
+			Solenoid clapperActuator1,Solenoid clapperActuator2) {
 
-	public Clapper(VictorSP leftBelt, VictorSP rightBelt, 
-			Solenoid leftFingerActuator0, Solenoid leftFingerActuator1,
-			Solenoid rightFingerActuator0, Solenoid rightFingerActuator1,
-			Solenoid clapperActuator, Solenoid intakeBeltsActuator) {
-		
 		this.leftBelt 				= leftBelt;
 		this.rightBelt				= rightBelt;
-		this.leftFingerActuator0	= leftFingerActuator0;
+		this.clapperLifter1			= clapperLifter1;
+		this.clapperLifter2			= clapperLifter2;
 		this.leftFingerActuator1	= leftFingerActuator1;
-		this.rightFingerActuator0	= rightFingerActuator0;
+		this.leftFingerActuator2	= leftFingerActuator2;
 		this.rightFingerActuator1	= rightFingerActuator1;
-		this.clapperActuator		= clapperActuator;
-		this.intakeBeltsActuator	= intakeBeltsActuator;
+		this.rightFingerActuator2	= rightFingerActuator2;
+		this.clapperActuator1		= clapperActuator1;
+		this.clapperActuator2		= clapperActuator2;
 
 		intakeSpeed  = 0.8;
-		reverseSpeed = -0.8; 
+		reverseSpeed = -0.8;
+
 	}
 
-	public Clapper(int leftBelt, int rightBelt, int leftFingerActuator0,
-			int leftFingerActuator1, int rightFingerActuator0, int rightFingerActuator1,
-			int clapperActuator, int intakeBeltsActuator) {
-		
-		this(new VictorSP(leftBelt), new VictorSP(rightBelt), new Solenoid(leftFingerActuator0),
-				new Solenoid(leftFingerActuator1), new Solenoid(rightFingerActuator0),
-				new Solenoid(rightFingerActuator1), new Solenoid(clapperActuator), new Solenoid(intakeBeltsActuator));
+	public Clapper(int leftBelt, int rightBelt, int clapperLifter1,
+			int clapperLifter2, int leftFingerActuator1,
+			int leftFingerActuator2, int rightFingerActuator1,
+			int rightFingerActuator2, int clapperActuator1,
+			int clapperActuator2) {
+
+		this(new VictorSP(leftBelt), new VictorSP(rightBelt), new VictorSP(clapperLifter1),
+				new VictorSP(clapperLifter2), new Solenoid(leftFingerActuator1),
+				new Solenoid(leftFingerActuator2), new Solenoid(rightFingerActuator1),
+				new Solenoid(rightFingerActuator2), new Solenoid(clapperActuator1),
+				new Solenoid(clapperActuator2));
 	}
 
 	/*
@@ -71,11 +88,21 @@ public class Clapper {
 	}
 
 	public void setIntakeSpeed(double intakeSpeed) {
-		this.intakeSpeed = intakeSpeed;
+		if (intakeSpeed > 1)
+			intakeSpeed = 1; 
+		else if (intakeSpeed < -1)
+			intakeSpeed = -1; 
+		else 
+			this.intakeSpeed = intakeSpeed;
 	}
 
 	public void setReverseSpeed(double reverseSpeed) {
-		this.reverseSpeed = reverseSpeed;
+		if (reverseSpeed > 1)
+			reverseSpeed = 1;
+		else if (reverseSpeed < -1)
+			reverseSpeed = -1; 
+		else
+			this.reverseSpeed = reverseSpeed;
 	}
 
 	/*
@@ -120,39 +147,43 @@ public class Clapper {
 	public void setFingerPosition(int position) {
 
 		switch (position) {
-			case 1: 
-				leftFingerActuator0.set(false);
-				leftFingerActuator1.set(false);
-				rightFingerActuator0.set(false);
-				rightFingerActuator1.set(false);
-				break;
-			case 2:
-				leftFingerActuator0.set(false);
-				leftFingerActuator1.set(true);
-				rightFingerActuator0.set(false);
-				rightFingerActuator1.set(true);
-				break;
-			case 3:
-				leftFingerActuator0.set(true);
-				leftFingerActuator1.set(true);
-				rightFingerActuator0.set(true);
-				rightFingerActuator1.set(true);
-				break;
-			default:
-				throw new IllegalArgumentException("Make the position 1, 2, or 3");
-		
-		
+		case 1: 
+			leftFingerActuator1.set(false);
+			leftFingerActuator2.set(false);
+			rightFingerActuator1.set(false);
+			rightFingerActuator2.set(false);
+			break;
+		case 2:
+			leftFingerActuator1.set(false);
+			leftFingerActuator2.set(true);
+			rightFingerActuator1.set(false);
+			rightFingerActuator2.set(true);
+			break;
+		case 3:
+			leftFingerActuator1.set(true);
+			leftFingerActuator2.set(true);
+			rightFingerActuator1.set(true);
+			rightFingerActuator2.set(true);
+			break;
+		default:
+			throw new IllegalArgumentException("Make the position 1, 2, or 3");
+
+
 		}
-		
-			
+
+
 	}
 
 	public void openClapper() {
-		clapperActuator.set(true);
+		clapperActuator1.set(true);
+		clapperActuator2.set(true);
+		open = true;
 	}
 
 	public void closeClapper() {
-		clapperActuator.set(false);
+		clapperActuator1.set(false);
+		clapperActuator2.set(false);
+		open = false;
 	}
 
 
