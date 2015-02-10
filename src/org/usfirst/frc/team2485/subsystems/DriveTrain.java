@@ -538,6 +538,10 @@ public class DriveTrain {
 	public boolean rotate(double angle){
 		return rotateTo(imu.getYaw()+angle);
 	}
+	/**
+	 * @param inches to drive forward
+	 * @return true when robot has driven that many inches, false if not completed
+	 */
 	public boolean driveTo(double inches) {
 
 		if(driveStraightPID == null)

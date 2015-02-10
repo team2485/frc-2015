@@ -1,5 +1,7 @@
 package org.usfirst.frc.team2485.subsystems;
 
+import org.usfirst.frc.team2485.util.CombinedVictorSP;
+
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PIDController;
@@ -8,7 +10,8 @@ import edu.wpi.first.wpilibj.VictorSP;
 
 public class Clapper {
 
-	private VictorSP clapperLifter1, clapperLifter2;	
+	private VictorSP clapperLifter1, clapperLifter2;
+	private CombinedVictorSP clapperLifter;
 
 	private DoubleSolenoid clapperActuator;
 	private Solenoid clapper1, clapper2;
@@ -28,7 +31,7 @@ public class Clapper {
 	
 	private boolean isPID;
 	
-	public static final int 
+	public static final double 
 		ONE_TOTE_SETPOINT		= 0,
 		TWO_TOTE_SETPOINT		= 0,
 		THREE_TOTE_SETPOINT		= 0,
@@ -46,6 +49,8 @@ public class Clapper {
 		this.clapperLifter2			= clapperLifter2;
 		this.clapperActuator		= clapperActuator;
 		this.pot					= pot;
+		
+		this.clapperPID = new PIDController(kP, kI, kD, pot, clapperLifter);
 	}
 
 	public Clapper(int clapperLifter1Port, int clapperLifter2Port, 
@@ -76,14 +81,9 @@ public class Clapper {
 		clapperPID.setPID(kP, kI, kD);
 	}
 	
-	public void setRawSetpoint(int setpoint) {
+	public void setRawSetpoint(double setpoint) {
 		
-		switch(setpoint) {
-		//different cases
-		default: 
-			throw new IllegalArgumentException("Not given valid setpoint"); 
-		}
-//		clapperPID.setSetpoint(setpoint);
+		clapperPID.setSetpoint(setpoint);
 	}
 
 	public void setPercentSetpoint(double setpointPercent) {

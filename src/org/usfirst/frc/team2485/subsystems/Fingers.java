@@ -14,8 +14,6 @@ public class Fingers {
 	private double intakeSpeed, reverseSpeed;
 	private final double AXIS_DEADBAND = 0.125;
 	
-	private double controllerY = 0, controllerZ = 0;
-	
 	private int fingerPosition;
 	
 	public static final int
@@ -46,18 +44,15 @@ public class Fingers {
 	 * Handles tote by using the joystick to rotate it and pull it into clappers
 	 */
 	public void handleTote(float controllerY, float controllerZ) {
-		this.controllerY = handleThreshold(controllerY, AXIS_DEADBAND);
-		this.controllerZ = handleThreshold(controllerZ, AXIS_DEADBAND);
 		
-		if (controllerY != 0) {
-			if (controllerY > 0) {
-				setReverseSpeed(1.0 * controllerY);
-				dualReverse();
-			} else if (controllerY < 0) {
-				setIntakeSpeed(1.0 * controllerY);
-				dualIntake();
-			}
-		}	
+		controllerY = (float) handleThreshold(controllerY, AXIS_DEADBAND);
+		controllerZ = (float) handleThreshold(controllerZ, AXIS_DEADBAND);
+		
+		if (controllerY == 0 && controllerZ == 0) 
+			stopBelts();
+	
+		
+		//first check for spinning belts in the other way
 		if (controllerZ != 0) {
 			if (controllerZ > 0) {
 				setIntakeSpeed(1.0 * controllerZ);
@@ -67,10 +62,16 @@ public class Fingers {
 				rotateToteLeft();
 			}
 		}
-		
-//		if (controllerY == 0 && controllerZ == 0) {
-//			stopBelts();
-//		}
+		//if we aren't trying to spin belts in opposite directions, move on here
+		else if (controllerY != 0) {
+			if (controllerY > 0) {
+				setReverseSpeed(1.0 * controllerY);
+				dualReverse();
+			} else if (controllerY < 0) {
+				setIntakeSpeed(1.0 * controllerY);
+				dualIntake();
+			}
+		}	
 	}
 
 	public void setIntakeSpeed(double intakeSpeed) {
