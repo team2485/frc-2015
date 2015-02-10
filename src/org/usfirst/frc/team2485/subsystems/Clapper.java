@@ -1,6 +1,7 @@
 package org.usfirst.frc.team2485.subsystems;
 
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.VictorSP;
@@ -9,7 +10,8 @@ public class Clapper {
 
 	private VictorSP clapperLifter1, clapperLifter2;	
 
-	private Solenoid leftClapperActuator, rightClapperActuator;
+	private DoubleSolenoid clapperActuator;
+	private Solenoid clapper1, clapper2;
 
 	private PIDController clapperPID;
 	private AnalogPotentiometer pot;
@@ -38,22 +40,24 @@ public class Clapper {
 		SCORING_PLATFORM_HEIGHT	= 0;
 
 	public Clapper(VictorSP clapperLifter1, VictorSP clapperLifter2,
-			Solenoid leftClapperActuator, Solenoid rightClapperActuator,
-			AnalogPotentiometer pot) {
+			DoubleSolenoid clapperActuator, AnalogPotentiometer pot) {
 
 		this.clapperLifter1			= clapperLifter1;
 		this.clapperLifter2			= clapperLifter2;
-		this.leftClapperActuator	= leftClapperActuator;
-		this.rightClapperActuator	= rightClapperActuator;
+		this.clapperActuator		= clapperActuator;
 		this.pot					= pot;
 	}
 
 	public Clapper(int clapperLifter1Port, int clapperLifter2Port, 
-			int clapperActuator1Port, int clapperActuator2Port, int potPort) {
+			int clapperActuatorPort1, int clapperActuatorPort2, int potPort) {
 
 		this(new VictorSP(clapperLifter1Port), new VictorSP(clapperLifter2Port),
-				new Solenoid(clapperActuator1Port), new Solenoid(clapperActuator2Port),
+				new DoubleSolenoid(clapperActuatorPort1, clapperActuatorPort2),
 				new AnalogPotentiometer(potPort));
+	}
+	
+	public Clapper(int clapperActuatorPort1, int clapperActuatorPort2) {
+		this.clapperActuator = new DoubleSolenoid(clapperActuatorPort1, clapperActuatorPort2);
 	}
 
 	public double getPotValue() {
@@ -92,15 +96,18 @@ public class Clapper {
 	}
 	
 	public void openClapper() {
-		leftClapperActuator.set(true);
-		rightClapperActuator.set(true);
+		clapperActuator.set(DoubleSolenoid.Value.kForward);
 		open = true;
 	}
 
 	public void closeClapper() {
-		leftClapperActuator.set(false);
-		rightClapperActuator.set(false);
+		clapperActuator.set(DoubleSolenoid.Value.kReverse);
 		open = false;
+	}
+	
+	public void closeAll() {
+		clapper1.set(false);
+		clapper2.set(false);
 	}
 	
 	public boolean isOpen() {

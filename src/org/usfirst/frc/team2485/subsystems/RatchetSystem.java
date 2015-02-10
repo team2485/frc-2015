@@ -2,26 +2,27 @@ package org.usfirst.frc.team2485.subsystems;
 
 import edu.wpi.first.wpilibj.Solenoid;
 
+/**
+ * 
+ * @author Ben Clark
+ */
 public class RatchetSystem {
 
-	private Solenoid hook, bottomRest;
+	private Solenoid ratchetActuator;
 	
-	public RatchetSystem(Solenoid hook, Solenoid bottomRest) {
-		this.hook		= hook;
-		this.bottomRest	= bottomRest;
+	public RatchetSystem(Solenoid ratchetActuator) {
+		this.ratchetActuator = ratchetActuator;
 	}
 	
-	public RatchetSystem(int hookPort, int bottomRestPort) {
-		this(new Solenoid(hookPort), new Solenoid(bottomRestPort));
+	public RatchetSystem(int ratchetActuatorPort) {
+		this(new Solenoid(ratchetActuatorPort));
 	}
 	
 	public void releaseToteStack() {
-		hook.set(true);
-		bottomRest.set(true);
+		ratchetActuator.set(true);
 	}
 	
 	public void setDefaultRatchetPosition() {
-		hook.set(false);
-		bottomRest.set(false);
+		ratchetActuator.set(false);
 	}
 }

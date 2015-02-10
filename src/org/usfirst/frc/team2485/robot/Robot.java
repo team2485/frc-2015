@@ -3,16 +3,19 @@ package org.usfirst.frc.team2485.robot;
 
 import org.usfirst.frc.com.kauailabs.nav6.frc.IMU;
 import org.usfirst.frc.com.kauailabs.nav6.frc.IMUAdvanced;
+import org.usfirst.frc.team2485.subsystems.Clapper;
 import org.usfirst.frc.team2485.subsystems.DriveTrain;
-import org.usfirst.frc.team2485.subsystems.DualEncoder;
+import org.usfirst.frc.team2485.subsystems.Fingers;
 import org.usfirst.frc.team2485.subsystems.Strongback;
 import org.usfirst.frc.team2485.util.Controllers;
+import org.usfirst.frc.team2485.util.DualEncoder;
 
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
+import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
@@ -24,7 +27,9 @@ public class Robot extends IterativeRobot {
 	
 	private VictorSP left, left2, right, right2, center, leadScrewMotor;
 	public static DriveTrain drive;
-//	public static Strongback strongback; 
+//	public static Strongback strongback;
+	public static Clapper clapper;
+	public static Fingers fingers;
 	private Encoder leftEnc, rightEnc, centerEnc;
 	private DualEncoder dualEncoder;
 	private Solenoid suspension;
@@ -32,6 +37,9 @@ public class Robot extends IterativeRobot {
 	private DoubleSolenoid ds;
 	private IMUAdvanced imu;
 	private SerialPort ser;
+	private CameraServer camServer;
+	
+//	boolean fingersOn = true;
 	
     public void robotInit() {
 
@@ -39,8 +47,8 @@ public class Robot extends IterativeRobot {
     	left2 	= new VictorSP(15);
     	right   = new VictorSP(0); //right: 0, 1
     	right2 	= new VictorSP(1);
-    	center  = new VictorSP(13); //center: 9   changed to 13 1/31/15
-    	suspension = new Solenoid(7); //may need two solenoids
+//    	center  = new VictorSP(13); //center: 9   changed to 13 1/31/15
+//    	suspension = new Solenoid(7); //may need two solenoids
     	
     	leftEnc = new Encoder(0, 1);
     	rightEnc = new Encoder(4, 5);
@@ -67,10 +75,20 @@ public class Robot extends IterativeRobot {
     		LiveWindow.addSensor("IMU", "Gyro", imu);
     	}
     	
-    	drive = new DriveTrain(left, left2, right, right2, center, suspension, imu, leftEnc, rightEnc, centerEnc);
-    	drive.setSolenoid(false);
+//    	drive = new DriveTrain(left, left2, right, right2, imu, leftEnc, rightEnc);
+//    	drive.setSolenoid(false);
+    	
+    	clapper = new Clapper(6, 5);
+    	fingers = new Fingers(9, 7, 0, 4);
+//    	clapper.close();
     	
 //    	strongback = new Strongback(leadScrewMotor, imu); 
+    	
+    	
+//    	camServer = CameraServer.getInstance();
+//        camServer.setQuality(50);
+//        //the camera name (ex "cam0") can be found through the roborio web interface
+//        camServer.startAutomaticCapture("cam0");
 
     	Controllers.set(new Joystick(0), new Joystick(1));
     	System.out.println("initialized");
@@ -103,63 +121,65 @@ public class Robot extends IterativeRobot {
 
     public void teleopPeriodic() {
     	
+    	System.out.println("Teleop enabled");
+    	
 //		strongback.enablePid();
     	
-        drive.warlordDrive(Controllers.getAxis(Controllers.XBOX_AXIS_LX, 0.2f),
-        					Controllers.getAxis(Controllers.XBOX_AXIS_LY, 0.2f),
-                			Controllers.getAxis(Controllers.XBOX_AXIS_RX, 0.2f));
+//        drive.warlordDrive(Controllers.getAxis(Controllers.XBOX_AXIS_LX, 0.2f),
+//        					Controllers.getAxis(Controllers.XBOX_AXIS_LY, 0.2f),
+//                			Controllers.getAxis(Controllers.XBOX_AXIS_RX, 0.2f));
     	
-        if(Controllers.getButton(Controllers.XBOX_BTN_RBUMP)) {
-        		drive.setQuickTurn(true);
-        } else
-        	drive.setQuickTurn(false);
+//        if(Controllers.getButton(Controllers.XBOX_BTN_RBUMP)) {
+//        		drive.setQuickTurn(true);
+//        } else
+//        	drive.setQuickTurn(false);
 //        
-//        if(Controllers.getButton(Controllers.XBOX_BTN_LBUMP)) {
-//        	
-//        	drive.setLowSpeed();
+//        if(Controllers.getButton(Controllers.XBOX_BTN_A)) {
+//        	drive.setSolenoid(true);
 //        }
 //        
-        if(Controllers.getButton(Controllers.XBOX_BTN_A)) {
-        	drive.setSolenoid(true);
-//        	ds.set(DoubleSolenoid.Value.kForward);
-        }
-        
-        if(Controllers.getButton(Controllers.XBOX_BTN_B)) {
-        	drive.setSolenoid(false);
-//        	ds.set(DoubleSolenoid.Value.kReverse);
-        }
-        
-        if (Controllers.getButton(Controllers.XBOX_BTN_START))
-        	drive.tuneStrafeParam(.005);
-        if (Controllers.getButton(Controllers.XBOX_BTN_BACK))
-        	drive.tuneStrafeParam(-.005);
-        if (Controllers.getButton(Controllers.XBOX_BTN_Y)) 
-        	drive.resetButtonClicked(); 
-        
-    	System.out.println("current setpoint is: " + drive.imuPID.getSetpoint());
-    	System.out.println("current error is: " + drive.imuPID.getError());
-    
-
-//        else {
+//        if(Controllers.getButton(Controllers.XBOX_BTN_B)) {
 //        	drive.setSolenoid(false);
 //        }
+        
+//        if (Controllers.getButton(Controllers.XBOX_BTN_START))
+//        	drive.tuneStrafeParam(.005);
+//        if (Controllers.getButton(Controllers.XBOX_BTN_BACK))
+//        	drive.tuneStrafeParam(-.005);
+//        if (Controllers.getButton(Controllers.XBOX_BTN_Y)) 
+//        	drive.resetButtonClicked(); 
+//        
+//    	System.out.println("current setpoint is: " + drive.imuPID.getSetpoint());
+//    	System.out.println("current error is: " + drive.imuPID.getError());
 //        
 //    	System.out.println("Pot value: " + pot.get());
 //    	System.out.println("Enc value: " + encoder.get());
 //    	System.out.println("IMU pitch: " + imu.getPitch());
 //    	System.out.println("IMU yaw: " + imu.getYaw());
 //    	System.out.println("IMU roll: " + imu.getRoll());
-    	
+
     	//basic controls for intake arm
-        /*clapper.handleTote(Controllers.getAxis(Controllers.JOYSTICK_AXIS_Y,
-        			Controllers.getAxis(Controllers.JOYSTICK_AXIS_Z);
-        	
-      	if (Controllers.getJoystickButton(1)) {
-       		clapper.openClapper();
+        fingers.handleTote((Controllers.getAxis(Controllers.JOYSTICK_AXIS_Y)),
+        			Controllers.getAxis(Controllers.JOYSTICK_AXIS_Z));
+    
+      	if (Controllers.getAxis(Controllers.JOYSTICK_AXIS_THROTTLE) > 0) {
+	      	clapper.openClapper();
        	}
-       	if (Controllers.getJoystickButton(2)) {
+      	
+      	else {
         	clapper.closeClapper();
-    	}*/
+    	}
+      	
+       	if (Controllers.getJoystickButton(7)) {
+       		fingers.setFingerPosition(Fingers.CLOSED);
+       	}
+       	if (Controllers.getJoystickButton(9)) {
+       		fingers.setFingerPosition(Fingers.PARALLEL);
+       	}
+       	if (Controllers.getJoystickButton(11)) {
+       		fingers.setFingerPosition(Fingers.OPEN);
+       	}
+       	
     }
     
     public void disabledPeriodic() {
@@ -167,12 +187,12 @@ public class Robot extends IterativeRobot {
     }
     
     public void testInit() {
-    	leftEnc.reset();
-    	rightEnc.reset();
-    	drive.disableDriveStraightPID();
-    	drive.disableIMUPID();
-    	imu.zeroYaw();
-    	done = false;
+//    	leftEnc.reset();
+//    	rightEnc.reset();
+//    	drive.disableDriveStraightPID();
+//    	drive.disableIMUPID();
+//    	imu.zeroYaw();
+//    	done = false;
     }
     
     private boolean done = false;

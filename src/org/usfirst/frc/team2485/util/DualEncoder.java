@@ -1,4 +1,4 @@
-package org.usfirst.frc.team2485.subsystems;
+package org.usfirst.frc.team2485.util;
 
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.PIDSource;

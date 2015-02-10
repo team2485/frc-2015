@@ -3,6 +3,7 @@ package org.usfirst.frc.team2485.subsystems;
 
 import org.usfirst.frc.com.kauailabs.nav6.frc.IMU;
 import org.usfirst.frc.com.kauailabs.nav6.frc.IMUAdvanced;
+import org.usfirst.frc.team2485.util.DualEncoder;
 import org.usfirst.frc.team2485.util.DummyOutput;
 
 import edu.wpi.first.wpilibj.Encoder;
@@ -86,18 +87,47 @@ public class DriveTrain {
 		rotateImu_kI = 0.0,
 		rotateImu_kD = 0.005;
 
+//	public DriveTrain(VictorSP leftDrive, VictorSP leftDrive2, VictorSP rightDrive, 
+//			VictorSP rightDrive2, VictorSP centerDrive, Solenoid suspension, IMU imu, Encoder leftEnc, 
+//			Encoder rightEnc, Encoder centerEnc) {
+//
+//		this.leftDrive      = leftDrive;
+//		this.leftDrive2		= leftDrive2; 
+//		this.rightDrive     = rightDrive;
+//		this.rightDrive2	= rightDrive2; 
+//		this.centerDrive	= centerDrive;
+//		this.suspension 	= suspension;
+//		this.imu            = imu;
+//		this.centerEnc		= centerEnc;
+//		this.leftEnc		= leftEnc;
+//		this.rightEnc		= rightEnc;
+//
+//		if (this.imu != null) {
+//			setImu(this.imu);
+//		}
+//
+//		if(leftEnc != null && rightEnc != null) {	
+//			dummyEncoderOutput = new DummyOutput();
+//			dualEncoder = new DualEncoder(leftEnc, rightEnc);
+//			driveStraightPID = new PIDController(driveStraightEncoder_Kp, driveStraightEnvoder_Ki, driveStraightEncoder_Kd, dualEncoder, dummyEncoderOutput);
+//			driveStraightPID.setAbsoluteTolerance(absTolerance_Enc_DriveStraight);
+//		}
+//
+//		if(centerEnc != null) {
+//			strafePID = new PIDController(strafeEncoder_Kp, strafeEncoder_Ki, strafeEncoder_Kd, centerEnc, centerDrive);
+//			strafePID.setAbsoluteTolerance(absTolerance_Enc_Strafe);
+//		}
+//	}
+	
 	public DriveTrain(VictorSP leftDrive, VictorSP leftDrive2, VictorSP rightDrive, 
-			VictorSP rightDrive2, VictorSP centerDrive, Solenoid suspension, IMU imu, Encoder leftEnc, 
-			Encoder rightEnc, Encoder centerEnc) {
+			VictorSP rightDrive2, IMU imu, Encoder leftEnc, 
+			Encoder rightEnc) {
 
 		this.leftDrive      = leftDrive;
 		this.leftDrive2		= leftDrive2; 
 		this.rightDrive     = rightDrive;
 		this.rightDrive2	= rightDrive2; 
-		this.centerDrive	= centerDrive;
-		this.suspension 	= suspension;
 		this.imu            = imu;
-		this.centerEnc		= centerEnc;
 		this.leftEnc		= leftEnc;
 		this.rightEnc		= rightEnc;
 
@@ -105,17 +135,17 @@ public class DriveTrain {
 			setImu(this.imu);
 		}
 
-		if(leftEnc != null && rightEnc != null) {	
-			dummyEncoderOutput = new DummyOutput();
-			dualEncoder = new DualEncoder(leftEnc, rightEnc);
-			driveStraightPID = new PIDController(driveStraightEncoder_Kp, driveStraightEnvoder_Ki, driveStraightEncoder_Kd, dualEncoder, dummyEncoderOutput);
-			driveStraightPID.setAbsoluteTolerance(absTolerance_Enc_DriveStraight);
-		}
-
-		if(centerEnc != null) {
-			strafePID = new PIDController(strafeEncoder_Kp, strafeEncoder_Ki, strafeEncoder_Kd, centerEnc, centerDrive);
-			strafePID.setAbsoluteTolerance(absTolerance_Enc_Strafe);
-		}
+//		if(leftEnc != null && rightEnc != null) {	
+//			dummyEncoderOutput = new DummyOutput();
+//			dualEncoder = new DualEncoder(leftEnc, rightEnc);
+//			driveStraightPID = new PIDController(driveStraightEncoder_Kp, driveStraightEnvoder_Ki, driveStraightEncoder_Kd, dualEncoder, dummyEncoderOutput);
+//			driveStraightPID.setAbsoluteTolerance(absTolerance_Enc_DriveStraight);
+//		}
+//
+//		if(centerEnc != null) {
+//			strafePID = new PIDController(strafeEncoder_Kp, strafeEncoder_Ki, strafeEncoder_Kd, centerEnc, centerDrive);
+//			strafePID.setAbsoluteTolerance(absTolerance_Enc_Strafe);
+//		}
 	}
 	/*
 	public DriveTrain(VictorSP leftDrive, VictorSP leftDrive2, VictorSP rightDrive, 

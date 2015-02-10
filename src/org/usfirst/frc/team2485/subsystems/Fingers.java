@@ -8,43 +8,47 @@ public class Fingers {
 	private VictorSP leftBelt, rightBelt;
 	
 	private Solenoid
-		leftFingerActuator1,
-		leftFingerActuator2,
-		rightFingerActuator1,
-		rightFingerActuator2;
+		longFingerActuators,
+		shortFingerActuators;
 	
 	private double intakeSpeed, reverseSpeed;
+	private final double AXIS_DEADBAND = 0.125;
+	
+	private double controllerY = 0, controllerZ = 0;
 	
 	private int fingerPosition;
 	
+	public static final int
+		CLOSED		= 1,
+		PARALLEL	= 2,
+		OPEN		= 3;
+	
 	public Fingers(VictorSP leftBelt, VictorSP rightBelt,
-			Solenoid leftFingerActuator1, Solenoid leftFingerActuator2,
-			Solenoid rightFingerActuator1, Solenoid rightFingerActuator2) {
+			Solenoid longFingerActuators, Solenoid shortFingerActuators) {
 		
 		this.leftBelt				= leftBelt;
 		this.rightBelt				= rightBelt;
-		this.leftFingerActuator1 	= leftFingerActuator1;
-		this.leftFingerActuator2	= leftFingerActuator2;
-		this.rightFingerActuator1	= rightFingerActuator1;
-		this.rightFingerActuator2	= rightFingerActuator2;
+		this.longFingerActuators	= longFingerActuators;
+		this.shortFingerActuators	= shortFingerActuators;
 		
 		intakeSpeed  = 0.8;
 		reverseSpeed = -0.8;
 	}
 	
 	public Fingers(int leftBeltPort, int rightBeltPort,
-			int leftFingerActuator1Port, int leftFingerActuator2Port,
-			int rightFingerActuator1Port, int rightFingerActuator2Port) {
+			int longFingerActuatorsPort, int shortFingerActuatorsPort) {
 		
 		this(new VictorSP(leftBeltPort), new VictorSP(rightBeltPort),
-				new Solenoid(leftFingerActuator1Port), new Solenoid(leftFingerActuator2Port),
-				new Solenoid(rightFingerActuator1Port), new Solenoid(rightFingerActuator2Port));
+				new Solenoid(longFingerActuatorsPort), new Solenoid(shortFingerActuatorsPort));
 	}
 	
 	/*
 	 * Handles tote by using the joystick to rotate it and pull it into clappers
 	 */
-	public void handleTote(double controllerY, double controllerZ) {
+	public void handleTote(float controllerY, float controllerZ) {
+		this.controllerY = handleThreshold(controllerY, AXIS_DEADBAND);
+		this.controllerZ = handleThreshold(controllerZ, AXIS_DEADBAND);
+		
 		if (controllerY != 0) {
 			if (controllerY > 0) {
 				setReverseSpeed(1.0 * controllerY);
@@ -63,6 +67,10 @@ public class Fingers {
 				rotateToteLeft();
 			}
 		}
+		
+//		if (controllerY == 0 && controllerZ == 0) {
+//			stopBelts();
+//		}
 	}
 
 	public void setIntakeSpeed(double intakeSpeed) {
@@ -88,22 +96,23 @@ public class Fingers {
 	 */
 	public void dualIntake() {
 		leftBelt.set(intakeSpeed);
-		rightBelt.set(intakeSpeed);
+		rightBelt.set(-intakeSpeed);
 	}
 
 	/*
 	 * Reverse a tote out of the clappers
 	 */
 	public void dualReverse() {
-		leftBelt.set(reverseSpeed);
+		leftBelt.set(-reverseSpeed);
 		rightBelt.set(reverseSpeed);
 	}
 
 	/*
 	 * Rotates tote left to align it for intake
+	 * TODO: find out which way is left versus right
 	 */
 	public void rotateToteLeft() {
-		leftBelt.set(intakeSpeed);
+		leftBelt.set(-intakeSpeed);
 		rightBelt.set(-intakeSpeed);
 	}
 
@@ -111,15 +120,20 @@ public class Fingers {
 	 * Rotates tote right to align it for intake
 	 */
 	public void rotateToteRight() {
-		leftBelt.set(-intakeSpeed);
+		leftBelt.set(intakeSpeed);
 		rightBelt.set(intakeSpeed);
+	}
+	
+	public void stopBelts() {
+		leftBelt.set(0);
+		rightBelt.set(0);
 	}
 
 	/*
 	 * Takes a parameter 1, 2, or 3 for the possible positions of the fingers.
-	 * 1 is closed
-	 * 2 is flush or parallel
 	 * 3 is open
+	 * 2 is flush or parallel
+	 * 1 is closed
 	 * Assumes that we will only be working with 3 positions, rather than the possible four
 	 */
 	public void setFingerPosition(int position) {
@@ -128,30 +142,25 @@ public class Fingers {
 
 		switch (position) {
 			case 1: 
-				leftFingerActuator1.set(false);
-				leftFingerActuator2.set(false);
-				rightFingerActuator1.set(false);
-				rightFingerActuator2.set(false);
+				longFingerActuators.set(true);
+				shortFingerActuators.set(true);
 				
 				fingerPosition = 1;
 				
 				break;
 			
 			case 2:
-				leftFingerActuator1.set(false);
-				leftFingerActuator2.set(true);
-				rightFingerActuator1.set(false);
-				rightFingerActuator2.set(true);
+				//TODO: check which actuator should be set to true
+				longFingerActuators.set(false);
+				shortFingerActuators.set(true);
 				
 				fingerPosition = 2;
 				
 				break;
 			
 			case 3:
-				leftFingerActuator1.set(true);
-				leftFingerActuator2.set(true);
-				rightFingerActuator1.set(true);
-				rightFingerActuator2.set(true);
+				longFingerActuators.set(false);
+				longFingerActuators.set(false);
 				
 				fingerPosition = 3;
 				
@@ -160,6 +169,22 @@ public class Fingers {
 			default:
 				throw new IllegalArgumentException("Make the finger position 1, 2, or 3");
 		}
+	}
+	
+	/**
+	 * Thresholds values
+	 *
+	 * @param val
+	 * @param deadband
+	 * @return
+	 */
+	private double handleThreshold(double val, double threshold) {
+
+		double returnValue = (Math.abs(val) > Math.abs(threshold)) ? (val/Math.abs(val)*(Math.abs(val)-threshold)/(1-threshold)) : 0.0;
+		//System.out.println(val + " : " + returnValue);
+		return returnValue;
+
+		//return (Math.abs(val) > Math.abs(threshold)) ? val : 0.0;
 	}
 	
 

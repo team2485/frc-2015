@@ -186,6 +186,10 @@ public final class Controllers {
     // <editor-fold defaultstate="collapsed" desc="Joystick Axes">
 
     /**
+     * The secondary joystick X (horizontal) axis.
+     */
+    public static final int JOYSTICK_AXIS_X = 0;
+    /**
      * The secondary joystick Y (vertical) axis.
      */
     public static final int JOYSTICK_AXIS_Y = 1;
@@ -294,6 +298,7 @@ public final class Controllers {
         dump.xboxBtnLStick        = primary.getRawButton(XBOX_BTN_LSTICK);
         dump.xboxBtnRStick        = primary.getRawButton(XBOX_BTN_RSTICK);
         
+        dump.joystickAxisX		  = (float)secondary.getRawAxis(JOYSTICK_AXIS_X);
         dump.joystickAxisY        = (float)secondary.getRawAxis(JOYSTICK_AXIS_Y);
         dump.joystickAxisZ        = (float)secondary.getRawAxis(JOYSTICK_AXIS_Z);
         dump.joystickAxisThrottle = (float)secondary.getRawAxis(JOYSTICK_AXIS_THROTTLE);
