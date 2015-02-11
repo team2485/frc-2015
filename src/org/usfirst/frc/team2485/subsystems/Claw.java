@@ -74,8 +74,12 @@ public class Claw {
 		elevationPID.setPID(kP, kI, kD);
 	}
 	
-	public void setRawSetpoint(int setpoint) {
+	public void setSetpoint(int setpoint) {
 		elevationPID.setSetpoint(setpoint);
+	}
+	
+	public boolean elevationPidIsOnTarget() {
+		return elevationPID.onTarget(); 
 	}
 
 	/**
@@ -99,7 +103,7 @@ public class Claw {
 	/**
 	 * Sets the claw to automatic control, PID will control the winch, moveManually will not function
 	 */
-	private void setAutomatic() {
+	public void setAutomatic() {
 		automatic = true;
 		elevationPID.enable();
 	}
@@ -107,7 +111,7 @@ public class Claw {
 	/**
 	 * Sets the claw to manual control, PID will not control elevation, but the moveManually method will function. 
 	 */
-	private void setManual() {
+	public void setManual() {
 		automatic = false;
 		elevationPID.disable();
 	}

@@ -6,6 +6,7 @@ import org.usfirst.frc.com.kauailabs.nav6.frc.IMUAdvanced;
 import org.usfirst.frc.team2485.auto.Sequencer;
 import org.usfirst.frc.team2485.auto.SequencerFactory;
 import org.usfirst.frc.team2485.subsystems.Clapper;
+import org.usfirst.frc.team2485.subsystems.Claw;
 import org.usfirst.frc.team2485.subsystems.DriveTrain;
 import org.usfirst.frc.team2485.subsystems.Fingers;
 import org.usfirst.frc.team2485.subsystems.Strongback;
@@ -32,6 +33,7 @@ public class Robot extends IterativeRobot {
 //	public static Strongback strongback;
 	public static Clapper clapper;
 	public static Fingers fingers;
+	public static Claw claw; 
 	private Encoder leftEnc, rightEnc, centerEnc;
 	private DualEncoder dualEncoder;
 	private Solenoid suspension;

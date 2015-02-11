@@ -4,7 +4,6 @@ import edu.wpi.first.wpilibj.SpeedController;
 import edu.wpi.first.wpilibj.VictorSP;
 
 /**
- * 
  * @author Patrick Wamsley 
  * @author Ben Clark
  */
@@ -19,7 +18,8 @@ public class CombinedVictorSP implements SpeedController {
 	
 	@Override
 	public void pidWrite(double output) {
-		//TODO Auto-generated method stub
+		
+		set(output); 
 	}
 
 	@Override
@@ -49,10 +49,6 @@ public class CombinedVictorSP implements SpeedController {
 		}
 	}
 
-	@Override
-	public void disable() {
-		// TODO Auto-generated method stub
-		
-	}
+	public void disable() {}
 
 }

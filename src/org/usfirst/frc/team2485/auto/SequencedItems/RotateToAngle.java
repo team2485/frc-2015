@@ -3,24 +3,25 @@ package org.usfirst.frc.team2485.auto.SequencedItems;
 import org.usfirst.frc.team2485.auto.SequencedItem;
 import org.usfirst.frc.team2485.robot.Robot;
 
-//we beed some sort of sensor to tell when the tote is in/out of the clappper
-//until then i dont think we can right this
-public class ToteIntake implements SequencedItem {
-
+public class RotateToAngle implements SequencedItem {
+	
+	private final double angle; 
 	private boolean finished; 
 	
-	public ToteIntake(boolean on) {
+	public RotateToAngle(double angle) {
+		this.angle = angle; 
 		finished = false; 
 	}
-	
+
 	@Override
 	public void run() {
-		Robot.fingers.dualIntake(1);
+		finished = Robot.drive.rotateTo(angle); 
 	}
 
 	@Override
 	public double duration() {
 		return finished ? 0 : 2; 
 	}
-
+	
+	
 }
