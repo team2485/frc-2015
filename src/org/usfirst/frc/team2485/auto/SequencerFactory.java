@@ -7,7 +7,7 @@ public class SequencerFactory {
 
 	//auto types
 	public static final int 
-	SEQ_TEST = -1; 
+		SEQ_TEST = -1; 
 
 	public static Sequencer createAuto(int autoType) {
 
