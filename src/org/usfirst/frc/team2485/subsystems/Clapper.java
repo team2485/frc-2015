@@ -8,6 +8,11 @@ import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.VictorSP;
 
+/**
+ * @author Ben
+ * @author Aidan
+ *
+ */
 public class Clapper {
 
 	private CombinedVictorSP clapperLifter;
@@ -16,8 +21,6 @@ public class Clapper {
 
 	private PIDController clapperPID;
 	private AnalogPotentiometer pot;
-	private static final double POT_MULTIPLIER = 0;
-	private static final double POT_OFFSET = 0;
 	private boolean open;
 	
 	public double
@@ -28,6 +31,8 @@ public class Clapper {
 	private double potValue;
 	
 	private boolean isPID;
+
+	private boolean automatic;
 	
 	public static final double 
 		ONE_TOTE_SETPOINT		= 0,
@@ -40,6 +45,10 @@ public class Clapper {
 		RATCHET_HEIGHT			= 0,
 		SCORING_PLATFORM_HEIGHT	= 0;
 
+	private static final double LOWEST_POS = 0;
+
+	private static final double POS_RANGE = 0;
+
 	public Clapper(VictorSP clapperLifter1, VictorSP clapperLifter2,
 			DoubleSolenoid clapperActuator, AnalogPotentiometer pot) {
 
@@ -50,6 +59,7 @@ public class Clapper {
 		this.clapperPID = new PIDController(kP, kI, kD, pot, clapperLifter);
 	}
 
+	
 	public Clapper(int clapperLifter1Port, int clapperLifter2Port, 
 			int clapperActuatorPort1, int clapperActuatorPort2, int potPort) {
 
@@ -58,9 +68,9 @@ public class Clapper {
 				new AnalogPotentiometer(potPort));
 	}
 	
-	public Clapper(int clapperActuatorPort1, int clapperActuatorPort2) {
-		this.clapperActuator = new DoubleSolenoid(clapperActuatorPort1, clapperActuatorPort2);
-	}
+//	public Clapper(int clapperActuatorPort1, int clapperActuatorPort2) {
+//		this.clapperActuator = new DoubleSolenoid(clapperActuatorPort1, clapperActuatorPort2);
+//	}
 
 	public double getPotValue() {
 		return pot.get();
@@ -78,19 +88,15 @@ public class Clapper {
 		clapperPID.setPID(kP, kI, kD);
 	}
 	
-	public void setRawSetpoint(double setpoint) {
+	public void setSetpoint(double setpoint) {
 		
 		clapperPID.setSetpoint(setpoint);
 	}
 
-	public void setPercentSetpoint(double setpointPercent) {
-		double correctedSetpoint = POT_MULTIPLIER * setpointPercent + POT_OFFSET;		
-		clapperPID.setSetpoint(correctedSetpoint);
-	}
-	
-	public double getPercentHeight() {
-		return (pot.get() - POT_OFFSET) / POT_MULTIPLIER;
-	}
+//	public void setPercentSetpoint(double setpointPercent) {
+//		double correctedSetpoint = POT_MULTIPLIER * setpointPercent + POT_OFFSET;		
+//		clapperPID.setSetpoint(correctedSetpoint);
+//	}
 	
 	public void openClapper() {
 		clapperActuator.set(DoubleSolenoid.Value.kForward);
@@ -106,8 +112,77 @@ public class Clapper {
 		return open;
 	}
 
+	
+	public double getPercentHeight() {
+		return (pot.get() - LOWEST_POS)/POS_RANGE;
+	}
+	
+	/**
+	 * Sets the claw to automatic control, PID will control the winch, moveManually will not function
+	 */
+	public void setAutomatic() {
+		automatic = true;
+		clapperPID.enable();
+	}
+	
+	/**
+	 * Sets the claw to manual control, PID will not control elevation, but the moveManually method will function. 
+	 */
+	public void setManual() {
+		automatic = false;
+		clapperPID.disable();
+	}
+
+	/**
+	 * Returns if the winch is being controlled by PID.
+	 */
+	public boolean isAutomatic() {
+		return automatic;
+	}
+	
+	/**
+	 * Returns if the winch can be controlled manually.
+	 */
+	public boolean isManual() {
+		return !automatic;
+	}
+	
+	
+	/*
+	 * Assuming that a positive speed moves the clapper down
+	 */
+	public boolean moveManually(double speed){
+		double adjustedSpeed = handleThreshold(speed, 0.1)/4;
+		System.out.println(speed + " | " + adjustedSpeed);
+		if (adjustedSpeed > 1){
+			adjustedSpeed = 1;
+		} else if (adjustedSpeed < -1){
+			adjustedSpeed = -1;
+		}
+		
+		if (isManual()){
+			if (pot.get() >= LOWEST_POS + POS_RANGE && adjustedSpeed > 0){
+				adjustedSpeed = 0;
+			}else if (pot.get() <= LOWEST_POS && adjustedSpeed < 0){
+				adjustedSpeed = 0;
+			}
+			clapperLifter.set(adjustedSpeed);
+		}
+		
+		return isManual();
+	}
+	
+	private double handleThreshold(double val, double threshold) {
+
+		double returnValue = (Math.abs(val) > Math.abs(threshold)) ? (val/Math.abs(val)*(Math.abs(val)-threshold)/(1-threshold)) : 0.0;
+		//System.out.println(val + " : " + returnValue);
+		return returnValue;
+
+		//return (Math.abs(val) > Math.abs(threshold)) ? val : 0.0;
+	}
+
+}
 
 
 	//  two belts for intake, pneumatic for finger, pneumatic for opens and closes whole intake, one pneumatic for open/closes 
 	//	the belts, sensors for detecting tote
-}

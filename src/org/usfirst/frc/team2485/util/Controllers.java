@@ -236,7 +236,7 @@ public final class Controllers {
     public static float getJoystickAxis(int axis, float inputThreshold) {
         if (secondary == null)
             throw new ControllerNullException("Secondary controller is null");
-        if (axis < 1 || axis > 6)
+        if (axis < 0 || axis > 6)
             throw new IllegalArgumentException("Joystick axis (" + axis + ") is invalid.");
 
         float val = (float)secondary.getRawAxis(axis);

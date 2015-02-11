@@ -6,8 +6,10 @@ import org.usfirst.frc.com.kauailabs.nav6.frc.IMUAdvanced;
 import org.usfirst.frc.team2485.auto.Sequencer;
 import org.usfirst.frc.team2485.auto.SequencerFactory;
 import org.usfirst.frc.team2485.subsystems.Clapper;
+import org.usfirst.frc.team2485.subsystems.Claw;
 import org.usfirst.frc.team2485.subsystems.DriveTrain;
 import org.usfirst.frc.team2485.subsystems.Fingers;
+import org.usfirst.frc.team2485.subsystems.RatchetSystem;
 import org.usfirst.frc.team2485.subsystems.Strongback;
 import org.usfirst.frc.team2485.util.Controllers;
 import org.usfirst.frc.team2485.util.DualEncoder;
@@ -17,46 +19,73 @@ import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
+import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.VictorSP;
 
+/**
+ * @author Anoushka
+ * @author Aidan
+ * @author Ben
+ * @author Patrick
+ * @author Camille
+ * @author Maunu
+ */
 public class Robot extends IterativeRobot {
 	
-	private VictorSP left, left2, right, right2, center, leadScrewMotor;
+	private VictorSP left, left2, right, right2, center, leadScrewMotor, leftBelt, rightBelt, clapperLifter1, clapperLifter2;
 	public static DriveTrain drive;
 //	public static Strongback strongback;
 	public static Clapper clapper;
 	public static Fingers fingers;
+	public static RatchetSystem rachet;
+	public static Claw claw; 
 	private Encoder leftEnc, rightEnc, centerEnc;
 	private DualEncoder dualEncoder;
-	private Solenoid suspension;
+	private Solenoid suspension, longFingerActuators, shortFingerActuators, latchActuator;
 	private Compressor compressor;
-	private DoubleSolenoid ds;
+	private DoubleSolenoid ds, clapperActuator;
 	private IMUAdvanced imu;
 	private SerialPort ser;
 	private CameraServer camServer;
 	
+	private AnalogInput toteDetector;
+	
 	private Sequencer autoSequence;
+	private AnalogPotentiometer clapperPot;
 	
 //	boolean fingersOn = true;
 	
     public void robotInit() {
 
-    	left 	= new VictorSP(14); //left: 14,15
-    	left2 	= new VictorSP(15);
-    	right   = new VictorSP(0); //right: 0, 1
-    	right2 	= new VictorSP(1);
+    	left     	= new VictorSP(14); //left: 14,15
+    	left2 	    = new VictorSP(15);
+    	right       = new VictorSP(0); //right: 0, 1
+    	right2  	= new VictorSP(1);
+    	leftBelt    = new VictorSP(9);
+    	rightBelt   = new VictorSP(7);
+    	clapperLifter1 = new VictorSP(13);
+    	clapperLifter2 = new VictorSP( 3);
+    	longFingerActuators  = new Solenoid(0);
+    	shortFingerActuators = new Solenoid(4);
+    	latchActuator = new Solenoid(3);
+    	
 //    	center  = new VictorSP(13); //center: 9   changed to 13 1/31/15
 //    	suspension = new Solenoid(7); //may need two solenoids
+    	clapperActuator = new DoubleSolenoid(6, 5);
+    	clapperPot = new AnalogPotentiometer(1); 
     	
     	leftEnc = new Encoder(0, 1);
     	rightEnc = new Encoder(4, 5);
     	dualEncoder = new DualEncoder(leftEnc, rightEnc);
+    	
+    	toteDetector = new AnalogInput(0);
     	
 //    	leadScrewMotor = new VictorSP(2); 
     	
@@ -82,17 +111,19 @@ public class Robot extends IterativeRobot {
 //    	drive = new DriveTrain(left, left2, right, right2, imu, leftEnc, rightEnc);
 //    	drive.setSolenoid(false);
     	
-    	clapper = new Clapper(6, 5);
-    	fingers = new Fingers(9, 7, 0, 4);
+    	//clapper = new Clapper(6, 5);
+    	clapper = new Clapper(clapperLifter1, clapperLifter2, clapperActuator, clapperPot);
+    	fingers = new Fingers(leftBelt,rightBelt,longFingerActuators,shortFingerActuators);
+    	rachet = new RatchetSystem(latchActuator);
 //    	clapper.close();
     	
 //    	strongback = new Strongback(leadScrewMotor, imu); 
     	
     	
 //    	camServer = CameraServer.getInstance();
-//        camServer.setQuality(50);
+//        //camServer.setQuality(50);
 //        //the camera name (ex "cam0") can be found through the roborio web interface
-//        camServer.startAutomaticCapture("cam0");
+//        camServer.startAutomaticCapture("cam1");
 
     	Controllers.set(new Joystick(0), new Joystick(1));
     	System.out.println("initialized");
@@ -131,6 +162,10 @@ public class Robot extends IterativeRobot {
     	
     	System.out.println("Teleop enabled");
     	
+    	clapper.setManual();
+    	
+    	clapper.moveManually(Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_X,0));//left is up
+    	
 //		strongback.enablePid();
     	
 //        drive.warlordDrive(Controllers.getAxis(Controllers.XBOX_AXIS_LX, 0.2f),
@@ -167,9 +202,9 @@ public class Robot extends IterativeRobot {
 //    	System.out.println("IMU roll: " + imu.getRoll());
 
     	//basic controls for intake arm
-        fingers.handleTote((Controllers.getAxis(Controllers.JOYSTICK_AXIS_Y)),
-        			Controllers.getAxis(Controllers.JOYSTICK_AXIS_Z));
-    
+//        fingers.handleTote((Controllers.getAxis(Controllers.JOYSTICK_AXIS_Y)),
+//        			Controllers.getAxis(Controllers.JOYSTICK_AXIS_Z));
+//    
       	if (Controllers.getAxis(Controllers.JOYSTICK_AXIS_THROTTLE) > 0) {
 	      	clapper.openClapper();
        	}
@@ -187,6 +222,8 @@ public class Robot extends IterativeRobot {
        	if (Controllers.getJoystickButton(11)) {
        		fingers.setFingerPosition(Fingers.OPEN);
        	}
+       	
+       	
        	
     }
     
