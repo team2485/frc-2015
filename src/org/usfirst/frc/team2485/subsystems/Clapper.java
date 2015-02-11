@@ -10,11 +10,9 @@ import edu.wpi.first.wpilibj.VictorSP;
 
 public class Clapper {
 
-	private VictorSP clapperLifter1, clapperLifter2;
 	private CombinedVictorSP clapperLifter;
 
 	private DoubleSolenoid clapperActuator;
-	private Solenoid clapper1, clapper2;
 
 	private PIDController clapperPID;
 	private AnalogPotentiometer pot;
@@ -45,8 +43,7 @@ public class Clapper {
 	public Clapper(VictorSP clapperLifter1, VictorSP clapperLifter2,
 			DoubleSolenoid clapperActuator, AnalogPotentiometer pot) {
 
-		this.clapperLifter1			= clapperLifter1;
-		this.clapperLifter2			= clapperLifter2;
+		this.clapperLifter			= new CombinedVictorSP(clapperLifter1, clapperLifter2);
 		this.clapperActuator		= clapperActuator;
 		this.pot					= pot;
 		
@@ -104,12 +101,7 @@ public class Clapper {
 		clapperActuator.set(DoubleSolenoid.Value.kReverse);
 		open = false;
 	}
-	
-	public void closeAll() {
-		clapper1.set(false);
-		clapper2.set(false);
-	}
-	
+
 	public boolean isOpen() {
 		return open;
 	}

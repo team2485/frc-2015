@@ -3,6 +3,11 @@ package org.usfirst.frc.team2485.util;
 import edu.wpi.first.wpilibj.SpeedController;
 import edu.wpi.first.wpilibj.VictorSP;
 
+/**
+ * 
+ * @author Patrick Wamsley 
+ * @author Ben Clark
+ */
 public class CombinedVictorSP implements SpeedController {
 
 	private VictorSP[] speedControllerList;

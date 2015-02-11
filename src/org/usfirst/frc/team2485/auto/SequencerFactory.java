@@ -12,10 +12,10 @@ public class SequencerFactory {
 	public static Sequencer createAuto(int autoType) {
 
 		switch (autoType) {
-			case SEQ_TEST: 
-				return new Sequencer(new SequencedItem[] {
-						new AutoTestPrint() 
-				}); 
+		case SEQ_TEST: 
+			return new Sequencer(new SequencedItem[] {
+					new AutoTestPrint() 
+			}); 
 		}
 		return new Sequencer();
 	}
