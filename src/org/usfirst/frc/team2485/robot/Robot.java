@@ -3,6 +3,8 @@ package org.usfirst.frc.team2485.robot;
 
 import org.usfirst.frc.com.kauailabs.nav6.frc.IMU;
 import org.usfirst.frc.com.kauailabs.nav6.frc.IMUAdvanced;
+import org.usfirst.frc.team2485.auto.Sequencer;
+import org.usfirst.frc.team2485.auto.SequencerFactory;
 import org.usfirst.frc.team2485.subsystems.Clapper;
 import org.usfirst.frc.team2485.subsystems.DriveTrain;
 import org.usfirst.frc.team2485.subsystems.Fingers;
@@ -38,6 +40,8 @@ public class Robot extends IterativeRobot {
 	private IMUAdvanced imu;
 	private SerialPort ser;
 	private CameraServer camServer;
+	
+	private Sequencer autoSequence;
 	
 //	boolean fingersOn = true;
 	
@@ -99,13 +103,17 @@ public class Robot extends IterativeRobot {
     	leftEnc.reset();
     	rightEnc.reset();
     	dualEncoder.reset();
+    	
+    	autoSequence = SequencerFactory.createAuto(SequencerFactory.SEQ_TEST);
     }
   
     public void autonomousPeriodic() {
-    	System.out.println("left/right " + leftEnc.getDistance() + "\t\t" + rightEnc.getDistance());
-    	System.out.println("dualEnc " + dualEncoder.getDistance());
+//    	System.out.println("left/right " + leftEnc.getDistance() + "\t\t" + rightEnc.getDistance());
+//    	System.out.println("dualEnc " + dualEncoder.getDistance());
     	
-    	drive.setLeftRight(-.7, -.7);
+//    	drive.setLeftRight(-.7, -.7);
+    	 autoSequence.run();
+    	 
     }
     
     public void teleopInit() {

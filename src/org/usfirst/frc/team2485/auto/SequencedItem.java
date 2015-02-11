@@ -1,7 +1,5 @@
 package org.usfirst.frc.team2485.auto;
 
-import team2485.auto.Sequencer;
-
 /**
  * Represents an item which can be sequenced. The item will be run at least once.
  * 
