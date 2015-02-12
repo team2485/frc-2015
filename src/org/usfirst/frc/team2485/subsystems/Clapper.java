@@ -1,6 +1,7 @@
 package org.usfirst.frc.team2485.subsystems;
 
 import org.usfirst.frc.team2485.util.CombinedVictorSP;
+import org.usfirst.frc.team2485.util.InvertedPot;
 import org.usfirst.frc.team2485.util.ThresholdHandler;
 
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
@@ -18,6 +19,7 @@ public class Clapper {
 	private DoubleSolenoid clapperActuator;
 	private PIDController clapperPID;
 	private AnalogPotentiometer pot;
+	private InvertedPot potInverted;
 	
 	private boolean open;
 	private boolean automatic;
@@ -27,19 +29,19 @@ public class Clapper {
 		kI	= 0.00,
 		kD	= 0.00;
 			
+	private static final double LOWEST_POS = 502; 
+	private static final double POS_RANGE = 375;
+	private static final double POT_TOLERANCE = 5;
+	
 	public static final double 
-		ONE_TOTE_SETPOINT		= 0,
-		TWO_TOTE_SETPOINT		= 0,
-		THREE_TOTE_SETPOINT		= 0,
-		FOUR_TOTE_SETPOINT		= 0,
-		FIVE_TOTE_SETPOINT		= 0,
-		SIX_TOTE_SETPOINT		= 0,
-		STEP_HEIGHT				= 0,
-		RATCHET_HEIGHT			= 0,
-		SCORING_PLATFORM_HEIGHT	= 0;
-
-	private static final double LOWEST_POS = 0;
-	private static final double POS_RANGE = 0;
+		ABOVE_RATCHET_SETPOINT		= LOWEST_POS + 140,
+		ON_RATCHET_SETPOINT			= LOWEST_POS + 125, 
+		LOADING_SETPOINT			= LOWEST_POS + 25,
+		COOP_ZERO_TOTE_SETPOINT		= LOWEST_POS + 77, 
+		COOP_ONE_TOTE_SETPOINT		= LOWEST_POS + 175, 
+		COOP_TWO_TOTES_SETPOINT		= LOWEST_POS + 275,
+		COOP_THREE_TOTES_SETPOINT	= LOWEST_POS + 370, 
+		SCORING_PLATFORM_HEIGHT		= LOWEST_POS + 25;
 
 	public Clapper(VictorSP clapperLifter1, VictorSP clapperLifter2,
 			DoubleSolenoid clapperActuator, AnalogPotentiometer pot) {
@@ -48,7 +50,16 @@ public class Clapper {
 		this.clapperActuator		= clapperActuator;
 		this.pot					= pot;
 		
-		this.clapperPID = new PIDController(kP, kI, kD, pot, clapperLifter);
+		this.potInverted			= new InvertedPot(pot);
+		
+		this.clapperPID = new PIDController(kP, kI, kD, potInverted, clapperLifter);
+		this.clapperPID.setAbsoluteTolerance(POT_TOLERANCE);
+		this.clapperPID.setOutputRange(-0.45, 0.6);
+		
+		this.automatic				= false;
+		this.open					= false;
+		
+		clapperLifter.invertMotorDirection(true);
 	}
 
 	
@@ -61,7 +72,7 @@ public class Clapper {
 	}
 	
 	public double getPotValue() {
-		return pot.get();
+		return potInverted.pidGet();
 	}
 	
 	public void setPID(double kP, double kI, double kD) {
@@ -75,6 +86,10 @@ public class Clapper {
 	public void setSetpoint(double setpoint) {
 		setAutomatic();
 		clapperPID.setSetpoint(setpoint);
+	}
+	
+	public double getSetpoint() {
+		return clapperPID.getSetpoint();
 	}
 	
 	public boolean isPIDOnTarget() {
@@ -135,14 +150,16 @@ public class Clapper {
 	 */
 	public void liftManually(double speed) {
 		setManual();
-		double adjustedSpeed = ThresholdHandler.handleThreshold(speed, 0.1)/4;
-		System.out.println(speed + " | " + adjustedSpeed);
+		double adjustedSpeed = ThresholdHandler.handleThreshold(speed, 0.1)/2;
+		
 		if (adjustedSpeed > 1){
 			adjustedSpeed = 1;
 		} else if (adjustedSpeed < -1){
 			adjustedSpeed = -1;
 		}
 		clapperLifter.set(adjustedSpeed);
+		System.out.println(speed + " | " + adjustedSpeed);
+
 	}
 }
 

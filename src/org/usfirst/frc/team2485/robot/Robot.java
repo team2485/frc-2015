@@ -11,6 +11,7 @@ import org.usfirst.frc.team2485.subsystems.DriveTrain;
 import org.usfirst.frc.team2485.subsystems.Fingers;
 import org.usfirst.frc.team2485.subsystems.RatchetSystem;
 import org.usfirst.frc.team2485.subsystems.Strongback;
+import org.usfirst.frc.team2485.util.CombinedVictorSP;
 import org.usfirst.frc.team2485.util.Controllers;
 import org.usfirst.frc.team2485.util.DualEncoder;
 import org.usfirst.frc.team2485.util.ThresholdHandler;
@@ -60,6 +61,7 @@ public class Robot extends IterativeRobot {
 	
 	private Sequencer autoSequence;
 	private AnalogPotentiometer clapperPot;
+	private CombinedVictorSP combinedVic;
 	
 //	boolean fingersOn = true;
 	
@@ -72,7 +74,7 @@ public class Robot extends IterativeRobot {
     	leftBelt    = new VictorSP(9);
     	rightBelt   = new VictorSP(7);
     	clapperLifter1 = new VictorSP(13);
-    	clapperLifter2 = new VictorSP( 3);
+    	clapperLifter2 = new VictorSP(3 );
     	longFingerActuators  = new Solenoid(0);
     	shortFingerActuators = new Solenoid(4);
     	latchActuator = new Solenoid(3);
@@ -125,8 +127,9 @@ public class Robot extends IterativeRobot {
 //        //camServer.setQuality(50);
 //        //the camera name (ex "cam0") can be found through the roborio web interface
 //        camServer.startAutomaticCapture("cam1");
-
-    	Controllers.set(new Joystick(0), new Joystick(1));
+    	
+        Controllers.set(new Joystick(0), new Joystick(1));
+    	
     	System.out.println("initialized");
     }
 
@@ -157,16 +160,20 @@ public class Robot extends IterativeRobot {
     	
     	leftEnc.reset();
     	rightEnc.reset();
+    	
+    	clapper.setManual();
     }
 
     public void teleopPeriodic() {
     	
-    	System.out.println("Teleop enabled");
+//    	System.out.println("teleop enabled" );
+
     	
     	double adjustedJoystickXAxis = (ThresholdHandler.handleThreshold(Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_X,0), 0.1));
     	if (adjustedJoystickXAxis != 0){//if the joystick is moved
     		clapper.liftManually(adjustedJoystickXAxis);//left is up
-    	} else if (clapper.isManual()){
+    	}
+    	else if (clapper.isManual()){
     		clapper.setSetpoint(clapper.getPotValue());//set the setpoint to where ever it left off
     	}
     	
@@ -206,17 +213,15 @@ public class Robot extends IterativeRobot {
 //    	System.out.println("IMU roll: " + imu.getRoll());
 
     	//basic controls for intake arm
-//        fingers.handleTote((Controllers.getAxis(Controllers.JOYSTICK_AXIS_Y)),
-//        			Controllers.getAxis(Controllers.JOYSTICK_AXIS_Z));
-//    
+        fingers.handleTote((Controllers.getAxis(Controllers.JOYSTICK_AXIS_Y)),
+        			Controllers.getAxis(Controllers.JOYSTICK_AXIS_Z));
+    
       	if (Controllers.getAxis(Controllers.JOYSTICK_AXIS_THROTTLE) > 0) {
 	      	clapper.openClapper();
        	}
-      	
       	else {
         	clapper.closeClapper();
     	}
-      	
        	if (Controllers.getJoystickButton(7)) {
        		fingers.setFingerPosition(Fingers.CLOSED);
        	}
@@ -226,16 +231,23 @@ public class Robot extends IterativeRobot {
        	if (Controllers.getJoystickButton(11)) {
        		fingers.setFingerPosition(Fingers.OPEN);
        	}
-       	
-       	
+       	if (Controllers.getJoystickButton(3)) {
+       		clapper.setSetpoint(clapper.COOP_TWO_TOTES_SETPOINT);
+       	}
+       	if (Controllers.getJoystickButton(4)) {
+       		clapper.setSetpoint(clapper.COOP_ONE_TOTE_SETPOINT);
+       	}
+       	 	
+       	System.out.println("setpoint " + clapper.getSetpoint() + " potValue " + clapper.getPotValue() + " pid controlled " + clapper.isAutomatic());
        	
     }
     
     public void disabledPeriodic() {
-    	
+    	System.out.println(clapper.getPotValue());
     }
     
     public void testInit() {
+    	clapper.setManual();
 //    	leftEnc.reset();
 //    	rightEnc.reset();
 //    	drive.disableDriveStraightPID();

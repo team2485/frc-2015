@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.VictorSP;
 public class CombinedVictorSP implements SpeedController {
 
 	private VictorSP[] speedControllerList;
+	private double direction = 1;
 	
 	public CombinedVictorSP(VictorSP... speedControllerList) {
 
@@ -37,7 +38,7 @@ public class CombinedVictorSP implements SpeedController {
 	public void set(double speed, byte syncGroup) {
 		
 		for(SpeedController s : speedControllerList) {
-			s.set(speed, syncGroup);
+			s.set(speed * direction, syncGroup);
 		}
 	}
 
@@ -45,7 +46,17 @@ public class CombinedVictorSP implements SpeedController {
 	public void set(double speed) {
 		
 		for(SpeedController s : speedControllerList) {
-			s.set(speed);
+			s.set(speed * direction);
+		}
+	}
+	
+	public void invertMotorDirection(boolean isInverted) {
+		if(isInverted) {
+			direction = -1;
+		}
+		
+		else {
+			direction = 1;
 		}
 	}
 

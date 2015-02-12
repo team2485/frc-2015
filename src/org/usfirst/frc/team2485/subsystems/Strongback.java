@@ -2,7 +2,7 @@ package org.usfirst.frc.team2485.subsystems;
 
 import org.usfirst.frc.com.kauailabs.nav6.frc.IMU;
 import org.usfirst.frc.team2485.robot.Robot;
-import org.usfirst.frc.team2485.util.IMUPitchPIDSource;
+import org.usfirst.frc.team2485.util.IMURollPIDSource;
 
 import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.VictorSP;
@@ -20,10 +20,10 @@ public class Strongback {
 	private VictorSP leadScrew; 
 	private IMU imu; 
 	public PIDController leadScrewImuPID;
-	private double pitchSetpoint = 0.0;
+	private double rollSetpoint = 0.0;
 	private double absToleranceLeadScrew = 0.15; //degrees 
 	
-	private IMUPitchPIDSource pitchPIDSource; 
+	private IMURollPIDSource rollPIDSource; 
 	
 	public static final double
 		leadScrew_kP = 0.15,
@@ -34,11 +34,11 @@ public class Strongback {
 		this.leadScrew = leadScrew; 
 		this.imu = imu; 
 				
-		pitchPIDSource = new IMUPitchPIDSource(imu); 
+		rollPIDSource = new IMURollPIDSource(imu); 
 		
-		leadScrewImuPID = new PIDController(leadScrew_kP, leadScrew_kI, leadscrew_kD, pitchPIDSource, leadScrew); 
+		leadScrewImuPID = new PIDController(leadScrew_kP, leadScrew_kI, leadscrew_kD, rollPIDSource, leadScrew); 
 		leadScrewImuPID.setAbsoluteTolerance(absToleranceLeadScrew );
-		leadScrewImuPID.setSetpoint(pitchSetpoint);
+		leadScrewImuPID.setSetpoint(rollSetpoint);
 	}
 	
 	public Strongback(int leadScrewPort, IMU imu) {
@@ -54,8 +54,8 @@ public class Strongback {
 	}
 	
 	public void setSetpoint(double newSetpoint) {
-		pitchSetpoint = newSetpoint;
-		leadScrewImuPID.setSetpoint(pitchSetpoint);
+		rollSetpoint = newSetpoint;
+		leadScrewImuPID.setSetpoint(rollSetpoint);
 		leadScrewImuPID.enable();
 	}
 	
