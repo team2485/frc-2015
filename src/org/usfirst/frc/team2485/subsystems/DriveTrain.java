@@ -123,7 +123,7 @@ public class DriveTrain {
 
 		translateX = -ThresholdHandler.handleThreshold(translateX, TRANSLATE_X_DEADBAND);
 		translateY = -ThresholdHandler.handleThreshold(translateY, TRANSLATE_Y_DEADBAND);
-		rotation   = ThresholdHandler.handleThreshold(rotation, ROTATION_DEADBAND);
+		rotation   =  ThresholdHandler.handleThreshold(rotation,   ROTATION_DEADBAND   );
 
 		System.out.println("x, y \t\t" + translateX + ",\t" + translateY);
 

@@ -1,11 +1,12 @@
 package org.usfirst.frc.team2485.subsystems;
 
+import org.usfirst.frc.team2485.util.ThresholdHandler;
+
 import edu.wpi.first.wpilibj.*;
 
 /**
  * @author Aidan Fay
  * @author Ben Clark
- * 
  */
 
 public class Claw {
@@ -53,16 +54,15 @@ public class Claw {
 	 * @return
 	 */
 	public void liftManually(double speed) {
-		
-		setManual(); 
-		
-		if (speed > 1) {
-			speed = 1;
-		} else if (speed < -1) {
-			speed = -1;
+		setManual();
+		double adjustedSpeed = ThresholdHandler.handleThreshold(speed, 0.1)/4;
+		System.out.println(speed + " | " + adjustedSpeed);
+		if (adjustedSpeed > 1){
+			adjustedSpeed = 1;
+		} else if (adjustedSpeed < -1){
+			adjustedSpeed = -1;
 		}
-		
-		winchMotor.set(speed);
+		winchMotor.set(adjustedSpeed);
 	}
 	
 	public void setPID(double kP, double kI, double kD) {

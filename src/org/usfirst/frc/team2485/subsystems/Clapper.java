@@ -6,13 +6,11 @@ import org.usfirst.frc.team2485.util.ThresholdHandler;
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PIDController;
-import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.VictorSP;
 
 /**
  * @author Ben Clark
  * @author Aidan Fay
- *
  */
 public class Clapper {
 
@@ -22,7 +20,6 @@ public class Clapper {
 	private AnalogPotentiometer pot;
 	
 	private boolean open;
-	private boolean isPID;
 	private boolean automatic;
 
 	public double
@@ -144,7 +141,8 @@ public class Clapper {
 			adjustedSpeed = 1;
 		} else if (adjustedSpeed < -1){
 			adjustedSpeed = -1;
-		}		
+		}
+		clapperLifter.set(adjustedSpeed);
 	}
 }
 
