@@ -13,6 +13,7 @@ import org.usfirst.frc.team2485.subsystems.RatchetSystem;
 import org.usfirst.frc.team2485.subsystems.Strongback;
 import org.usfirst.frc.team2485.util.Controllers;
 import org.usfirst.frc.team2485.util.DualEncoder;
+import org.usfirst.frc.team2485.util.HandleThreshold;
 
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.Compressor;
@@ -44,10 +45,7 @@ public class Robot extends IterativeRobot {
 //	public static Strongback strongback;
 	public static Clapper clapper;
 	public static Fingers fingers;
-<<<<<<< HEAD
 	public static RatchetSystem rachet;
-=======
->>>>>>> 226fed499fbeec706f7eb17032e6c8ba3355f73b
 	public static Claw claw; 
 	private Encoder leftEnc, rightEnc, centerEnc;
 	private DualEncoder dualEncoder;
@@ -165,9 +163,12 @@ public class Robot extends IterativeRobot {
     	
     	System.out.println("Teleop enabled");
     	
-    	clapper.setManual();
-    	
-    	clapper.moveManually(Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_X,0));//left is up
+    	double adjustedJoystickXAxis = (HandleThreshold.handleThreshold(Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_X,0), 0.1));
+    	if (adjustedJoystickXAxis != 0){//if the joystick is moved
+    		clapper.moveManually(adjustedJoystickXAxis);//left is up
+    	} else if (clapper.isManual()){
+    		clapper.setSetpoint(clapper.getPotValue());//set the setpoint to where ever it left off
+    	}
     	
 //		strongback.enablePid();
     	

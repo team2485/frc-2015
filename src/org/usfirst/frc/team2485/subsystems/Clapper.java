@@ -1,6 +1,7 @@
 package org.usfirst.frc.team2485.subsystems;
 
 import org.usfirst.frc.team2485.util.CombinedVictorSP;
+import org.usfirst.frc.team2485.util.HandleThreshold;
 
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
@@ -89,7 +90,7 @@ public class Clapper {
 	}
 	
 	public void setSetpoint(double setpoint) {
-		
+		setAutomatic();
 		clapperPID.setSetpoint(setpoint);
 	}
 
@@ -151,8 +152,9 @@ public class Clapper {
 	/*
 	 * Assuming that a positive speed moves the clapper down
 	 */
-	public boolean moveManually(double speed){
-		double adjustedSpeed = handleThreshold(speed, 0.1)/4;
+	public void moveManually(double speed){
+		setManual();
+		double adjustedSpeed = HandleThreshold.handleThreshold(speed, 0.1)/4;
 		System.out.println(speed + " | " + adjustedSpeed);
 		if (adjustedSpeed > 1){
 			adjustedSpeed = 1;
@@ -161,26 +163,14 @@ public class Clapper {
 		}
 		
 		if (isManual()){
-			if (pot.get() >= LOWEST_POS + POS_RANGE && adjustedSpeed > 0){
-				adjustedSpeed = 0;
-			}else if (pot.get() <= LOWEST_POS && adjustedSpeed < 0){
-				adjustedSpeed = 0;
-			}
+//			if (pot.get() >= LOWEST_POS + POS_RANGE && adjustedSpeed > 0){
+//				adjustedSpeed = 0;
+//			}else if (pot.get() <= LOWEST_POS && adjustedSpeed < 0){
+//				adjustedSpeed = 0;
+//			}
 			clapperLifter.set(adjustedSpeed);
 		}
-		
-		return isManual();
 	}
-	
-	private double handleThreshold(double val, double threshold) {
-
-		double returnValue = (Math.abs(val) > Math.abs(threshold)) ? (val/Math.abs(val)*(Math.abs(val)-threshold)/(1-threshold)) : 0.0;
-		//System.out.println(val + " : " + returnValue);
-		return returnValue;
-
-		//return (Math.abs(val) > Math.abs(threshold)) ? val : 0.0;
-	}
-
 }
 
 
