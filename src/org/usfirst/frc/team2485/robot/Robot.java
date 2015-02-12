@@ -44,7 +44,10 @@ public class Robot extends IterativeRobot {
 //	public static Strongback strongback;
 	public static Clapper clapper;
 	public static Fingers fingers;
+<<<<<<< HEAD
 	public static RatchetSystem rachet;
+=======
+>>>>>>> 226fed499fbeec706f7eb17032e6c8ba3355f73b
 	public static Claw claw; 
 	private Encoder leftEnc, rightEnc, centerEnc;
 	private DualEncoder dualEncoder;
