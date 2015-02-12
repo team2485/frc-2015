@@ -5,11 +5,11 @@ import org.usfirst.frc.team2485.robot.Robot;
 
 //we beed some sort of sensor to tell when the tote is in/out of the clappper
 //until then i dont think we can right this
-public class ReleaseTote implements SequencedItem {
+public class SpitTote implements SequencedItem {
 
 	private boolean finished; 
 	
-	public ReleaseTote() {
+	public SpitTote() {
 		finished = false ;
 	}
 	@Override

@@ -41,7 +41,7 @@ public class Robot extends IterativeRobot {
 	public static Strongback strongback; 
 	public static Clapper clapper;
 	public static Fingers fingers;
-	public static RatchetSystem rachet;
+	public static RatchetSystem ratchet;
 	public static Claw claw; 
 	private Encoder leftEnc, rightEnc, centerEnc;
 	private DualEncoder dualEncoder;
@@ -113,7 +113,7 @@ public class Robot extends IterativeRobot {
     	//clapper = new Clapper(6, 5);
     	clapper = new Clapper(clapperLifter1, clapperLifter2, clapperActuator, clapperPot);
     	fingers = new Fingers(leftBelt,rightBelt,longFingerActuators,shortFingerActuators);
-    	rachet = new RatchetSystem(latchActuator);
+    	ratchet = new RatchetSystem(latchActuator);
 //    	clapper.close();
     	
     	strongback = new Strongback(leadScrewMotor, imu); 
