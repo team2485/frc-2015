@@ -50,7 +50,7 @@ public class Fingers {
 		controllerY = (float) ThresholdHandler.handleThreshold(controllerY, AXIS_DEADBAND);
 		controllerZ = (float) ThresholdHandler.handleThreshold(controllerZ, AXIS_DEADBAND);
 		
-		System.out.println("controllerY: " + controllerY + "controllerZ: " + controllerZ);
+//		System.out.println("controllerY: " + controllerY + "controllerZ: " + controllerZ);
 		
 		if (Math.abs(controllerZ) > 0.05) {
 			if (controllerZ > 0) {

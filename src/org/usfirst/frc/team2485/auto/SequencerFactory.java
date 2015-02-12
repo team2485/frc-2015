@@ -1,6 +1,7 @@
 package org.usfirst.frc.team2485.auto;
 
 import org.usfirst.frc.team2485.auto.SequencedItems.AutoTestPrint;
+import org.usfirst.frc.team2485.auto.SequencedItems.CloseClapper;
 import org.usfirst.frc.team2485.auto.SequencedItems.DriveStraight;
 import org.usfirst.frc.team2485.auto.SequencedItems.MoveClapperVertically;
 import org.usfirst.frc.team2485.auto.SequencedItems.RotateToAngle;
@@ -112,14 +113,18 @@ public class SequencerFactory {
 	public static Sequencer createIntakeToteRoutine() {
 		return new Sequencer( new SequencedItem[] {
 			new SequencedMultipleItem(
-					new SetFingersPos(Fingers.CLOSED), 
+					new CloseClapper(),
+					new SetFingersPos(Fingers.PARALLEL), 
 					new SetFingerRollers(SetFingerRollers.INTAKE)
 					), 
-			new SequencedMultipleItem(
-					new SetFingersPos(Fingers.PARALLEL),
-					new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
-					new SetFingerRollers(SetFingerRollers.OFF)
-							)
+			new SequencedPause(0.7),
+//			new SequencedMultipleItem(
+//			new SetFingersPos(Fingers.PARALLEL),
+			new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
+			new SetFingerRollers(SetFingerRollers.OFF),
+//							),
+			new SequencedPause(0.7),
+			new MoveClapperVertically(Clapper.LOADING_SETPOINT)
 		});
 	}
 }

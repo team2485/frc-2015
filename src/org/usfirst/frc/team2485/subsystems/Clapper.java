@@ -20,12 +20,12 @@ public class Clapper {
 	private PIDController clapperPID;
 	private AnalogPotentiometer pot;
 	private InvertedPot potInverted;
-	
+	 
 	private boolean open;
 	private boolean automatic;
 
 	public double
-		kP	= 0.01,
+		kP	= 0.02,
 		kI	= 0.00,
 		kD	= 0.00;
 			
@@ -34,9 +34,9 @@ public class Clapper {
 	private static final double POT_TOLERANCE = 5;
 	
 	public static final double 
-		ABOVE_RATCHET_SETPOINT		= LOWEST_POS + 140,
+		ABOVE_RATCHET_SETPOINT		= LOWEST_POS + 170,
 		ON_RATCHET_SETPOINT			= LOWEST_POS + 125, 
-		LOADING_SETPOINT			= LOWEST_POS + 25,
+		LOADING_SETPOINT			= LOWEST_POS + 10,
 		COOP_ZERO_TOTE_SETPOINT		= LOWEST_POS + 77, 
 		COOP_ONE_TOTE_SETPOINT		= LOWEST_POS + 175, 
 		COOP_TWO_TOTES_SETPOINT		= LOWEST_POS + 275,
@@ -54,7 +54,7 @@ public class Clapper {
 		
 		this.clapperPID = new PIDController(kP, kI, kD, potInverted, clapperLifter);
 		this.clapperPID.setAbsoluteTolerance(POT_TOLERANCE);
-		this.clapperPID.setOutputRange(-0.45, 0.6);
+		this.clapperPID.setOutputRange(-0.3, 0.4); // positive is up
 		
 		this.automatic				= false;
 		this.open					= false;

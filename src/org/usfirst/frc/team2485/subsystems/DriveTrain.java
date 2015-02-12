@@ -113,6 +113,11 @@ public class DriveTrain {
 			setImu(this.imu);
 		}
 
+		dummyEncoderOutput = new DummyOutput();
+		dualEncoder = new DualEncoder(leftEnc, rightEnc);
+		driveStraightPID = new PIDController(driveStraightEncoder_Kp, driveStraightEnvoder_Ki, driveStraightEncoder_Kd, dualEncoder, dummyEncoderOutput);
+		driveStraightPID.setAbsoluteTolerance(absTolerance_Enc_DriveStraight);
+		
 		if(centerEnc != null) {
 			strafePID = new PIDController(strafeEncoder_Kp, strafeEncoder_Ki, strafeEncoder_Kd, centerEnc, centerDrive);
 			strafePID.setAbsoluteTolerance(absTolerance_Enc_Strafe);
@@ -129,25 +134,25 @@ public class DriveTrain {
 
 		printLog();    
 
-		if(rotation != 0) {
+//		if(rotation != 0) {
 			if (maintainingHeading) {
 				maintainingHeading = false; 
 				imuPID.disable(); 
 			}
 			rotationalDrive(translateY, rotation);
-		}
-
-		else {
-			if (!maintainingHeading) {
-				maintainingHeading = true; 
-				desiredHeading = imu.getYaw(); 
-
-				setImuForDrivingStraight(); 
-				imuPID.setSetpoint(desiredHeading);
-				imuPID.enable();
-			}
-			strafeDrive(translateX, translateY);
-		}
+//		}
+//
+//		else {
+//			if (!maintainingHeading) {
+//				maintainingHeading = true; 
+//				desiredHeading = imu.getYaw(); 
+//
+//				setImuForDrivingStraight(); 
+//				imuPID.setSetpoint(desiredHeading);
+//				imuPID.enable();
+//			}
+//			strafeDrive(translateX, translateY);
+//		}
 	}
 
 	public void rotationalDrive(double power, double rotation) {
@@ -168,83 +173,89 @@ public class DriveTrain {
 		//		setLeftRight(wheel, -wheel);   
 		//		return;   
 
-		double negInertia = rotation - oldWheel;
-		oldWheel = rotation;
-
-		double wheelNonLinearity = 0.5;
+//		double negInertia = rotation - oldWheel;
+//		oldWheel = rotation;
+//
+//		double wheelNonLinearity = 0.5;
 
 		//this was the low gear code, since we only have one gear
-		rotation = Math.sin(Math.PI / 2.0 * wheelNonLinearity * rotation) /
-				Math.sin(Math.PI / 2.0 * wheelNonLinearity);
-		rotation = Math.sin(Math.PI / 2.0 * wheelNonLinearity * rotation) /
-				Math.sin(Math.PI / 2.0 * wheelNonLinearity);
-		rotation = Math.sin(Math.PI / 2.0 * wheelNonLinearity * rotation) /
-				Math.sin(Math.PI / 2.0 * wheelNonLinearity);
+//		rotation = Math.sin(Math.PI / 2.0 * wheelNonLinearity * rotation) /
+//				Math.sin(Math.PI / 2.0 * wheelNonLinearity);
+//		rotation = Math.sin(Math.PI / 2.0 * wheelNonLinearity * rotation) /
+//				Math.sin(Math.PI / 2.0 * wheelNonLinearity);
+//		rotation = Math.sin(Math.PI / 2.0 * wheelNonLinearity * rotation) /
+//				Math.sin(Math.PI / 2.0 * wheelNonLinearity);
+//
+//		double sensitivity = MUCH_TOO_HIGH_SENSITIVITY;
+//		double leftPwm, rightPwm, overPower;
+//
+//		double angularPower;
+//		double linearPower;
+//
+//		// Negative inertia!
+//		double negInertiaAccumulator = 0.0;
+//		double negInertiaScalar;
 
-		double sensitivity = MUCH_TOO_HIGH_SENSITIVITY;
-		double leftPwm, rightPwm, overPower;
+//		negInertiaScalar = 5.0;
+//		sensitivity = SENSITIVITY_LOW;
+//
+//		double negInertiaPower = negInertia * negInertiaScalar;
+//		negInertiaAccumulator += negInertiaPower;
+//
+//		rotation = rotation + negInertiaAccumulator;
+//		linearPower = power;
 
-		double angularPower;
-		double linearPower;
-
-		// Negative inertia!
-		double negInertiaAccumulator = 0.0;
-		double negInertiaScalar;
-
-		negInertiaScalar = 5.0;
-		sensitivity = SENSITIVITY_LOW;
-
-		double negInertiaPower = negInertia * negInertiaScalar;
-		negInertiaAccumulator += negInertiaPower;
-
-		rotation = rotation + negInertiaAccumulator;
-		linearPower = power;
-
-		if (isQuickTurn) {
-			if (Math.abs(linearPower) < 0.2) {
-				double alpha = 0.1;
-				rotation = rotation > 1 ? 1.0 : rotation;
-				quickStopAccumulator = (1 - alpha) * quickStopAccumulator + alpha *
-						rotation * 0.5;
-			}
-			overPower = 1.0;            
-			angularPower = rotation;
-		} else {
-			overPower = 0.0;
-			angularPower = Math.abs(power) * rotation * sensitivity - quickStopAccumulator;
-			if (quickStopAccumulator > 1) {
-				quickStopAccumulator -= 1;
-			} else if (quickStopAccumulator < -1) {
-				quickStopAccumulator += 1;
-			} else {
-				quickStopAccumulator = 0.0;
-			}
-		}
-
-		rightPwm = leftPwm = linearPower;
-
-		leftPwm  += angularPower;
-		rightPwm -= angularPower;
-
-		//lower sensitivity -- 1/31/15 debugging 
-		leftPwm  *= Math.abs(leftPwm); 
-		rightPwm *= Math.abs(rightPwm); 
-
-		if (leftPwm > 1.0) {
-			rightPwm -= overPower * (leftPwm - 1.0);
-			leftPwm = 1.0;
-		} else if (rightPwm > 1.0) {
-			leftPwm -= overPower * (rightPwm - 1.0);
-			rightPwm = 1.0;
-		} else if (leftPwm < -1.0) {
-			rightPwm += overPower * (-1.0 - leftPwm);
-			leftPwm = -1.0;
-		} else if (rightPwm < -1.0) {
-			leftPwm += overPower * (-1.0 - rightPwm);
-			rightPwm = -1.0;
-		}
-
-		setLeftRight(leftPwm, rightPwm);
+		setLeftRight(.2, -.2);
+//		return;
+//		
+//		if (isQuickTurn) {
+//			if (Math.abs(linearPower) < 0.2) {
+//				double alpha = 0.1;
+//				rotation = rotation > 1 ? 1.0 : rotation;
+//				quickStopAccumulator = (1 - alpha) * quickStopAccumulator + alpha *
+//						rotation * 0.5;
+//			}
+//			overPower = 1.0;            
+//			angularPower = rotation;
+//		} else {
+//			overPower = 0.0;
+//			angularPower = Math.abs(power) * rotation * sensitivity - quickStopAccumulator;
+//			if (quickStopAccumulator > 1) {
+//				quickStopAccumulator -= 1;
+//			} else if (quickStopAccumulator < -1) {
+//				quickStopAccumulator += 1;
+//			} else {
+//				quickStopAccumulator = 0.0;
+//			}
+//		}
+//
+//		rightPwm = leftPwm = linearPower;
+//
+//		leftPwm  += angularPower;
+//		rightPwm -= angularPower;
+//
+//		System.out.println("leftPWM/rightPWM before: " + leftPwm + " and " + rightPwm);
+//		
+//		//lower sensitivity -- 1/31/15 debugging 
+//		leftPwm  *= Math.abs(leftPwm); 
+//		rightPwm *= Math.abs(rightPwm); 
+//
+//		if (leftPwm > 1.0) {
+//			rightPwm -= overPower * (leftPwm - 1.0);
+//			leftPwm = 1.0;
+//		} else if (rightPwm > 1.0) {
+//			leftPwm -= overPower * (rightPwm - 1.0);
+//			rightPwm = 1.0;
+//		} else if (leftPwm < -1.0) {
+//			rightPwm += overPower * (-1.0 - leftPwm);
+//			leftPwm = -1.0;
+//		} else if (rightPwm < -1.0) {
+//			leftPwm += overPower * (-1.0 - rightPwm);
+//			rightPwm = -1.0;
+//		}
+//
+//		System.out.println("leftPWM/rightPWM after: " + leftPwm + " and " + rightPwm);
+//		setLeftRight(leftPwm, rightPwm);
 	}
 	
 	public void setImuForDrivingStraight() {
@@ -486,12 +497,14 @@ public class DriveTrain {
 		if (!driveStraightPID.isEnable()) {
 			dualEncoder.reset();
 			driveStraightPID.enable();
+			System.out.println("Enabling driveStraight PID in driveTo");
 			driveStraightPID.setSetpoint(inches);
 		}
 
 		if(imuPID != null && !imuPID.isEnable()) {
 			setImuForDrivingStraight();
 			imuPID.setSetpoint(imu.getYaw());
+			System.out.println("enabling IMU PID in driveTo");
 			imuPID.enable();
 		}
 
@@ -503,12 +516,12 @@ public class DriveTrain {
 		if(imuPID != null)
 			imuOutput = dummyImuOutput.get();
 
-//		System.out.println("leftEnc value: " + leftEnc.getDistance() + " rightEnc value: " + rightEnc.getDistance());
-//		System.out.println("dualEncoder: " + dualEncoder.getDistance());
-//
-//		System.out.println("encoderPID output: " + encoderOutput + " imuPID output: " + imuOutput);
-//		System.out.println("error from enc PID " + driveStraightPID.getError() + " from imu PID " + imuPID.getError());
-//		System.out.println("Kp from enc PID " + driveStraightPID.getP());
+		System.out.println("leftEnc value: " + leftEnc.getDistance() + " rightEnc value: " + rightEnc.getDistance());
+		System.out.println("dualEncoder: " + dualEncoder.getDistance());
+
+		System.out.println("encoderPID output: " + encoderOutput + " imuPID output: " + imuOutput);
+		System.out.println("error from enc PID " + driveStraightPID.getError() + " from imu PID " + imuPID.getError());
+		System.out.println("Kp from enc PID " + driveStraightPID.getP());
 
 //		just changed this sign
 		setLeftRight(leftOutput + imuOutput, rightOutput - imuOutput);
@@ -518,6 +531,7 @@ public class DriveTrain {
 			setLeftRight(0.0, 0.0);
 			driveStraightPID.disable();
 			imuPID.disable();
+			System.out.println("driveTo finished inside of driveTo");
 			return true;
 		}
 		return false;

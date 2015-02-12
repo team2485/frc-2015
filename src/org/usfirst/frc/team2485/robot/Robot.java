@@ -5,12 +5,7 @@ import org.usfirst.frc.com.kauailabs.nav6.frc.IMU;
 import org.usfirst.frc.com.kauailabs.nav6.frc.IMUAdvanced;
 import org.usfirst.frc.team2485.auto.Sequencer;
 import org.usfirst.frc.team2485.auto.SequencerFactory;
-import org.usfirst.frc.team2485.subsystems.Clapper;
-import org.usfirst.frc.team2485.subsystems.Claw;
-import org.usfirst.frc.team2485.subsystems.DriveTrain;
-import org.usfirst.frc.team2485.subsystems.Fingers;
-import org.usfirst.frc.team2485.subsystems.RatchetSystem;
-import org.usfirst.frc.team2485.subsystems.Strongback;
+import org.usfirst.frc.team2485.subsystems.*;
 import org.usfirst.frc.team2485.util.CombinedVictorSP;
 import org.usfirst.frc.team2485.util.Controllers;
 import org.usfirst.frc.team2485.util.DualEncoder;
@@ -38,12 +33,12 @@ import edu.wpi.first.wpilibj.VictorSP;
  * @author Patrick
  * @author Camille
  * @author Maunu
- */
+ */ 
 public class Robot extends IterativeRobot {
 	
 	private VictorSP left, left2, right, right2, center, leadScrewMotor, leftBelt, rightBelt, clapperLifter1, clapperLifter2;
 	public static DriveTrain drive;
-//	public static Strongback strongback;
+	public static Strongback strongback; 
 	public static Clapper clapper;
 	public static Fingers fingers;
 	public static RatchetSystem rachet;
@@ -62,6 +57,7 @@ public class Robot extends IterativeRobot {
 	private Sequencer autoSequence;
 	private AnalogPotentiometer clapperPot;
 	private CombinedVictorSP combinedVic;
+	private Sequencer teleopSequence;
 	
 //	boolean fingersOn = true;
 	
@@ -80,7 +76,7 @@ public class Robot extends IterativeRobot {
     	latchActuator = new Solenoid(3);
     	
 //    	center  = new VictorSP(13); //center: 9   changed to 13 1/31/15
-//    	suspension = new Solenoid(7); //may need two solenoids
+    	suspension = new Solenoid(7); //may need two solenoids
     	clapperActuator = new DoubleSolenoid(6, 5);
     	clapperPot = new AnalogPotentiometer(1); 
     	
@@ -90,7 +86,7 @@ public class Robot extends IterativeRobot {
     	
     	toteDetector = new AnalogInput(0);
     	
-//    	leadScrewMotor = new VictorSP(2); 
+    	leadScrewMotor = new VictorSP(2); 
     	
     	leftEnc.setDistancePerPulse(.0414221608);
     	rightEnc.setDistancePerPulse(.0414221608); 
@@ -111,7 +107,7 @@ public class Robot extends IterativeRobot {
     		LiveWindow.addSensor("IMU", "Gyro", imu);
     	}
     	
-//    	drive = new DriveTrain(left, left2, right, right2, imu, leftEnc, rightEnc);
+    	drive = new DriveTrain(left, left2, right, right2, center, latchActuator, imu, leftEnc, rightEnc, centerEnc);
 //    	drive.setSolenoid(false);
     	
     	//clapper = new Clapper(6, 5);
@@ -120,7 +116,7 @@ public class Robot extends IterativeRobot {
     	rachet = new RatchetSystem(latchActuator);
 //    	clapper.close();
     	
-//    	strongback = new Strongback(leadScrewMotor, imu); 
+    	strongback = new Strongback(leadScrewMotor, imu); 
     	
     	
 //    	camServer = CameraServer.getInstance();
@@ -153,7 +149,7 @@ public class Robot extends IterativeRobot {
     
     public void teleopInit() {
     	System.out.println("teleop init");
-//    	imu.zeroYaw();
+    	imu.zeroYaw();
 
     	
 //    	drive.setSolenoid(false);
@@ -162,9 +158,12 @@ public class Robot extends IterativeRobot {
     	rightEnc.reset();
     	
     	clapper.setManual();
+    	
+		strongback.enablePid();
     }
 
     public void teleopPeriodic() {
+    	strongback.checkSafety();
     	
 //    	System.out.println("teleop enabled" );
 
@@ -175,9 +174,10 @@ public class Robot extends IterativeRobot {
     	}
     	else if (clapper.isManual()){
     		clapper.setSetpoint(clapper.getPotValue());//set the setpoint to where ever it left off
+    		System.out.println("setting clapper setpoint in isManual detection, teleopPeriodic, getPotValue() is " + clapper.getPotValue());
     	}
     	
-//		strongback.enablePid();
+		System.out.println(imu.getRoll());
     	
 //        drive.warlordDrive(Controllers.getAxis(Controllers.XBOX_AXIS_LX, 0.2f),
 //        					Controllers.getAxis(Controllers.XBOX_AXIS_LY, 0.2f),
@@ -219,6 +219,8 @@ public class Robot extends IterativeRobot {
       	if (Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_THROTTLE) > 0) {
       		System.out.println("clapper should be open");
 	      	clapper.openClapper();
+	      	
+	      	//TODO: figure out how to only open the clapper if a sequence isn't running
        	}
       	else {
         	clapper.closeClapper();
@@ -238,31 +240,46 @@ public class Robot extends IterativeRobot {
        	if (Controllers.getJoystickButton(4)) {
        		clapper.setSetpoint(clapper.COOP_ONE_TOTE_SETPOINT);
        	}
-       	 	
+       	if (Controllers.getJoystickButton(5)) {
+       		teleopSequence = SequencerFactory.createIntakeToteRoutine();
+       	}
+       	
+       	if(teleopSequence != null) {
+       		System.out.println("running teleop sequence");
+       		if(teleopSequence.run()) {
+       			teleopSequence = null;
+       		}
+       	}
 //       	System.out.println("setpoint " + clapper.getSetpoint() + " potValue " + clapper.getPotValue() + " pid controlled " + clapper.isAutomatic());
        	
     }
     
     public void disabledPeriodic() {
-//    	System.out.println(clapper.getPotValue());
+ //   	System.out.println(clapper.getPotValue());
     }
     
     public void testInit() {
     	clapper.setManual();
-//    	leftEnc.reset();
-//    	rightEnc.reset();
-//    	drive.disableDriveStraightPID();
-//    	drive.disableIMUPID();
-//    	imu.zeroYaw();
-//    	done = false;
+    	leftEnc.reset();
+    	rightEnc.reset();
+    	drive.disableDriveStraightPID();
+    	drive.disableIMUPID();
+    	imu.zeroYaw();
+    	done = false;
     }
     
     private boolean done = false;
     public void testPeriodic() {
-    	compressor.start();
 
-//    	if(!done && drive.rotateTo(-173))
+//    	compressor.start();
+
+    	drive.setLeftRight(.2, -.2);
+    	
+//    	if(!done && drive.driveTo(60)) {
 //    		done = true;
+//    		System.out.println("just finished driveTo inside of testPeriodic");
+//    	}
+    	
 //    	System.out.println("Imu yaw: " + imu.getYaw());
 //    	System.out.println("Imu pitch: " + imu.getPitch());
 //    	

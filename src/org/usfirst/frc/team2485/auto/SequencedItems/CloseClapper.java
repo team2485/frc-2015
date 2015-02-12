@@ -12,7 +12,7 @@ public class CloseClapper implements SequencedItem {
 
 	@Override
 	public double duration() {
-		return 0;
+		return 0.1;
 	}
 
 	
