@@ -8,8 +8,11 @@ package org.usfirst.frc.team2485.auto;
 public class SequencedMultipleItem implements SequencedItem {
     private final SequencedItem[] items;
 
-    public SequencedMultipleItem(SequencedItem[] items) {
-        this.items = items;
+//    public SequencedMultipleItem(SequencedItem[] items) {
+//        this.items = items;
+//    }
+    public SequencedMultipleItem(SequencedItem... items) {
+    	this.items = items; 
     }
 
     public void run() {
