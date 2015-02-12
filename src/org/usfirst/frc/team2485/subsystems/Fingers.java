@@ -47,9 +47,10 @@ public class Fingers {
 	 * Handles tote by using the joystick to rotate it and pull it into clappers
 	 */
 	public void handleTote(float controllerY, float controllerZ) {
-		
 		controllerY = (float) ThresholdHandler.handleThreshold(controllerY, AXIS_DEADBAND);
 		controllerZ = (float) ThresholdHandler.handleThreshold(controllerZ, AXIS_DEADBAND);
+		
+		System.out.println("controllerY: " + controllerY + "controllerZ: " + controllerZ);
 		
 		if (Math.abs(controllerZ) > 0.05) {
 			if (controllerZ > 0) {

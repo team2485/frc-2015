@@ -158,7 +158,7 @@ public class Clapper {
 			adjustedSpeed = -1;
 		}
 		clapperLifter.set(adjustedSpeed);
-		System.out.println(speed + " | " + adjustedSpeed);
+//		System.out.println(speed + " | " + adjustedSpeed);
 
 	}
 }

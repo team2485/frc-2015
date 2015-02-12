@@ -213,10 +213,11 @@ public class Robot extends IterativeRobot {
 //    	System.out.println("IMU roll: " + imu.getRoll());
 
     	//basic controls for intake arm
-        fingers.handleTote((Controllers.getAxis(Controllers.JOYSTICK_AXIS_Y)),
-        			Controllers.getAxis(Controllers.JOYSTICK_AXIS_Z));
+        fingers.handleTote((Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_Y)),
+        			Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_Z));
     
-      	if (Controllers.getAxis(Controllers.JOYSTICK_AXIS_THROTTLE) > 0) {
+      	if (Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_THROTTLE) > 0) {
+      		System.out.println("clapper should be open");
 	      	clapper.openClapper();
        	}
       	else {
@@ -238,12 +239,12 @@ public class Robot extends IterativeRobot {
        		clapper.setSetpoint(clapper.COOP_ONE_TOTE_SETPOINT);
        	}
        	 	
-       	System.out.println("setpoint " + clapper.getSetpoint() + " potValue " + clapper.getPotValue() + " pid controlled " + clapper.isAutomatic());
+//       	System.out.println("setpoint " + clapper.getSetpoint() + " potValue " + clapper.getPotValue() + " pid controlled " + clapper.isAutomatic());
        	
     }
     
     public void disabledPeriodic() {
-    	System.out.println(clapper.getPotValue());
+//    	System.out.println(clapper.getPotValue());
     }
     
     public void testInit() {
