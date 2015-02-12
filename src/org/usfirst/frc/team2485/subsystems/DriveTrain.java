@@ -173,89 +173,90 @@ public class DriveTrain {
 		//		setLeftRight(wheel, -wheel);   
 		//		return;   
 
-//		double negInertia = rotation - oldWheel;
-//		oldWheel = rotation;
-//
-//		double wheelNonLinearity = 0.5;
+		double negInertia = rotation - oldWheel;
+		oldWheel = rotation;
+
+		double wheelNonLinearity = 0.5;
 
 		//this was the low gear code, since we only have one gear
-//		rotation = Math.sin(Math.PI / 2.0 * wheelNonLinearity * rotation) /
-//				Math.sin(Math.PI / 2.0 * wheelNonLinearity);
-//		rotation = Math.sin(Math.PI / 2.0 * wheelNonLinearity * rotation) /
-//				Math.sin(Math.PI / 2.0 * wheelNonLinearity);
-//		rotation = Math.sin(Math.PI / 2.0 * wheelNonLinearity * rotation) /
-//				Math.sin(Math.PI / 2.0 * wheelNonLinearity);
-//
-//		double sensitivity = MUCH_TOO_HIGH_SENSITIVITY;
-//		double leftPwm, rightPwm, overPower;
-//
-//		double angularPower;
-//		double linearPower;
-//
+		rotation = Math.sin(Math.PI / 2.0 * wheelNonLinearity * rotation) /
+				Math.sin(Math.PI / 2.0 * wheelNonLinearity);
+		rotation = Math.sin(Math.PI / 2.0 * wheelNonLinearity * rotation) /
+				Math.sin(Math.PI / 2.0 * wheelNonLinearity);
+		rotation = Math.sin(Math.PI / 2.0 * wheelNonLinearity * rotation) /
+				Math.sin(Math.PI / 2.0 * wheelNonLinearity);
+
+		double sensitivity = MUCH_TOO_HIGH_SENSITIVITY;
+		double leftPwm, rightPwm, overPower;
+
+		double angularPower;
+		double linearPower;
+
 //		// Negative inertia!
-//		double negInertiaAccumulator = 0.0;
-//		double negInertiaScalar;
+		double negInertiaAccumulator = 0.0;
+		double negInertiaScalar;
 
-//		negInertiaScalar = 5.0;
-//		sensitivity = SENSITIVITY_LOW;
-//
-//		double negInertiaPower = negInertia * negInertiaScalar;
-//		negInertiaAccumulator += negInertiaPower;
-//
-//		rotation = rotation + negInertiaAccumulator;
-//		linearPower = power;
+		negInertiaScalar = 5.0;
+		sensitivity = SENSITIVITY_LOW;
 
-		setLeftRight(.2, -.2);
-//		return;
-//		
-//		if (isQuickTurn) {
-//			if (Math.abs(linearPower) < 0.2) {
-//				double alpha = 0.1;
-//				rotation = rotation > 1 ? 1.0 : rotation;
-//				quickStopAccumulator = (1 - alpha) * quickStopAccumulator + alpha *
-//						rotation * 0.5;
-//			}
-//			overPower = 1.0;            
-//			angularPower = rotation;
-//		} else {
-//			overPower = 0.0;
-//			angularPower = Math.abs(power) * rotation * sensitivity - quickStopAccumulator;
-//			if (quickStopAccumulator > 1) {
-//				quickStopAccumulator -= 1;
-//			} else if (quickStopAccumulator < -1) {
-//				quickStopAccumulator += 1;
-//			} else {
-//				quickStopAccumulator = 0.0;
-//			}
-//		}
-//
-//		rightPwm = leftPwm = linearPower;
-//
-//		leftPwm  += angularPower;
-//		rightPwm -= angularPower;
-//
-//		System.out.println("leftPWM/rightPWM before: " + leftPwm + " and " + rightPwm);
-//		
-//		//lower sensitivity -- 1/31/15 debugging 
-//		leftPwm  *= Math.abs(leftPwm); 
-//		rightPwm *= Math.abs(rightPwm); 
-//
-//		if (leftPwm > 1.0) {
-//			rightPwm -= overPower * (leftPwm - 1.0);
-//			leftPwm = 1.0;
-//		} else if (rightPwm > 1.0) {
-//			leftPwm -= overPower * (rightPwm - 1.0);
-//			rightPwm = 1.0;
-//		} else if (leftPwm < -1.0) {
-//			rightPwm += overPower * (-1.0 - leftPwm);
-//			leftPwm = -1.0;
-//		} else if (rightPwm < -1.0) {
-//			leftPwm += overPower * (-1.0 - rightPwm);
-//			rightPwm = -1.0;
-//		}
-//
-//		System.out.println("leftPWM/rightPWM after: " + leftPwm + " and " + rightPwm);
-//		setLeftRight(leftPwm, rightPwm);
+		double negInertiaPower = negInertia * negInertiaScalar;
+		negInertiaAccumulator += negInertiaPower;
+
+		rotation = rotation + negInertiaAccumulator;
+		linearPower = power;
+
+		if (isQuickTurn) {
+			if (Math.abs(linearPower) < 0.2) {
+				double alpha = 0.1;
+				rotation = rotation > 1 ? 1.0 : rotation;
+				quickStopAccumulator = (1 - alpha) * quickStopAccumulator + alpha *
+						rotation * 0.5;
+			}
+			overPower = 1.0;            
+			angularPower = rotation;
+		} else {
+			overPower = 0.0;
+			angularPower = Math.abs(power) * rotation * sensitivity - quickStopAccumulator;
+			if (quickStopAccumulator > 1) {
+				quickStopAccumulator -= 1;
+			} else if (quickStopAccumulator < -1) {
+				quickStopAccumulator += 1;
+			} else {
+				quickStopAccumulator = 0.0;
+			}
+		}
+
+		rightPwm = leftPwm = linearPower;
+
+		leftPwm  += angularPower;
+		rightPwm -= angularPower;
+
+		System.out.println("leftPWM/rightPWM before: " + leftPwm + " and " + rightPwm);
+		
+		////////////////////////////////////////////////////////////////////////////////////
+		//lower sensitivity -- 1/31/15 debugging 
+		///////////  DOES THIS NEED TO BE HERE!!!!
+		///////////
+		////////////////////////////////////////////////////////////////////////////////////
+		leftPwm  *= Math.abs(leftPwm); 
+		rightPwm *= Math.abs(rightPwm); 
+
+		if (leftPwm > 1.0) {
+			rightPwm -= overPower * (leftPwm - 1.0);
+			leftPwm = 1.0;
+		} else if (rightPwm > 1.0) {
+			leftPwm -= overPower * (rightPwm - 1.0);
+			rightPwm = 1.0;
+		} else if (leftPwm < -1.0) {
+			rightPwm += overPower * (-1.0 - leftPwm);
+			leftPwm = -1.0;
+		} else if (rightPwm < -1.0) {
+			leftPwm += overPower * (-1.0 - rightPwm);
+			rightPwm = -1.0;
+		}
+
+		System.out.println("leftPWM/rightPWM after: " + leftPwm + " and " + rightPwm);
+		setLeftRight(leftPwm, rightPwm);
 	}
 	
 	public void setImuForDrivingStraight() {
