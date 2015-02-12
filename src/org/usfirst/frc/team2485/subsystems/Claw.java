@@ -3,8 +3,8 @@ package org.usfirst.frc.team2485.subsystems;
 import edu.wpi.first.wpilibj.*;
 
 /**
- * @author Aidan
- * @author Ben
+ * @author Aidan Fay
+ * @author Ben Clark
  * 
  */
 
@@ -22,7 +22,7 @@ public class Claw {
 	
 	private boolean automatic = true;
 
-	public Claw(VictorSP winchMotor, Solenoid actuator, AnalogPotentiometer pot){
+	public Claw(VictorSP winchMotor, Solenoid actuator, AnalogPotentiometer pot) {
 		this.winchMotor = winchMotor;
 		this.actuator 	= actuator;
 		this.pot 		= pot;
@@ -34,15 +34,15 @@ public class Claw {
 		this(new VictorSP(winchMotorPort), new Solenoid(actuatorPort), new AnalogPotentiometer(potPort));
 	}
 	
-	public void open(){
+	public void open() {
 		actuator.set(true);
 	}
 	
-	public void close(){
+	public void close() {
 		actuator.set(false);
 	}
 	
-	public boolean isOpen(){
+	public boolean isOpen() {
 		return actuator.get();
 	}
 	
@@ -52,18 +52,17 @@ public class Claw {
 	 * @param speed
 	 * @return
 	 */
-	public boolean moveManually(double speed){
-		if (speed > 1){
+	public void liftManually(double speed) {
+		
+		setManual(); 
+		
+		if (speed > 1) {
 			speed = 1;
-		} else if (speed < -1){
+		} else if (speed < -1) {
 			speed = -1;
 		}
 		
-		if (isManual()){
-			winchMotor.set(speed);
-		}
-		
-		return isManual();
+		winchMotor.set(speed);
 	}
 	
 	public void setPID(double kP, double kI, double kD) {
@@ -75,13 +74,10 @@ public class Claw {
 	}
 	
 	public void setSetpoint(int setpoint) {
+		setAutomatic();
 		elevationPID.setSetpoint(setpoint);
 	}
 	
-	public boolean elevationPidIsOnTarget() {
-		return elevationPID.onTarget(); 
-	}
-
 	/**
 	 * Sets the location of
 	 * @param setpointPercent
@@ -128,6 +124,10 @@ public class Claw {
 	 */
 	public boolean isManual() {
 		return !automatic;
+	}
+	
+	public boolean isPidOnTarget() {
+		return elevationPID.onTarget(); 
 	}
 
 }

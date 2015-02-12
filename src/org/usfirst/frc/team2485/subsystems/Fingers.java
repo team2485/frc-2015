@@ -1,8 +1,14 @@
 package org.usfirst.frc.team2485.subsystems;
 
+import org.usfirst.frc.team2485.util.ThresholdHandler;
+
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.VictorSP;
 
+/**
+ * @author Camille Considine
+ * @author Ben Clark
+ */
 public class Fingers {
 	
 	private VictorSP leftBelt, rightBelt;
@@ -11,7 +17,7 @@ public class Fingers {
 		longFingerActuators,
 		shortFingerActuators;
 	
-	private final double AXIS_DEADBAND = 0.125;
+	private final double AXIS_DEADBAND = 0.25;
 	
 	private int fingerPosition;
 	
@@ -42,8 +48,8 @@ public class Fingers {
 	 */
 	public void handleTote(float controllerY, float controllerZ) {
 		
-		controllerY = (float) handleThreshold(controllerY, AXIS_DEADBAND);
-		controllerZ = (float) handleThreshold(controllerZ, AXIS_DEADBAND);
+		controllerY = (float) ThresholdHandler.handleThreshold(controllerY, AXIS_DEADBAND);
+		controllerZ = (float) ThresholdHandler.handleThreshold(controllerZ, AXIS_DEADBAND);
 		
 		if (Math.abs(controllerZ) > 0.05) {
 			if (controllerZ > 0) {
@@ -82,7 +88,6 @@ public class Fingers {
 
 	/*
 	 * Rotates tote left to align it for intake
-	 * TODO: find out which way is left versus right
 	 */
 	public void rotateToteLeft(double speed) {
 		leftBelt.set(Math.abs(speed));
@@ -123,7 +128,6 @@ public class Fingers {
 				break;
 			
 			case PARALLEL:
-				//TODO: check which actuator should be set to true
 				longFingerActuators.set(false);
 				shortFingerActuators.set(true);
 				
@@ -134,7 +138,7 @@ public class Fingers {
 			case OPEN:
 				longFingerActuators.set(false);
 				shortFingerActuators.set(false);
-				System.out.println("detected open in Fingers");
+				
 				fingerPosition = OPEN;
 				
 				break;
@@ -144,22 +148,5 @@ public class Fingers {
 						"Make the finger position CLOSED, PARALLEL, or OPEN");
 		}
 	}
-	
-	/**
-	 * Thresholds values
-	 *
-	 * @param val
-	 * @param deadband
-	 * @return
-	 */
-	private double handleThreshold(double val, double threshold) {
-
-		double returnValue = (Math.abs(val) > Math.abs(threshold)) ? (val/Math.abs(val)*(Math.abs(val)-threshold)/(1-threshold)) : 0.0;
-		//System.out.println(val + " : " + returnValue);
-		return returnValue;
-
-		//return (Math.abs(val) > Math.abs(threshold)) ? val : 0.0;
-	}
-	
 
 }

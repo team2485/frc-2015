@@ -19,11 +19,8 @@ public class MoveClawVertically implements SequencedItem {
 		
 		Claw claw = Robot.claw; 
 		
-		if (claw.isManual())
-			claw.setAutomatic(); 
-		
 		claw.setSetpoint(setpoint);
-		finished = claw.elevationPidIsOnTarget(); 
+		finished = claw.isPidOnTarget(); 
 	}
 
 	@Override

@@ -1,7 +1,7 @@
 package org.usfirst.frc.team2485.subsystems;
 
 import org.usfirst.frc.team2485.util.CombinedVictorSP;
-import org.usfirst.frc.team2485.util.HandleThreshold;
+import org.usfirst.frc.team2485.util.ThresholdHandler;
 
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
@@ -10,31 +10,26 @@ import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.VictorSP;
 
 /**
- * @author Ben
- * @author Aidan
+ * @author Ben Clark
+ * @author Aidan Fay
  *
  */
 public class Clapper {
 
 	private CombinedVictorSP clapperLifter;
-
 	private DoubleSolenoid clapperActuator;
-
 	private PIDController clapperPID;
 	private AnalogPotentiometer pot;
-	private boolean open;
 	
+	private boolean open;
+	private boolean isPID;
+	private boolean automatic;
+
 	public double
 		kP	= 0.01,
 		kI	= 0.00,
 		kD	= 0.00;
-	
-	private double potValue;
-	
-	private boolean isPID;
-
-	private boolean automatic;
-	
+			
 	public static final double 
 		ONE_TOTE_SETPOINT		= 0,
 		TWO_TOTE_SETPOINT		= 0,
@@ -47,7 +42,6 @@ public class Clapper {
 		SCORING_PLATFORM_HEIGHT	= 0;
 
 	private static final double LOWEST_POS = 0;
-
 	private static final double POS_RANGE = 0;
 
 	public Clapper(VictorSP clapperLifter1, VictorSP clapperLifter2,
@@ -69,17 +63,9 @@ public class Clapper {
 				new AnalogPotentiometer(potPort));
 	}
 	
-//	public Clapper(int clapperActuatorPort1, int clapperActuatorPort2) {
-//		this.clapperActuator = new DoubleSolenoid(clapperActuatorPort1, clapperActuatorPort2);
-//	}
-
 	public double getPotValue() {
 		return pot.get();
 	}
-	
-	/*public double getPotPercentage() {
-		return 100 * (pot.get() + POT_OFFSET);
-	}*/
 	
 	public void setPID(double kP, double kI, double kD) {
 		this.kP = kP;
@@ -93,11 +79,10 @@ public class Clapper {
 		setAutomatic();
 		clapperPID.setSetpoint(setpoint);
 	}
-
-//	public void setPercentSetpoint(double setpointPercent) {
-//		double correctedSetpoint = POT_MULTIPLIER * setpointPercent + POT_OFFSET;		
-//		clapperPID.setSetpoint(correctedSetpoint);
-//	}
+	
+	public boolean isPIDOnTarget() {
+		return clapperPID.onTarget(); 
+	}
 	
 	public void openClapper() {
 		clapperActuator.set(DoubleSolenoid.Value.kForward);
@@ -148,31 +133,20 @@ public class Clapper {
 		return !automatic;
 	}
 	
-	
 	/*
 	 * Assuming that a positive speed moves the clapper down
 	 */
-	public void moveManually(double speed){
+	public void liftManually(double speed) {
 		setManual();
-		double adjustedSpeed = HandleThreshold.handleThreshold(speed, 0.1)/4;
+		double adjustedSpeed = ThresholdHandler.handleThreshold(speed, 0.1)/4;
 		System.out.println(speed + " | " + adjustedSpeed);
 		if (adjustedSpeed > 1){
 			adjustedSpeed = 1;
 		} else if (adjustedSpeed < -1){
 			adjustedSpeed = -1;
-		}
-		
-		if (isManual()){
-//			if (pot.get() >= LOWEST_POS + POS_RANGE && adjustedSpeed > 0){
-//				adjustedSpeed = 0;
-//			}else if (pot.get() <= LOWEST_POS && adjustedSpeed < 0){
-//				adjustedSpeed = 0;
-//			}
-			clapperLifter.set(adjustedSpeed);
-		}
+		}		
 	}
 }
-
 
 	//  two belts for intake, pneumatic for finger, pneumatic for opens and closes whole intake, one pneumatic for open/closes 
 	//	the belts, sensors for detecting tote

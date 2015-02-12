@@ -17,7 +17,7 @@ public class MoveClapperVertically implements SequencedItem {
 
 	@Override
 	public void run() {
-		Robot.clapper.setRawSetpoint(setpoint); 
+		Robot.clapper.setSetpoint(setpoint); 
 	}
 
 	@Override
