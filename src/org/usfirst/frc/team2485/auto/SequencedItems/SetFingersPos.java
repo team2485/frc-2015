@@ -2,26 +2,28 @@ package org.usfirst.frc.team2485.auto.SequencedItems;
 
 import org.usfirst.frc.team2485.auto.SequencedItem;
 import org.usfirst.frc.team2485.robot.Robot;
+import org.usfirst.frc.team2485.subsystems.Fingers;
 
-//we beed some sort of sensor to tell when the tote is in/out of the clappper
-//until then i dont think we can right this
-public class ToteIntake implements SequencedItem {
+public class SetFingersPos implements SequencedItem {
 
 	private boolean finished; 
-	
-	public ToteIntake() {
+	private final int pos; 
+
+	public SetFingersPos(int pos) {
 		finished = false; 
+		this.pos = pos; 
 	}
-	
+
 	@Override
 	public void run() {
-		Robot.fingers.dualIntake(1);
+		if (!finished) {
+			Robot.fingers.setFingerPosition(pos);
+			finished = true; 
+		}
 	}
 
 	@Override
 	public double duration() {
-//		return finished ? 0 : 2; 
-		return 2; 
+		return 0;
 	}
-
 }
