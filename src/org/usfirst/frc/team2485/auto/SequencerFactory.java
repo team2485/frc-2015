@@ -4,6 +4,9 @@ import org.usfirst.frc.team2485.auto.SequencedItems.AutoTestPrint;
 import org.usfirst.frc.team2485.auto.SequencedItems.CloseClapper;
 import org.usfirst.frc.team2485.auto.SequencedItems.DriveStraight;
 import org.usfirst.frc.team2485.auto.SequencedItems.MoveClapperVertically;
+import org.usfirst.frc.team2485.auto.SequencedItems.OpenClapper;
+import org.usfirst.frc.team2485.auto.SequencedItems.ReleaseToteStack;
+import org.usfirst.frc.team2485.auto.SequencedItems.ResetRatchet;
 import org.usfirst.frc.team2485.auto.SequencedItems.RotateToAngle;
 import org.usfirst.frc.team2485.auto.SequencedItems.SetFingerRollers;
 import org.usfirst.frc.team2485.auto.SequencedItems.SetFingersPos;
@@ -111,7 +114,7 @@ public class SequencerFactory {
 	}
 
 	public static Sequencer createIntakeToteRoutine() {
-		return new Sequencer( new SequencedItem[] {
+		return new Sequencer(new SequencedItem[] {
 			new SequencedMultipleItem(
 					new CloseClapper(),
 					new SetFingersPos(Fingers.PARALLEL), 
@@ -125,6 +128,15 @@ public class SequencerFactory {
 //							),
 			new SequencedPause(0.7),
 			new MoveClapperVertically(Clapper.LOADING_SETPOINT)
+		});
+	}
+	public static Sequencer createDropToteStackRoutine() {
+		return new Sequencer(new SequencedItem[] {
+			new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT), 
+			new ReleaseToteStack(),
+			new MoveClapperVertically(Clapper.LOADING_SETPOINT), 
+			new OpenClapper(), 
+			new ResetRatchet()
 		});
 	}
 }
