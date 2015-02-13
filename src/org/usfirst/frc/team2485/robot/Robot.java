@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.Encoder;
@@ -135,7 +136,7 @@ public class Robot extends IterativeRobot {
     	rightEnc.reset();
     	dualEncoder.reset();
     	
-    	autoSequence = SequencerFactory.createAuto(SequencerFactory.SEQ_TEST);
+    	autoSequence = SequencerFactory.createAuto(SequencerFactory.ONE_TOTE);
     }
   
     public void autonomousPeriodic() {
@@ -160,6 +161,8 @@ public class Robot extends IterativeRobot {
     	clapper.setManual();
     	
 		strongback.enablePid();
+		
+		teleopSequence = null; 
     }
 
     public void teleopPeriodic() {
@@ -177,16 +180,16 @@ public class Robot extends IterativeRobot {
     		System.out.println("setting clapper setpoint in isManual detection, teleopPeriodic, getPotValue() is " + clapper.getPotValue());
     	}
     	
-		System.out.println(imu.getRoll());
+//		System.out.println(imu.getRoll());
     	
-//        drive.warlordDrive(Controllers.getAxis(Controllers.XBOX_AXIS_LX, 0.2f),
-//        					Controllers.getAxis(Controllers.XBOX_AXIS_LY, 0.2f),
-//                			Controllers.getAxis(Controllers.XBOX_AXIS_RX, 0.2f));
+        drive.warlordDrive(Controllers.getAxis(Controllers.XBOX_AXIS_LX, 0.2f),
+        					Controllers.getAxis(Controllers.XBOX_AXIS_LY, 0.2f),
+                			Controllers.getAxis(Controllers.XBOX_AXIS_RX, 0.2f));
     	
-//        if(Controllers.getButton(Controllers.XBOX_BTN_RBUMP)) {
-//        		drive.setQuickTurn(true);
-//        } else
-//        	drive.setQuickTurn(false);
+        if(Controllers.getButton(Controllers.XBOX_BTN_RBUMP)) {
+        		drive.setQuickTurn(true);
+        } else
+        	drive.setQuickTurn(false);
 //        
 //        if(Controllers.getButton(Controllers.XBOX_BTN_A)) {
 //        	drive.setSolenoid(true);
@@ -196,12 +199,6 @@ public class Robot extends IterativeRobot {
 //        	drive.setSolenoid(false);
 //        }
         
-//        if (Controllers.getButton(Controllers.XBOX_BTN_START))
-//        	drive.tuneStrafeParam(.005);
-//        if (Controllers.getButton(Controllers.XBOX_BTN_BACK))
-//        	drive.tuneStrafeParam(-.005);
-//        if (Controllers.getButton(Controllers.XBOX_BTN_Y)) 
-//        	drive.resetButtonClicked(); 
 //        
 //    	System.out.println("current setpoint is: " + drive.imuPID.getSetpoint());
 //    	System.out.println("current error is: " + drive.imuPID.getError());
@@ -250,12 +247,18 @@ public class Robot extends IterativeRobot {
        			teleopSequence = null;
        		}
        	}
+       	
+       	SmartDashboard.putString("Clapper and Container", clapper.getPercentHeight() +"," + 0 + "," + imu.getRoll());
+       	
+       	SmartDashboard.putInt("RPM", (int) drive.getAbsoluteRate());
+       	
 //       	System.out.println("setpoint " + clapper.getSetpoint() + " potValue " + clapper.getPotValue() + " pid controlled " + clapper.isAutomatic());
        	
     }
     
     public void disabledPeriodic() {
- //   	System.out.println(clapper.getPotValue());
+    	System.out.println(clapper.getPotValue());
+    	
     }
     
     public void testInit() {
@@ -271,15 +274,24 @@ public class Robot extends IterativeRobot {
     private boolean done = false;
     public void testPeriodic() {
 
-//    	compressor.start();
+    	compressor.start();
 
-    	drive.setLeftRight(.2, -.2);
+//    	drive.setLeftRight(.2, -.2);
+//    	drive.driveTo(60);
     	
 //    	if(!done && drive.driveTo(60)) {
 //    		done = true;
 //    		System.out.println("just finished driveTo inside of testPeriodic");
 //    	}
-    	
+//    	
+//    	  if (Controllers.getButton(Controllers.XBOX_BTN_START))
+//          	drive.tuneDriveKp(.005);
+//          if (Controllers.getButton(Controllers.XBOX_BTN_BACK))
+//          	drive.tuneDriveKp(-.005);
+//          if (Controllers.getButton(Controllers.XBOX_BTN_Y)) 
+//          	drive.resetButtonClicked(); 
+          
+          
 //    	System.out.println("Imu yaw: " + imu.getYaw());
 //    	System.out.println("Imu pitch: " + imu.getPitch());
 //    	
@@ -292,6 +304,10 @@ public class Robot extends IterativeRobot {
 //    	System.out.println(strongback.leadScrewImuPID.isEnable());
 //		strongback.enablePid(); 
 //		System.out.println(strongback.getError() + " output " + strongback.leadScrewImuPID.get());
+    	
+    	SmartDashboard.putString("Clapper and Container", clapper.getPercentHeight() +"," + 0 + "," + imu.getRoll());
+       	
+       	SmartDashboard.putInt("RPM", (int) drive.getAbsoluteRate());
 
     }
     
