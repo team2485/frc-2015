@@ -3,7 +3,7 @@
 TODO:
 [X] test 3 tote pickup
 [] buttons coop setpoints for 0 and 3 totes
-[] add second joystick to controllers
+[X] add second joystick to controllers
 [X] system tests: belts on intake
 [] remount IMU on strongback
 [] testing drive code
@@ -29,3 +29,4 @@ Container Sequence:
 7) close claw, release clapper, lift claw up
 
 **anytime you lift the claw past the hook, the ratchet hook must be pulled back**
+**check low enc rate logic*

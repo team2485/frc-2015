@@ -18,9 +18,9 @@ public class MoveClapperVertically implements SequencedItem {
 	@Override
 	public void run() {
 		Robot.clapper.setSetpoint(setpoint); 
-		System.out.println("here in Move Clapper, PID finished is " + Robot.clapper.isPIDOnTarget() +
-				" error: " + Robot.clapper.getError());
-		System.out.println("actual clapper output is " + Robot.clapper.getMotorOutput());
+//		System.out.println("here in Move Clapper, PID finished is " + Robot.clapper.isPIDOnTarget() +
+//				" error: " + Robot.clapper.getError());
+//		System.out.println("actual clapper output is " + Robot.clapper.getMotorOutput());
 	}
 
 	@Override

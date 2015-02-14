@@ -2,6 +2,7 @@ package org.usfirst.frc.team2485.auto;
 
 import org.usfirst.frc.team2485.auto.SequencedItems.AutoTestPrint;
 import org.usfirst.frc.team2485.auto.SequencedItems.CloseClapper;
+import org.usfirst.frc.team2485.auto.SequencedItems.DriveSlowConstant;
 import org.usfirst.frc.team2485.auto.SequencedItems.DriveStraight;
 import org.usfirst.frc.team2485.auto.SequencedItems.DriveStraightLowAcceleration;
 import org.usfirst.frc.team2485.auto.SequencedItems.MoveClapperVertically;
@@ -72,7 +73,6 @@ public class SequencerFactory {
 
 		case THREE_TOTE_STRAIGHT: 
 			return new Sequencer(new SequencedItem[] {
-					
 					new SequencedMultipleItem(
 							new CloseClapper(),
 							new SetFingersPos(Fingers.PARALLEL), 
@@ -87,8 +87,8 @@ public class SequencerFactory {
 					new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
 					new SequencedPause(.3),
 					new MoveClapperVertically(Clapper.LOADING_SETPOINT),
+					new SequencedPause(.2),
 					
-					new SequencedPause(2),
 					new SequencedMultipleItem(
 							new DriveStraightLowAcceleration(81),
 							new SetFingersPos(Fingers.OPEN)
@@ -97,7 +97,8 @@ public class SequencerFactory {
 							new CloseClapper(),
 							new SetFingersPos(Fingers.PARALLEL), 
 							new RetractRatchet(),
-							new SetFingerRollers(SetFingerRollers.INTAKE, 1)
+							new SetFingerRollers(SetFingerRollers.INTAKE, 1.5)
+//							new DriveStraightLowAcceleration(10)
 							), 
 					new SequencedMultipleItem(
 							new SequencedPause(0.2),
@@ -107,7 +108,26 @@ public class SequencerFactory {
 					new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
 					new SequencedPause(0.1),
 					new MoveClapperVertically(Clapper.LOADING_SETPOINT),
-					
+					new SequencedPause(0.2),
+					new SequencedMultipleItem(
+							new DriveStraightLowAcceleration(81),
+							new SetFingersPos(Fingers.OPEN)
+							), 
+					new SequencedMultipleItem(
+							new CloseClapper(),
+							new SetFingersPos(Fingers.PARALLEL), 
+							new RetractRatchet(),
+							new SetFingerRollers(SetFingerRollers.INTAKE, 1.5)
+//							new DriveStraightLowAcceleration(10)
+							), 
+					new SequencedMultipleItem(
+							new SequencedPause(0.2),
+							new SetFingerRollers(SetFingerRollers.OFF, .1),
+							new ResetRatchet()
+							),
+					new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
+					new SequencedPause(0.1),
+					new MoveClapperVertically(Clapper.LOADING_SETPOINT),
 					
 //					new RotateToAngle(0),
 //					new OpenClapper(), //TODO make multiple
@@ -238,4 +258,33 @@ public class SequencerFactory {
 				
 		});
 	}
-}
+		public static Sequencer createIntakeToteRoutineBackup() {
+			return new Sequencer(new SequencedItem[] {
+				new SequencedMultipleItem(
+						new OpenClapper(),
+						new SetFingersPos(Fingers.CLOSED), 
+						new RetractRatchet(),
+						new SetFingerRollers(SetFingerRollers.INTAKE, 1),
+						new DriveSlowConstant()
+						), 
+				new SequencedPause(.2),
+				new SequencedMultipleItem(
+//						new SetFingerRollers(SetFingerRollers.REVERSE, 1),
+						new SetFingersPos(Fingers.PARALLEL),
+						new ResetRatchet(),
+						new DriveSlowConstant()
+						),
+				new CloseClapper(),
+				new SequencedPause(.2),
+//				new SetFingerRollers(SetFingerRollers.INTAKE, 1),
+//				new SequencedMultipleItem(
+//				new SetFingersPos(Fingers.PARALLEL),
+//				new SequencedPause(1),
+				new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
+				new SetFingerRollers(SetFingerRollers.INTAKE, 1), // 0.2
+//								),
+				new SequencedPause(.2),
+				new MoveClapperVertically(Clapper.LOADING_SETPOINT)
+			});
+		}
+	}

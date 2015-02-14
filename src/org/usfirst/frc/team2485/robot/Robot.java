@@ -94,7 +94,7 @@ public class Robot extends IterativeRobot {
     	
     	toteDetector = new AnalogInput(0);
     	
-    	leadScrewMotor = new VictorSP(2); 
+//    	leadScrewMotor = new VictorSP(2); 
     	
     	leftEnc.setDistancePerPulse(.0414221608);
     	rightEnc.setDistancePerPulse(.0414221608); 
@@ -124,7 +124,7 @@ public class Robot extends IterativeRobot {
     	ratchet = new RatchetSystem(latchActuator);
 //    	clapper.close();
     	
-    	strongback = new Strongback(leadScrewMotor, imu); 
+//    	strongback = new Strongback(leadScrewMotor, imu); 
     	
     	
 //    	camServer = CameraServer.getInstance();
@@ -146,7 +146,7 @@ public class Robot extends IterativeRobot {
     	
     	autoSequence = SequencerFactory.createAuto(SequencerFactory.THREE_TOTE_STRAIGHT);
 //    	autoSequence.reset();
-    	autoSequence = null;
+//    	autoSequence = null;
     }
   
     public void autonomousPeriodic() {
@@ -178,7 +178,7 @@ public class Robot extends IterativeRobot {
     	
     	clapper.setManual();
     	
-		strongback.enablePid();
+//		strongback.enablePid();
 		
 		teleopSequence = null; 
 		System.out.println(clapper.getPotValue());
@@ -188,7 +188,7 @@ public class Robot extends IterativeRobot {
     	
     	compressor.start();
 
-    	strongback.checkSafety();
+//    	strongback.checkSafety();
     	
 //    	System.out.println("teleop enabled" );
 
@@ -237,16 +237,19 @@ public class Robot extends IterativeRobot {
         		fingers.handleTote((Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_Y)),
         				Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_Z));
     
-      	if (Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_THROTTLE) > 0) {
+        if(teleopSequence == null) {
+        	if ((Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_THROTTLE) > 0)) {
 //      		System.out.println("clapper should be open");
-	      	clapper.openClapper();
+	      		clapper.openClapper();
 	      	
 	      	//TODO: figure out how to only open the clapper if a sequence isn't running
-       	}
-      	else {
+       		}
+      		else {
 //      		System.out.println("clappers should close");
-      		clapper.closeClapper();
-    	}
+      			clapper.closeClapper();
+      		}
+        }
+        
        	if (Controllers.getJoystickButton(7)) {
        		System.out.println("fingers should close now");
        		fingers.setFingerPosition(Fingers.CLOSED);
@@ -266,7 +269,7 @@ public class Robot extends IterativeRobot {
        		clapper.setSetpoint(clapper.COOP_ONE_TOTE_SETPOINT);
        	}
        	if (Controllers.getJoystickButton(5)) {
-       		teleopSequence = SequencerFactory.createIntakeToteRoutine();
+       		teleopSequence = SequencerFactory.createIntakeToteRoutineBackup();
        	}
        	if (Controllers.getJoystickButton(12)) {
        		System.out.println("hook should release");

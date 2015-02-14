@@ -9,6 +9,8 @@ public class SetFingerRollers implements SequencedItem {
 	private int type; 
 	private double timing; 
 	
+//	private static int numTotes = 0; 
+	
 	public SetFingerRollers(int type, double timing) {
 		if (type == INTAKE || type == REVERSE || type == OFF)
 			this.type = type;
@@ -16,23 +18,25 @@ public class SetFingerRollers implements SequencedItem {
 			throw new IllegalArgumentException("Must send rollers intake or reverse or off"); 
 		
 		this.timing = timing; 
+		
+//		numTotes++; 
 	}
 	@Override
 	public void run() {
 		
 		if (type == INTAKE)
-			Robot.fingers.dualIntake(1);
+			Robot.fingers.dualIntake(0.5); // 0.5
 		else if (type == REVERSE) 
-			Robot.fingers.dualReverse(1);
+			Robot.fingers.dualReverse(0.5);
 		else if (type == OFF)
-			Robot.fingers.dualIntake(0); 
+			Robot.fingers.dualIntake(0.5); 
 		else
 			throw new IllegalStateException("Finger rollers can only go intake or reverse");
 	}
 
 	@Override
 	public double duration() {
-		return timing;  
+		return timing;
 	}
 
 	

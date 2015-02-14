@@ -1,5 +1,7 @@
 package org.usfirst.frc.team2485.auto.SequencedItems;
 
+import java.util.concurrent.SynchronousQueue;
+
 import org.usfirst.frc.team2485.auto.SequencedItem;
 import org.usfirst.frc.team2485.robot.Robot;
 
@@ -9,7 +11,6 @@ public class DriveStraightLowAcceleration implements SequencedItem {
 	private double distance; 
 	
 	public DriveStraightLowAcceleration(double inches) {
-		
 		finished = false;
 		distance = inches; 
 		
@@ -24,13 +25,14 @@ public class DriveStraightLowAcceleration implements SequencedItem {
 	public void run() {
 		if (Robot.drive.driveTo(distance)) {
 			finished = true; 
+			System.out.println("Run finished");
 			Robot.drive.driveStraightPID.setOutputRange(-1, 1); 
 		}
 	}
 
 	@Override
 	public double duration() {
-		return finished ? 0 : 2; 
+		return finished ? 0 : 4; 
 	} 
 	
 	

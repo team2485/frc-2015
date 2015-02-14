@@ -67,19 +67,19 @@ public class DriveTrain {
 	private DummyOutput dummyEncoderOutput;
 	private DummyOutput dummyImuOutput;
 
-	private double lowEncRate = 5;
+	private double lowEncRate = 40;
 	private int imuOnTargetCounter = 0;
 	private final int MINIMUM_IMU_ON_TARGET_ITERATIONS = 6;
 	
 	private final double
 		absTolerance_Imu_TurnTo = 1.0,
 		absTolerance_Imu_DriveStraight = 2.0,
-		absTolerance_Enc_DriveStraight = 3.0,
+		absTolerance_Enc_DriveStraight = 3.0, // needs tuning
 		absTolerance_Enc_Strafe = 3.0; 
 
 	public static double 
 		driveStraightEncoder_Kp = 0.0275, 
-		driveStraightEnvoder_Ki = 0.0, 
+		driveStraightEncoder_Ki = 0.0, 
 		driveStraightEncoder_Kd = 0.0;
 
 	public static double 
@@ -118,7 +118,7 @@ public class DriveTrain {
 
 		dummyEncoderOutput = new DummyOutput();
 		dualEncoder = new DualEncoder(leftEnc, rightEnc);
-		driveStraightPID = new PIDController(driveStraightEncoder_Kp, driveStraightEnvoder_Ki, driveStraightEncoder_Kd, dualEncoder, dummyEncoderOutput);
+		driveStraightPID = new PIDController(driveStraightEncoder_Kp, driveStraightEncoder_Ki, driveStraightEncoder_Kd, dualEncoder, dummyEncoderOutput);
 		driveStraightPID.setAbsoluteTolerance(absTolerance_Enc_DriveStraight);
 		
 		if(centerEnc != null) {
@@ -476,7 +476,7 @@ public class DriveTrain {
 			return true;
 		}
 
-		System.out.println("IMU Error: " + imuPID.getError());
+//		System.out.println("IMU Error: " + imuPID.getError());
 		
 		double imuOutput = dummyImuOutput.get();
 		setLeftRight(imuOutput, -imuOutput);
@@ -526,7 +526,9 @@ public class DriveTrain {
 //		System.out.println("dualEncoder: " + dualEncoder.getDistance());
 
 //		System.out.println("encoderPID output: " + encoderOutput + " imuPID output: " + imuOutput);
-		System.out.println("error from enc PID " + driveStraightPID.getError() + " from imu PID " + imuPID.getError());
+		System.out.println("error from enc PID " + driveStraightPID.getError());
+		System.out.println("dual encoder rate: " + dualEncoder.getRate()); 
+		System.out.println("signal sent: " + driveStraightPID.get());
 //		System.out.println("Kp from enc PID " + driveStraightPID.getP());
 
 //		just changed this sign
@@ -534,10 +536,11 @@ public class DriveTrain {
 
 		// Check to see if we're on target
 		if (driveStraightPID.onTarget() && Math.abs(dualEncoder.getRate()) < lowEncRate) {
+			System.out.println("Reached PID on target");
 			setLeftRight(0.0, 0.0);
 			driveStraightPID.disable();
 			imuPID.disable();
-			System.out.println("driveTo finished inside of driveTo");
+//			System.out.println("driveTo finished inside of driveTo");
 			return true;
 		}
 		return false;
