@@ -61,9 +61,9 @@ public class Fingers {
 		}
 		else if (Math.abs(controllerY) > 0.05) {
 			if (controllerY > 0) {
-				dualReverse(controllerY);
-			} else if (controllerY < 0) {
 				dualIntake(controllerY);
+			} else if (controllerY < 0) {
+				dualReverse(controllerY);
 			}
 		}	
 		else {

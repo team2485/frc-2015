@@ -7,12 +7,15 @@ public class SetFingerRollers implements SequencedItem {
 
 	public static final int INTAKE = 0, REVERSE = 1, OFF = 2; 
 	private int type; 
+	private double timing; 
 	
-	public SetFingerRollers(int type) {
+	public SetFingerRollers(int type, double timing) {
 		if (type == INTAKE || type == REVERSE || type == OFF)
 			this.type = type;
 		else
 			throw new IllegalArgumentException("Must send rollers intake or reverse or off"); 
+		
+		this.timing = timing; 
 	}
 	@Override
 	public void run() {
@@ -29,7 +32,7 @@ public class SetFingerRollers implements SequencedItem {
 
 	@Override
 	public double duration() {
-		return 1; //TODO: test timing, knowing what we are doing  
+		return timing;  
 	}
 
 	

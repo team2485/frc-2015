@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.VictorSP;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * @author Camille Considine
@@ -75,7 +76,7 @@ public class DriveTrain {
 		absTolerance_Enc_Strafe = 3.0; 
 
 	public static double 
-		driveStraightEncoder_Kp = 0.06, 
+		driveStraightEncoder_Kp = 0.0275, 
 		driveStraightEnvoder_Ki = 0.0, 
 		driveStraightEncoder_Kd = 0.0;
 
@@ -90,9 +91,9 @@ public class DriveTrain {
 		driveStraightImu_Kd = 0.0; 
 
 	public static double
-		rotateImu_kP = 0.045,
-		rotateImu_kI = 0.0,
-		rotateImu_kD = 0.005;
+		rotateImu_kP = 0.0115,
+		rotateImu_kI = 0.005,
+		rotateImu_kD = 0.01;
 
 	public DriveTrain(VictorSP leftDrive, VictorSP leftDrive2, VictorSP rightDrive, 
 			VictorSP rightDrive2, VictorSP centerDrive, Solenoid suspension, IMU imu, Encoder leftEnc, 
@@ -130,9 +131,9 @@ public class DriveTrain {
 		translateY = -ThresholdHandler.handleThreshold(translateY, TRANSLATE_Y_DEADBAND);
 		rotation   =  ThresholdHandler.handleThreshold(rotation,   ROTATION_DEADBAND   );
 
-		System.out.println("x, y \t\t" + translateX + ",\t" + translateY);
+//		System.out.println("x, y \t\t" + translateX + ",\t" + translateY);
 
-		printLog();    
+//		printLog();    
 
 //		if(rotation != 0) {
 			if (maintainingHeading) {
@@ -231,7 +232,7 @@ public class DriveTrain {
 		leftPwm  += angularPower;
 		rightPwm -= angularPower;
 
-		System.out.println("leftPWM/rightPWM before: " + leftPwm + " and " + rightPwm);
+//		System.out.println("leftPWM/rightPWM before: " + leftPwm + " and " + rightPwm);
 		
 		////////////////////////////////////////////////////////////////////////////////////
 		//lower sensitivity -- 1/31/15 debugging 
@@ -255,7 +256,7 @@ public class DriveTrain {
 			rightPwm = -1.0;
 		}
 
-		System.out.println("leftPWM/rightPWM after: " + leftPwm + " and " + rightPwm);
+//		System.out.println("leftPWM/rightPWM after: " + leftPwm + " and " + rightPwm);
 		setLeftRight(leftPwm, rightPwm);
 	}
 	
@@ -302,12 +303,12 @@ public class DriveTrain {
 
 		this.outputTX = xOutput; 
 		this.outputTY = yOutput; 
-		System.out.println("IMU PID enabled" + imuPID.isEnable());
-
-		System.out.println("xOut, yOut, pidOut \t" + xOutput + ", " + yOutput + ", " + pidOut);
-		setMotors(yOutput + pidOut, yOutput - pidOut, xOutput);
-		System.out.println(imu.getYaw() + " : " + imuPID.getSetpoint());
-		System.out.println("current kP is: " + imuPID.getP());
+//		System.out.println("IMU PID enabled" + imuPID.isEnable());
+//
+//		System.out.println("xOut, yOut, pidOut \t" + xOutput + ", " + yOutput + ", " + pidOut);
+//		setMotors(yOutput + pidOut, yOutput - pidOut, xOutput);
+//		System.out.println(imu.getYaw() + " : " + imuPID.getSetpoint());
+//		System.out.println("current kP is: " + imuPID.getP());
 
 	}
 
@@ -424,12 +425,13 @@ public class DriveTrain {
 	}
 	
 	// tune strafe param 
-	public void tuneStrafeParam(double d) {
+	public void tuneDriveKp(double d) {
 		if (buttonClicked) {
-			//			kP_G_Rotate += d; 
-			STRAFE_TUNING_PARAMETER += Math.abs(d)/d; 
+			driveStraightEncoder_Kd += d; 
+//			STRAFE_TUNING_PARAMETER += Math.abs(d)/d; 
 			buttonClicked = false; 
-			System.out.println("new strafe param: " + STRAFE_TUNING_PARAMETER);
+			System.out.println("new kP: " + driveStraightEncoder_Kd);
+			SmartDashboard.putNumber("Driving Straight Encoder kP", driveStraightEncoder_Kp);
 		}
 	}
 	
@@ -517,6 +519,7 @@ public class DriveTrain {
 		if(imuPID != null)
 			imuOutput = dummyImuOutput.get();
 
+		
 		System.out.println("leftEnc value: " + leftEnc.getDistance() + " rightEnc value: " + rightEnc.getDistance());
 		System.out.println("dualEncoder: " + dualEncoder.getDistance());
 
@@ -539,6 +542,10 @@ public class DriveTrain {
 	}
 	public IMU getIMU() {
 		return imu;
+	}
+	
+	public double getAbsoluteRate(){
+		return dualEncoder.getAbsoluteRate();
 	}
 //	public boolean strafeTo(double distance) {
 //		// TODO Auto-generated method stub

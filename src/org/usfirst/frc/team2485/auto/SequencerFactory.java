@@ -31,11 +31,6 @@ public class SequencerFactory {
 	SECRET_CONTAINER_STEAL_START_LEFT 	= 8,
 	SECRET_CONTAINER_STEAL_START_RIGHT 	= 9; 
 
-	//auto sequences used in teleop 
-	public static final int
-	INTAKE_TOTE = 10; 
-
-
 	public static Sequencer createAuto(int autoType) {
 
 		switch (autoType) {
@@ -50,7 +45,19 @@ public class SequencerFactory {
 
 		case ONE_TOTE: 
 			return new Sequencer(new SequencedItem[] {
-					new ToteIntake(),
+					new SequencedMultipleItem(
+							new CloseClapper(),
+							new SetFingersPos(Fingers.PARALLEL), 
+							new SetFingerRollers(SetFingerRollers.INTAKE, 1)
+							), 
+					new SequencedPause(0.7),
+//					new SequencedMultipleItem(
+//					new SetFingersPos(Fingers.PARALLEL),
+					new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
+					new SetFingerRollers(SetFingerRollers.OFF, .1),
+//									),
+					new SequencedPause(0.3),
+					new MoveClapperVertically(Clapper.LOADING_SETPOINT),
 					new RotateToAngle(90), //TODO: fix this
 					new DriveStraight(60) //TODO: fix this
 			}); 
@@ -75,12 +82,12 @@ public class SequencerFactory {
 					//first pick up tote
 					new SequencedMultipleItem(
 							new SetFingersPos(Fingers.CLOSED), 
-							new SetFingerRollers(SetFingerRollers.INTAKE)
+							new SetFingerRollers(SetFingerRollers.INTAKE, 1)
 							), 
 							new SequencedMultipleItem(
 									new SetFingersPos(Fingers.PARALLEL),
 									new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
-									new SetFingerRollers(SetFingerRollers.OFF)
+									new SetFingerRollers(SetFingerRollers.OFF, .1)
 									), 
 									new DriveStraight(20), //or whatever that is
 									//then pick up container
@@ -118,15 +125,17 @@ public class SequencerFactory {
 			new SequencedMultipleItem(
 					new CloseClapper(),
 					new SetFingersPos(Fingers.PARALLEL), 
-					new SetFingerRollers(SetFingerRollers.INTAKE)
+					new SetFingerRollers(SetFingerRollers.INTAKE, 1)
 					), 
-			new SequencedPause(0.7),
+			new SequencedMultipleItem(
+					new SequencedPause(0.2),
+					new SetFingerRollers(SetFingerRollers.OFF, .1)
+					),
 //			new SequencedMultipleItem(
 //			new SetFingersPos(Fingers.PARALLEL),
 			new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
-			new SetFingerRollers(SetFingerRollers.OFF),
 //							),
-			new SequencedPause(0.7),
+			new SequencedPause(0.1),
 			new MoveClapperVertically(Clapper.LOADING_SETPOINT)
 		});
 	}

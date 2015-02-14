@@ -1,5 +1,6 @@
 package org.usfirst.frc.team2485.subsystems;
 
+import org.usfirst.frc.team2485.robot.Robot;
 import org.usfirst.frc.team2485.util.CombinedVictorSP;
 import org.usfirst.frc.team2485.util.InvertedPot;
 import org.usfirst.frc.team2485.util.ThresholdHandler;
@@ -13,6 +14,8 @@ import edu.wpi.first.wpilibj.VictorSP;
  * @author Ben Clark
  * @author Aidan Fay
  */
+
+//TODO: find out where the PID is enabled after a sequence
 public class Clapper {
 
 	private CombinedVictorSP clapperLifter;
@@ -25,13 +28,13 @@ public class Clapper {
 	private boolean automatic;
 
 	public double
-		kP	= 0.02,
+		kP	= 0.05,
 		kI	= 0.00,
 		kD	= 0.00;
 			
-	private static final double LOWEST_POS = 502; 
+	private static final double LOWEST_POS = 500; 
 	private static final double POS_RANGE = 375;
-	private static final double POT_TOLERANCE = 5;
+	private static final double POT_TOLERANCE = 12;
 	
 	public static final double 
 		ABOVE_RATCHET_SETPOINT		= LOWEST_POS + 170,
@@ -42,6 +45,8 @@ public class Clapper {
 		COOP_TWO_TOTES_SETPOINT		= LOWEST_POS + 275,
 		COOP_THREE_TOTES_SETPOINT	= LOWEST_POS + 370, 
 		SCORING_PLATFORM_HEIGHT		= LOWEST_POS + 25;
+	
+	private static final double LIFT_DEADBAND = 0.5;
 
 	public Clapper(VictorSP clapperLifter1, VictorSP clapperLifter2,
 			DoubleSolenoid clapperActuator, AnalogPotentiometer pot) {
@@ -61,7 +66,6 @@ public class Clapper {
 		
 		clapperLifter.invertMotorDirection(true);
 	}
-
 	
 	public Clapper(int clapperLifter1Port, int clapperLifter2Port, 
 			int clapperActuatorPort1, int clapperActuatorPort2, int potPort) {
@@ -112,7 +116,7 @@ public class Clapper {
 
 	
 	public double getPercentHeight() {
-		return (pot.get() - LOWEST_POS)/POS_RANGE;
+		return (potInverted.pidGet() - LOWEST_POS)/POS_RANGE;
 	}
 	
 	/**
@@ -149,17 +153,32 @@ public class Clapper {
 	 * Assuming that a positive speed moves the clapper down
 	 */
 	public void liftManually(double speed) {
+		speed/=3;
 		setManual();
-		double adjustedSpeed = ThresholdHandler.handleThreshold(speed, 0.1)/2;
 		
-		if (adjustedSpeed > 1){
-			adjustedSpeed = 1;
-		} else if (adjustedSpeed < -1){
-			adjustedSpeed = -1;
+		if (potInverted.pidGet() < LOWEST_POS || potInverted.pidGet() > LOWEST_POS + POS_RANGE) 
+			return; 
+		
+		//double adjustedSpeed = ThresholdHandler.handleThreshold(speed, LIFT_DEADBAND)/2;
+		if (speed > 1){
+			speed = 1;
+		} else if (speed < -1){
+			speed = -1;
 		}
-		clapperLifter.set(adjustedSpeed);
+		
+		//System.out.println("in lift manually, adjustSpeed is " + adjustedSpeed);
+		clapperLifter.set(speed);
+		
 //		System.out.println(speed + " | " + adjustedSpeed);
 
+	}
+
+	public double getMotorOutput() {
+		return clapperPID.get(); 
+	}
+
+	public double getError() {
+		return clapperPID.getError();
 	}
 }
 

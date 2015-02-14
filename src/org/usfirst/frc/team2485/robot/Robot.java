@@ -57,8 +57,10 @@ public class Robot extends IterativeRobot {
 	
 	private Sequencer autoSequence;
 	private AnalogPotentiometer clapperPot;
-	private CombinedVictorSP combinedVic;
+	private CombinedVictorSP combinedVictorSP;
 	private Sequencer teleopSequence;
+	
+	int degrees;
 	
 //	boolean fingersOn = true;
 	
@@ -72,13 +74,13 @@ public class Robot extends IterativeRobot {
     	rightBelt   = new VictorSP(7);
     	clapperLifter1 = new VictorSP(13);
     	clapperLifter2 = new VictorSP(3 );
-    	longFingerActuators  = new Solenoid(0);
+    	longFingerActuators  = new Solenoid(6);
     	shortFingerActuators = new Solenoid(4);
-    	latchActuator = new Solenoid(3);
+    	latchActuator = new Solenoid(2);
     	
 //    	center  = new VictorSP(13); //center: 9   changed to 13 1/31/15
-    	suspension = new Solenoid(7); //may need two solenoids
-    	clapperActuator = new DoubleSolenoid(6, 5);
+    	suspension = new Solenoid(3); //may need two solenoids
+    	clapperActuator = new DoubleSolenoid(7, 1);
     	clapperPot = new AnalogPotentiometer(1); 
     	
     	leftEnc = new Encoder(0, 1);
@@ -163,17 +165,22 @@ public class Robot extends IterativeRobot {
 		strongback.enablePid();
 		
 		teleopSequence = null; 
+		System.out.println(clapper.getPotValue());
     }
 
     public void teleopPeriodic() {
+    	
+    	compressor.start();
+
     	strongback.checkSafety();
     	
 //    	System.out.println("teleop enabled" );
 
     	
-    	double adjustedJoystickXAxis = (ThresholdHandler.handleThreshold(Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_X,0), 0.1));
-    	if (adjustedJoystickXAxis != 0){//if the joystick is moved
-    		clapper.liftManually(adjustedJoystickXAxis);//left is up
+    	//double adjustedJoystickXAxis = (ThresholdHandler.handleThreshold(Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_X,0), 0.1));
+    	if (Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_X,(float) 0.1) != 0) {//if the joystick is moved
+    		//System.out.println("in Robot, lift joystick value is " + adjustedJoystickXAxis);
+    		clapper.liftManually((Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_X,(float) 0.1)));//right is up
     	}
     	else if (clapper.isManual()){
     		clapper.setSetpoint(clapper.getPotValue());//set the setpoint to where ever it left off
@@ -190,14 +197,14 @@ public class Robot extends IterativeRobot {
         		drive.setQuickTurn(true);
         } else
         	drive.setQuickTurn(false);
-//        
-//        if(Controllers.getButton(Controllers.XBOX_BTN_A)) {
-//        	drive.setSolenoid(true);
-//        }
-//        
-//        if(Controllers.getButton(Controllers.XBOX_BTN_B)) {
-//        	drive.setSolenoid(false);
-//        }
+        
+        if(Controllers.getButton(Controllers.XBOX_BTN_A)) {
+        	drive.dropCenterWheel(true);
+        }
+        
+        if(Controllers.getButton(Controllers.XBOX_BTN_B)) {
+        	drive.dropCenterWheel(false);
+        }
         
 //        
 //    	System.out.println("current setpoint is: " + drive.imuPID.getSetpoint());
@@ -210,25 +217,30 @@ public class Robot extends IterativeRobot {
 //    	System.out.println("IMU roll: " + imu.getRoll());
 
     	//basic controls for intake arm
-        fingers.handleTote((Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_Y)),
-        			Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_Z));
+        if (!(clapper.isManual()))
+        		fingers.handleTote((Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_Y)),
+        				Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_Z));
     
       	if (Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_THROTTLE) > 0) {
-      		System.out.println("clapper should be open");
+//      		System.out.println("clapper should be open");
 	      	clapper.openClapper();
 	      	
 	      	//TODO: figure out how to only open the clapper if a sequence isn't running
        	}
       	else {
-        	clapper.closeClapper();
+//      		System.out.println("clappers should close");
+      		clapper.closeClapper();
     	}
        	if (Controllers.getJoystickButton(7)) {
+       		System.out.println("fingers should close now");
        		fingers.setFingerPosition(Fingers.CLOSED);
        	}
        	if (Controllers.getJoystickButton(9)) {
+       		System.out.println("fingers should go parallel");
        		fingers.setFingerPosition(Fingers.PARALLEL);
        	}
        	if (Controllers.getJoystickButton(11)) {
+       		System.out.println("fingers should open");
        		fingers.setFingerPosition(Fingers.OPEN);
        	}
        	if (Controllers.getJoystickButton(3)) {
@@ -240,11 +252,20 @@ public class Robot extends IterativeRobot {
        	if (Controllers.getJoystickButton(5)) {
        		teleopSequence = SequencerFactory.createIntakeToteRoutine();
        	}
+       	if (Controllers.getJoystickButton(12)) {
+       		System.out.println("hook should release");
+       		ratchet.releaseToteStack();
+       	}
+       	if (Controllers.getJoystickButton(10)) {
+       		System.out.println("hook should go back to normal");
+       		ratchet.setDefaultRatchetPosition();
+       	}
        	
-       	if(teleopSequence != null) {
-       		System.out.println("running teleop sequence");
-       		if(teleopSequence.run()) {
+       	if (teleopSequence != null) {
+//       		System.out.println("running teleop sequence");
+       		if (teleopSequence.run()) {
        			teleopSequence = null;
+//       			clapper.setManual(); 
        		}
        	}
        	
@@ -257,7 +278,19 @@ public class Robot extends IterativeRobot {
     }
     
     public void disabledPeriodic() {
-    	System.out.println(clapper.getPotValue());
+//    	System.out.println(clapper.getPotValue());
+    	
+    	int counter = 0;
+    	
+    	if (Controllers.getButton(Controllers.XBOX_BTN_A)) {
+    		counter++;
+    	}
+    	
+    	if(counter > 50) {
+    		degrees += 30;
+//    		System.out.println("degrees is now " + degrees);
+    		counter = 0;
+    	}
     	
     }
     
@@ -279,10 +312,15 @@ public class Robot extends IterativeRobot {
 //    	drive.setLeftRight(.2, -.2);
 //    	drive.driveTo(60);
     	
-//    	if(!done && drive.driveTo(60)) {
+//    	degrees = 30;
+    	
+//    	if(!done && drive.rotateTo(30)) {
 //    		done = true;
-//    		System.out.println("just finished driveTo inside of testPeriodic");
+//    		System.out.println("just finished rotateTo inside of testPeriodic");
 //    	}
+    	
+//    	System.out.println(imu.getYaw());
+    	
 //    	
 //    	  if (Controllers.getButton(Controllers.XBOX_BTN_START))
 //          	drive.tuneDriveKp(.005);
@@ -305,9 +343,10 @@ public class Robot extends IterativeRobot {
 //		strongback.enablePid(); 
 //		System.out.println(strongback.getError() + " output " + strongback.leadScrewImuPID.get());
     	
-    	SmartDashboard.putString("Clapper and Container", clapper.getPercentHeight() +"," + 0 + "," + imu.getRoll());
+//    	SmartDashboard.putString("Clapper and Container", clapper.getPercentHeight() +"," + 0 + "," + imu.getRoll());
+//       	
+//       	SmartDashboard.putInt("IPS",    (int) drive.getAbsoluteRate());
        	
-       	SmartDashboard.putInt("RPM", (int) drive.getAbsoluteRate());
 
     }
     

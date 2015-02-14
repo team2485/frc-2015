@@ -24,6 +24,10 @@ public class DualEncoder implements PIDSource {
 		return (leftEncoder.getRate() - rightEncoder.getRate())/2;
 	}
 	
+	public double getAbsoluteRate(){
+		return (Math.abs(leftEncoder.getRate()) + Math.abs(rightEncoder.getRate()))/2;
+	}
+	
 	public void reset(){
 		leftEncoder.reset();
 		rightEncoder.reset();
