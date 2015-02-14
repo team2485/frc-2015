@@ -3,6 +3,7 @@ package org.usfirst.frc.team2485.auto;
 import org.usfirst.frc.team2485.auto.SequencedItems.AutoTestPrint;
 import org.usfirst.frc.team2485.auto.SequencedItems.CloseClapper;
 import org.usfirst.frc.team2485.auto.SequencedItems.DriveStraight;
+import org.usfirst.frc.team2485.auto.SequencedItems.DriveStraightLowAcceleration;
 import org.usfirst.frc.team2485.auto.SequencedItems.MoveClapperVertically;
 import org.usfirst.frc.team2485.auto.SequencedItems.OpenClapper;
 import org.usfirst.frc.team2485.auto.SequencedItems.RetractRatchet;
@@ -71,6 +72,7 @@ public class SequencerFactory {
 
 		case THREE_TOTE_STRAIGHT: 
 			return new Sequencer(new SequencedItem[] {
+					
 					new SequencedMultipleItem(
 							new CloseClapper(),
 							new SetFingersPos(Fingers.PARALLEL), 
@@ -82,16 +84,15 @@ public class SequencerFactory {
 							new SetFingerRollers(SetFingerRollers.OFF, .1),
 							new ResetRatchet()
 							),
+					new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
+					new SequencedPause(.3),
+					new MoveClapperVertically(Clapper.LOADING_SETPOINT),
+					
+					new SequencedPause(2),
 					new SequencedMultipleItem(
-							new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
-							new SequencedPause(0.1),
-							new MoveClapperVertically(Clapper.LOADING_SETPOINT),
-							new RotateToAngle(15),
-							new OpenClapper()
-							),
-					new DriveStraight(48),
-					new RotateToAngle(0),
-					new DriveStraight(3),
+							new DriveStraightLowAcceleration(81),
+							new SetFingersPos(Fingers.OPEN)
+							), 
 					new SequencedMultipleItem(
 							new CloseClapper(),
 							new SetFingersPos(Fingers.PARALLEL), 
@@ -103,15 +104,40 @@ public class SequencerFactory {
 							new SetFingerRollers(SetFingerRollers.OFF, .1),
 							new ResetRatchet()
 							),
+					new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
+					new SequencedPause(0.1),
+					new MoveClapperVertically(Clapper.LOADING_SETPOINT),
+					
+					
+//					new RotateToAngle(0),
+//					new OpenClapper(), //TODO make multiple
+//					new DriveStraight(3),
+							/*		new SequencedMultipleItem(
+							new SetFingersPos(Fingers.PARALLEL), 
+							new SetFingerRollers(SetFingerRollers.INTAKE, 1)
+							), 
+					new SequencedMultipleItem(
+							new SequencedPause(0.2),
+							new SetFingerRollers(SetFingerRollers.OFF, .1),
+							new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT)
+//							new RotateToAngle(15)
+							),
+					new SequencedMultipleItem(
+							new MoveClapperVertically(Clapper.LOADING_SETPOINT)
+							),
+//					new DriveStraight(81),
+							
 					new SequencedMultipleItem(
 							new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
 							new SequencedPause(0.1),
-							new MoveClapperVertically(Clapper.LOADING_SETPOINT),
 							new RotateToAngle(15)
 							),
-					new DriveStraight(48),
+					new SequencedMultipleItem(
+							new MoveClapperVertically(Clapper.LOADING_SETPOINT),
+							new DriveStraight(48)
+							),					
 					new RotateToAngle(0),
-					new DriveStraight(6),
+					new DriveStraight(6), */
 			}); 
 
 		case THREE_TOTE_PUSH_CONTAINERS: 
@@ -128,15 +154,15 @@ public class SequencerFactory {
 							new SetFingersPos(Fingers.CLOSED), 
 							new SetFingerRollers(SetFingerRollers.INTAKE, 1)
 							), 
-							new SequencedMultipleItem(
-									new SetFingersPos(Fingers.PARALLEL),
-									new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
-									new SetFingerRollers(SetFingerRollers.OFF, .1)
-									), 
-									new DriveStraight(20), //or whatever that is
-									//then pick up container
-									//no idea how to do that
-									//then finish the auto and stuff
+					new SequencedMultipleItem(
+							new SetFingersPos(Fingers.PARALLEL),
+							new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
+							new SetFingerRollers(SetFingerRollers.OFF, .1)
+							), 
+					new DriveStraight(20), //or whatever that is
+					//then pick up container
+					//no idea how to do that
+					//then finish the auto and stuff
 
 			});
 			

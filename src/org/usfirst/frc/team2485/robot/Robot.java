@@ -144,7 +144,9 @@ public class Robot extends IterativeRobot {
     	dualEncoder.reset();
     	strongback.disablePid(); 
     	
-    	autoSequence = SequencerFactory.createAuto(SequencerFactory.THREE_TOTE_PUSH_CONTAINERS);
+    	autoSequence = SequencerFactory.createAuto(SequencerFactory.THREE_TOTE_STRAIGHT);
+//    	autoSequence.reset();
+    	autoSequence = null;
     }
   
     public void autonomousPeriodic() {
@@ -152,7 +154,15 @@ public class Robot extends IterativeRobot {
 //    	System.out.println("dualEnc " + dualEncoder.getDistance());
     	
 //    	drive.setLeftRight(-.7, -.7);
-    	 autoSequence.run();
+//    	 autoSequence.run();
+    	 
+    	 if (autoSequence != null) {
+//    		System.out.println("running teleop sequence");
+    		if (autoSequence.run()) {
+    			autoSequence = null;
+//    			clapper.setManual(); 
+    		}
+    	}
     	 
     }
     
@@ -325,6 +335,7 @@ public class Robot extends IterativeRobot {
     	
 //    	degrees = 30;
     	
+//    	drive.dropCenterWheel(false);
 //    	if(!done && drive.rotateTo(30)) {
 //    		done = true;
 //    		System.out.println("just finished rotateTo inside of testPeriodic");

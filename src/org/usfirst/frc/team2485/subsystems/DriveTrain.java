@@ -60,7 +60,7 @@ public class DriveTrain {
 
 	private DualEncoder dualEncoder;
 
-	private PIDController driveStraightPID;
+	public PIDController driveStraightPID;
 	private PIDController strafePID;
 	public PIDController imuPID;
 
@@ -93,9 +93,9 @@ public class DriveTrain {
 		driveStraightImu_Kd = 0.01; 
 
 	public static double
-		rotateImu_kP = 0.0115,
-		rotateImu_kI = 0.005,
-		rotateImu_kD = 0.01;
+		rotateImu_kP = 0.0153,
+		rotateImu_kI = 0.00,
+		rotateImu_kD = 0.00;
 
 	public DriveTrain(VictorSP leftDrive, VictorSP leftDrive2, VictorSP rightDrive, 
 			VictorSP rightDrive2, CombinedVictorSP center, Solenoid suspension, IMU imu, Encoder leftEnc, 
@@ -476,7 +476,7 @@ public class DriveTrain {
 			return true;
 		}
 
-		System.out.println("IMUval: " + imu.getYaw() + " IMUdsetPoint: " + imuPID.getSetpoint() + " IMU Error: " + imuPID.getError() + " IMU enabled: " + imuPID.isEnable());
+		System.out.println("IMU Error: " + imuPID.getError());
 		
 		double imuOutput = dummyImuOutput.get();
 		setLeftRight(imuOutput, -imuOutput);
@@ -522,12 +522,12 @@ public class DriveTrain {
 			imuOutput = dummyImuOutput.get();
 
 		
-		System.out.println("leftEnc value: " + leftEnc.getDistance() + " rightEnc value: " + rightEnc.getDistance());
-		System.out.println("dualEncoder: " + dualEncoder.getDistance());
+//		System.out.println("leftEnc value: " + leftEnc.getDistance() + " rightEnc value: " + rightEnc.getDistance());
+//		System.out.println("dualEncoder: " + dualEncoder.getDistance());
 
-		System.out.println("encoderPID output: " + encoderOutput + " imuPID output: " + imuOutput);
+//		System.out.println("encoderPID output: " + encoderOutput + " imuPID output: " + imuOutput);
 		System.out.println("error from enc PID " + driveStraightPID.getError() + " from imu PID " + imuPID.getError());
-		System.out.println("Kp from enc PID " + driveStraightPID.getP());
+//		System.out.println("Kp from enc PID " + driveStraightPID.getP());
 
 //		just changed this sign
 		setLeftRight(leftOutput + imuOutput, rightOutput - imuOutput);

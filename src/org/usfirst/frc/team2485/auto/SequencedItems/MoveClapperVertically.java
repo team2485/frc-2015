@@ -25,7 +25,7 @@ public class MoveClapperVertically implements SequencedItem {
 
 	@Override
 	public double duration() {
-		return Robot.clapper.isPIDOnTarget() ? 0 : 20;
+		return Robot.clapper.isPIDOnTarget() ? 0 : 2;
 	}
 	
 	
