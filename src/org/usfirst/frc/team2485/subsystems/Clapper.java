@@ -87,6 +87,33 @@ public class Clapper {
 		clapperPID.setPID(kP, kI, kD);
 	}
 	
+	public double getkP() {
+		return kP;	
+	}
+
+	public void setkP(double kP) {
+		this.kP = kP;
+		clapperPID.setPID(kP, kI, kD);
+	}
+
+	public double getkI() {
+		return kI;
+	}
+
+	public void setkI(double kI) {
+		this.kI = kI;
+		clapperPID.setPID(kP, kI, kD);
+	}
+
+	public double getkD() {
+		return kD;
+	}
+
+	public void setkD(double kD) {
+		this.kD = kD;
+		clapperPID.setPID(kP, kI, kD);
+	}
+
 	public void setSetpoint(double setpoint) {
 		setAutomatic();
 		clapperPID.setSetpoint(setpoint);

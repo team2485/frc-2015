@@ -8,9 +8,11 @@ import org.usfirst.frc.team2485.auto.SequencedItems.OpenClapper;
 import org.usfirst.frc.team2485.auto.SequencedItems.ReleaseToteStack;
 import org.usfirst.frc.team2485.auto.SequencedItems.ResetRatchet;
 import org.usfirst.frc.team2485.auto.SequencedItems.RotateToAngle;
+import org.usfirst.frc.team2485.auto.SequencedItems.SetClapperPID;
 import org.usfirst.frc.team2485.auto.SequencedItems.SetFingerRollers;
 import org.usfirst.frc.team2485.auto.SequencedItems.SetFingersPos;
 import org.usfirst.frc.team2485.auto.SequencedItems.ToteIntake;
+import org.usfirst.frc.team2485.robot.Robot;
 import org.usfirst.frc.team2485.subsystems.Clapper;
 import org.usfirst.frc.team2485.subsystems.Fingers;
 
@@ -29,7 +31,7 @@ public class SequencerFactory {
 	CONTAINER_STEAL_LEFT				= 6, 
 	CONTAINER_STEAL_RIGHT 				= 7, 
 	SECRET_CONTAINER_STEAL_START_LEFT 	= 8,
-	SECRET_CONTAINER_STEAL_START_RIGHT 	= 9; 
+	SECRET_CONTAINER_STEAL_START_RIGHT 	= 9, 
 
 	public static Sequencer createAuto(int autoType) {
 
@@ -146,6 +148,22 @@ public class SequencerFactory {
 			new MoveClapperVertically(Clapper.LOADING_SETPOINT), 
 			new OpenClapper(), 
 			new ResetRatchet()
+		});
+	}
+	public static Sequencer pickupContainerRoutine() {
+		double kP = Robot.clapper.getkP();
+		double kI = Robot.clapper.getkI();
+		double kD = Robot.clapper.getkD();
+		return new Sequencer( new SequencedItem[] {
+				new SetFingersPos(Fingers.CLOSED),
+				new SequencedPause(0.4),
+				new SetClapperPID(0.02, kI, kD),
+				new MoveClapperVertically(Clapper.COOP_TWO_TOTES_SETPOINT), //TODO: find custom setpoint
+				new SequencedPause(0.4),
+				new MoveClapperVertically(Clapper.LOADING_SETPOINT),
+				new SetFingersPos(Fingers.PARALLEL),
+				new SetClapperPID(kP, kI, kD)
+				
 		});
 	}
 }
