@@ -54,16 +54,16 @@ public class SequencerFactory {
 							new SetFingersPos(Fingers.PARALLEL), 
 							new SetFingerRollers(SetFingerRollers.INTAKE, 1)
 							), 
-					new SequencedPause(0.7),
-//					new SequencedMultipleItem(
-//					new SetFingersPos(Fingers.PARALLEL),
-					new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
-					new SetFingerRollers(SetFingerRollers.OFF, .1),
-//									),
-					new SequencedPause(0.3),
-					new MoveClapperVertically(Clapper.LOADING_SETPOINT),
-					new RotateToAngle(90), //TODO: fix this
-					new DriveStraight(60) //TODO: fix this
+							new SequencedPause(0.7),
+							//					new SequencedMultipleItem(
+							//					new SetFingersPos(Fingers.PARALLEL),
+							new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
+							new SetFingerRollers(SetFingerRollers.OFF, .1),
+							//									),
+							new SequencedPause(0.3),
+							new MoveClapperVertically(Clapper.LOADING_SETPOINT),
+							new RotateToAngle(90), //TODO: fix this
+							new DriveStraight(60) //TODO: fix this
 			}); 
 
 		case TWO_TOTE: 
@@ -73,91 +73,69 @@ public class SequencerFactory {
 
 		case THREE_TOTE_STRAIGHT: 
 			return new Sequencer(new SequencedItem[] {
+					new CloseClapper(), 
 					new SequencedMultipleItem(
-							new CloseClapper(),
-							new SetFingersPos(Fingers.PARALLEL), 
-							new RetractRatchet(),
-							new SetFingerRollers(SetFingerRollers.INTAKE, 1)
-							), 
-					new SequencedMultipleItem(
-							new SequencedPause(0.2),
-							new SetFingerRollers(SetFingerRollers.OFF, .1),
-							new ResetRatchet()
-							),
-					new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
-					new SequencedPause(.3),
-					new MoveClapperVertically(Clapper.LOADING_SETPOINT),
-					new SequencedPause(.2),
-					
-					new SequencedMultipleItem(
-							new DriveStraightLowAcceleration(81),
-							new SetFingersPos(Fingers.OPEN)
-							), 
-					new SequencedMultipleItem(
-							new CloseClapper(),
-							new SetFingersPos(Fingers.PARALLEL), 
-							new RetractRatchet(),
-							new SetFingerRollers(SetFingerRollers.INTAKE, 1.5)
-//							new DriveStraightLowAcceleration(10)
-							), 
-					new SequencedMultipleItem(
-							new SequencedPause(0.2),
-							new SetFingerRollers(SetFingerRollers.OFF, .1),
-							new ResetRatchet()
-							),
-					new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
-					new SequencedPause(0.1),
-					new MoveClapperVertically(Clapper.LOADING_SETPOINT),
-					new SequencedPause(0.2),
-					new SequencedMultipleItem(
-							new DriveStraightLowAcceleration(81),
-							new SetFingersPos(Fingers.OPEN)
-							), 
-					new SequencedMultipleItem(
-							new CloseClapper(),
-							new SetFingersPos(Fingers.PARALLEL), 
-							new RetractRatchet(),
-							new SetFingerRollers(SetFingerRollers.INTAKE, 1.5)
-//							new DriveStraightLowAcceleration(10)
-							), 
-					new SequencedMultipleItem(
-							new SequencedPause(0.2),
-							new SetFingerRollers(SetFingerRollers.OFF, .1),
-							new ResetRatchet()
-							),
-					new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
-					new SequencedPause(0.1),
-					new MoveClapperVertically(Clapper.LOADING_SETPOINT),
-					
-//					new RotateToAngle(0),
-//					new OpenClapper(), //TODO make multiple
-//					new DriveStraight(3),
-							/*		new SequencedMultipleItem(
-							new SetFingersPos(Fingers.PARALLEL), 
-							new SetFingerRollers(SetFingerRollers.INTAKE, 1)
-							), 
-					new SequencedMultipleItem(
-							new SequencedPause(0.2),
-							new SetFingerRollers(SetFingerRollers.OFF, .1),
+							new DriveSlowConstant(),
 							new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT)
-//							new RotateToAngle(15)
 							),
+					new SetFingersPos(Fingers.PARALLEL), 
+					new SetFingerRollers(SetFingerRollers.INTAKE, 1),
+					new SequencedPause(0.2),
+					//					new SequencedMultipleItem(
+
+					new MoveClapperVertically(Clapper.LOADING_SETPOINT),
+					new DriveStraight(81),
+					//							new OpenClapper()
+					//					),
 					new SequencedMultipleItem(
-							new MoveClapperVertically(Clapper.LOADING_SETPOINT)
+							new OpenClapper(),
+							new SetFingersPos(Fingers.CLOSED), 
+							new RetractRatchet(),
+							new SetFingerRollers(SetFingerRollers.INTAKE, 1),
+							new DriveSlowConstant()
 							),
-//					new DriveStraight(81),
-							
-					new SequencedMultipleItem(
-							new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
-							new SequencedPause(0.1),
-							new RotateToAngle(15)
-							),
-					new SequencedMultipleItem(
-							new MoveClapperVertically(Clapper.LOADING_SETPOINT),
-							new DriveStraight(48)
-							),					
-					new RotateToAngle(0),
-					new DriveStraight(6), */
+							new SequencedPause(.2),
+							new SequencedMultipleItem(
+									//							new SetFingerRollers(SetFingerRollers.REVERSE, 1),
+									new SetFingersPos(Fingers.PARALLEL),
+									new ResetRatchet(),
+									new DriveSlowConstant()
+									),
+									new CloseClapper(),
+									new SequencedPause(.2),
+									//					new SetFingerRollers(SetFingerRollers.INTAKE, 1),
+									//					new SequencedMultipleItem(
+									//					new SetFingersPos(Fingers.PARALLEL),
+									//					new SequencedPause(1),
+									new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
+									new SetFingerRollers(SetFingerRollers.INTAKE, 1), // 0.2
+									new SequencedPause(.2),
+									new MoveClapperVertically(Clapper.LOADING_SETPOINT),
+									new DriveStraightLowAcceleration(81),
+									new SequencedMultipleItem(
+											new OpenClapper(),
+											new SetFingersPos(Fingers.CLOSED), 
+											new RetractRatchet(),
+											new SetFingerRollers(SetFingerRollers.INTAKE, 1),
+											new DriveSlowConstant()
+											),
+									new SequencedPause(.2),
+									new SequencedMultipleItem(
+													//							new SetFingerRollers(SetFingerRollers.REVERSE, 1),
+										new SetFingersPos(Fingers.PARALLEL),
+										new ResetRatchet(),
+										new DriveSlowConstant()
+										),
+										new CloseClapper(),
+										new SequencedPause(.2),
+													//					new SetFingerRollers(SetFingerRollers.INTAKE, 1),
+													//					new SequencedMultipleItem(
+													//					new SetFingersPos(Fingers.PARALLEL),
+													//					new SequencedPause(1),
+										new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
+										new SetFingerRollers(SetFingerRollers.INTAKE, 1), // 0.2
+										new SequencedPause(.2),
+										new MoveClapperVertically(Clapper.LOADING_SETPOINT)
 			}); 
 
 		case THREE_TOTE_PUSH_CONTAINERS: 
@@ -174,18 +152,18 @@ public class SequencerFactory {
 							new SetFingersPos(Fingers.CLOSED), 
 							new SetFingerRollers(SetFingerRollers.INTAKE, 1)
 							), 
-					new SequencedMultipleItem(
-							new SetFingersPos(Fingers.PARALLEL),
-							new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
-							new SetFingerRollers(SetFingerRollers.OFF, .1)
-							), 
-					new DriveStraight(20), //or whatever that is
-					//then pick up container
-					//no idea how to do that
-					//then finish the auto and stuff
+							new SequencedMultipleItem(
+									new SetFingersPos(Fingers.PARALLEL),
+									new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
+									new SetFingerRollers(SetFingerRollers.OFF, .1)
+									), 
+									new DriveStraight(20), //or whatever that is
+									//then pick up container
+									//no idea how to do that
+									//then finish the auto and stuff
 
 			});
-			
+
 
 			//			case CONTAINER_STEAL_LEFT: 
 			//				return new Sequencer(new SequencedItem[] {
@@ -212,36 +190,46 @@ public class SequencerFactory {
 	}
 
 	public static Sequencer createIntakeToteRoutine() {
+		double kP = Robot.clapper.getkP();
+		double kI = Robot.clapper.getkI();
+		double kD = Robot.clapper.getkD();
 		return new Sequencer(new SequencedItem[] {
-			new SequencedMultipleItem(
-					new CloseClapper(),
-					new SetFingersPos(Fingers.PARALLEL), 
-					new RetractRatchet(),
-					new SetFingerRollers(SetFingerRollers.INTAKE, 1)
-					), 
-			new SequencedMultipleItem(
-					new SequencedPause(0.2),
-					new SetFingerRollers(SetFingerRollers.OFF, .1),
-					new ResetRatchet()
-					),
-//			new SequencedMultipleItem(
-//			new SetFingersPos(Fingers.PARALLEL),
-			new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
-//							),
-			new SequencedPause(0.1),
-			new MoveClapperVertically(Clapper.LOADING_SETPOINT)
+				new SequencedMultipleItem(
+						new CloseClapper(),
+						new SetFingersPos(Fingers.PARALLEL), 
+						new RetractRatchet(),
+						new SetFingerRollers(SetFingerRollers.INTAKE, 1)
+						), 
+				new SequencedMultipleItem(
+						new SequencedPause(0.2),
+						new SetFingerRollers(SetFingerRollers.OFF, .1),
+						new ResetRatchet()
+						),
+						//			new SequencedMultipleItem(
+						//			new SetFingersPos(Fingers.PARALLEL),
+				new SequencedPause(1),
+				new SequencedMultipleItem(	
+						new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
+						new SetFingerRollers(SetFingerRollers.INTAKE, 1)),
+						//							),
+				new SequencedPause(0.1),
+				new SetClapperPID(0.002, kI, kD),
+				new MoveClapperVertically(Clapper.ON_RATCHET_SETPOINT),
+				new SetClapperPID(kP, kI, kD),
+				new SequencedPause(0.1),
+				new MoveClapperVertically(Clapper.LOADING_SETPOINT)
 		});
 	}
 	public static Sequencer createDropToteStackRoutine() {
 		return new Sequencer(new SequencedItem[] {
-			new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT), 
-			new RetractRatchet(),
-			new MoveClapperVertically(Clapper.LOADING_SETPOINT), 
-			new OpenClapper(), 
-			new ResetRatchet()
+				new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT), 
+				new RetractRatchet(),
+				new MoveClapperVertically(Clapper.LOADING_SETPOINT), 
+				new OpenClapper(), 
+				new ResetRatchet()
 		});
 	}
-	
+
 	public static Sequencer createContainerRightingRoutine() {
 		double kP = Robot.clapper.getkP();
 		double kI = Robot.clapper.getkI();
@@ -255,11 +243,11 @@ public class SequencerFactory {
 				new MoveClapperVertically(Clapper.LOADING_SETPOINT),
 				new SetFingersPos(Fingers.PARALLEL),
 				new SetClapperPID(kP, kI, kD)
-				
+
 		});
 	}
-		public static Sequencer createIntakeToteRoutineBackup() {
-			return new Sequencer(new SequencedItem[] {
+	public static Sequencer createIntakeToteRoutineBackup() {
+		return new Sequencer(new SequencedItem[] {
 				new SequencedMultipleItem(
 						new OpenClapper(),
 						new SetFingersPos(Fingers.CLOSED), 
@@ -269,11 +257,11 @@ public class SequencerFactory {
 						), 
 				new SequencedPause(.2),
 				new SequencedMultipleItem(
-//						new SetFingerRollers(SetFingerRollers.REVERSE, 1),
+								//						new SetFingerRollers(SetFingerRollers.REVERSE, 1),
 						new SetFingersPos(Fingers.PARALLEL),
 						new ResetRatchet(),
 						new DriveSlowConstant()
-						),
+				),
 				new CloseClapper(),
 				new SequencedPause(.2),
 //				new SetFingerRollers(SetFingerRollers.INTAKE, 1),
@@ -282,9 +270,9 @@ public class SequencerFactory {
 //				new SequencedPause(1),
 				new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
 				new SetFingerRollers(SetFingerRollers.INTAKE, 1), // 0.2
-//								),
+								//								),
 				new SequencedPause(.2),
 				new MoveClapperVertically(Clapper.LOADING_SETPOINT)
-			});
-		}
+		});
 	}
+}

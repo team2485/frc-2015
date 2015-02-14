@@ -1,6 +1,7 @@
 package org.usfirst.frc.team2485.subsystems;
 
 import org.usfirst.frc.com.kauailabs.nav6.frc.IMU;
+import org.usfirst.frc.com.kauailabs.nav6.frc.IMUAdvanced;
 import org.usfirst.frc.team2485.robot.Robot;
 import org.usfirst.frc.team2485.util.IMURollPIDSource;
 
@@ -18,19 +19,19 @@ public class Strongback {
 	
 	//serial port is the "tail" of the imu
 	private VictorSP leadScrew; 
-	private IMU imu; 
+	private IMUAdvanced imu; 
 	public PIDController leadScrewImuPID;
 	private double rollSetpoint = 0.0;
 	private double absToleranceLeadScrew = 0.15; //degrees 
 	
 	private IMURollPIDSource rollPIDSource; 
-	
+
 	public static final double
 		leadScrew_kP = 0.15,
 		leadScrew_kI = 0.0, 
 		leadscrew_kD = 0.0; 
 		
-	public Strongback(VictorSP leadScrew, IMU imu) {
+	public Strongback(VictorSP leadScrew, IMUAdvanced imu) {
 		this.leadScrew = leadScrew; 
 		this.imu = imu; 
 				
@@ -41,7 +42,7 @@ public class Strongback {
 		leadScrewImuPID.setSetpoint(rollSetpoint);
 	}
 	
-	public Strongback(int leadScrewPort, IMU imu) {
+	public Strongback(int leadScrewPort, IMUAdvanced imu) {
 		this(new VictorSP(leadScrewPort), imu);
 	}
 	
