@@ -37,13 +37,18 @@ import edu.wpi.first.wpilibj.VictorSP;
  */ 
 public class Robot extends IterativeRobot {
 	
-	private VictorSP left, left2, right, right2, center, leadScrewMotor, leftBelt, rightBelt, clapperLifter1, clapperLifter2;
+	//subsystems 
 	public static DriveTrain drive;
 	public static Strongback strongback; 
 	public static Clapper clapper;
 	public static Fingers fingers;
 	public static RatchetSystem ratchet;
-	public static Claw claw; 
+	public static Claw claw;
+
+	
+	private VictorSP left, left2, right, right2, leadScrewMotor, leftBelt, rightBelt, clapperLifter1, clapperLifter2;
+	private CombinedVictorSP center; 
+	 
 	private Encoder leftEnc, rightEnc, centerEnc;
 	private DualEncoder dualEncoder;
 	private Solenoid suspension, longFingerActuators, shortFingerActuators, latchActuator;
@@ -73,12 +78,12 @@ public class Robot extends IterativeRobot {
     	leftBelt    = new VictorSP(9);
     	rightBelt   = new VictorSP(7);
     	clapperLifter1 = new VictorSP(13);
-    	clapperLifter2 = new VictorSP(3 );
+    	clapperLifter2 = new VictorSP(3);
     	longFingerActuators  = new Solenoid(6);
     	shortFingerActuators = new Solenoid(4);
     	latchActuator = new Solenoid(2);
     	
-//    	center  = new VictorSP(13); //center: 9   changed to 13 1/31/15
+    	center = new CombinedVictorSP(new VictorSP(11), new VictorSP(12)); //center: 9   changed to 13 1/31/15
     	suspension = new Solenoid(3); //may need two solenoids
     	clapperActuator = new DoubleSolenoid(7, 1);
     	clapperPot = new AnalogPotentiometer(1); 
@@ -110,7 +115,7 @@ public class Robot extends IterativeRobot {
     		LiveWindow.addSensor("IMU", "Gyro", imu);
     	}
     	
-    	drive = new DriveTrain(left, left2, right, right2, center, latchActuator, imu, leftEnc, rightEnc, centerEnc);
+    	drive = new DriveTrain(left, left2, right, right2, center, suspension, imu, leftEnc, rightEnc, centerEnc);
 //    	drive.setSolenoid(false);
     	
     	//clapper = new Clapper(6, 5);
@@ -137,8 +142,9 @@ public class Robot extends IterativeRobot {
     	leftEnc.reset();
     	rightEnc.reset();
     	dualEncoder.reset();
+    	strongback.disablePid(); 
     	
-    	autoSequence = SequencerFactory.createAuto(SequencerFactory.ONE_TOTE);
+    	autoSequence = SequencerFactory.createAuto(SequencerFactory.THREE_TOTE_PUSH_CONTAINERS);
     }
   
     public void autonomousPeriodic() {
@@ -260,6 +266,10 @@ public class Robot extends IterativeRobot {
        		System.out.println("hook should go back to normal");
        		ratchet.setDefaultRatchetPosition();
        	}
+    	if (Controllers.getJoystickButton(8)) {
+       		System.out.println("test");
+       		teleopSequence = SequencerFactory.createContainerRightingRoutine();
+       	}
        	
        	if (teleopSequence != null) {
 //       		System.out.println("running teleop sequence");
@@ -269,10 +279,11 @@ public class Robot extends IterativeRobot {
        		}
        	}
        	
-       	SmartDashboard.putString("Clapper and Container", clapper.getPercentHeight() +"," + 0 + "," + imu.getRoll());
+//       	SmartDashboard.putString("Clapper and Container", clapper.getPercentHeight() +"," + 0 + "," + imu.getRoll());
        	
        	SmartDashboard.putInt("RPM", (int) drive.getAbsoluteRate());
        	
+       	System.out.println("IMU pitch is " + imu.getPitch());
 //       	System.out.println("setpoint " + clapper.getSetpoint() + " potValue " + clapper.getPotValue() + " pid controlled " + clapper.isAutomatic());
        	
     }

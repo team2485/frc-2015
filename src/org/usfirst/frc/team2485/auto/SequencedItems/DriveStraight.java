@@ -13,6 +13,10 @@ public class DriveStraight implements SequencedItem {
 		finished = false; 
 	}
 	
+	public DriveStraight(double feet, double inches) {
+		this(feet * 12 + inches); 
+	}
+	
 	@Override
 	public void run() {
 		finished = Robot.drive.driveTo(distance); 

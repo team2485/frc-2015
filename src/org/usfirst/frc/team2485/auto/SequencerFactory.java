@@ -5,7 +5,7 @@ import org.usfirst.frc.team2485.auto.SequencedItems.CloseClapper;
 import org.usfirst.frc.team2485.auto.SequencedItems.DriveStraight;
 import org.usfirst.frc.team2485.auto.SequencedItems.MoveClapperVertically;
 import org.usfirst.frc.team2485.auto.SequencedItems.OpenClapper;
-import org.usfirst.frc.team2485.auto.SequencedItems.ReleaseToteStack;
+import org.usfirst.frc.team2485.auto.SequencedItems.RetractRatchet;
 import org.usfirst.frc.team2485.auto.SequencedItems.ResetRatchet;
 import org.usfirst.frc.team2485.auto.SequencedItems.RotateToAngle;
 import org.usfirst.frc.team2485.auto.SequencedItems.SetClapperPID;
@@ -31,7 +31,7 @@ public class SequencerFactory {
 	CONTAINER_STEAL_LEFT				= 6, 
 	CONTAINER_STEAL_RIGHT 				= 7, 
 	SECRET_CONTAINER_STEAL_START_LEFT 	= 8,
-	SECRET_CONTAINER_STEAL_START_RIGHT 	= 9, 
+	SECRET_CONTAINER_STEAL_START_RIGHT 	= 9;
 
 	public static Sequencer createAuto(int autoType) {
 
@@ -71,12 +71,54 @@ public class SequencerFactory {
 
 		case THREE_TOTE_STRAIGHT: 
 			return new Sequencer(new SequencedItem[] {
-					new DriveStraight(60) //TODO: fix this
+					new SequencedMultipleItem(
+							new CloseClapper(),
+							new SetFingersPos(Fingers.PARALLEL), 
+							new RetractRatchet(),
+							new SetFingerRollers(SetFingerRollers.INTAKE, 1)
+							), 
+					new SequencedMultipleItem(
+							new SequencedPause(0.2),
+							new SetFingerRollers(SetFingerRollers.OFF, .1),
+							new ResetRatchet()
+							),
+					new SequencedMultipleItem(
+							new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
+							new SequencedPause(0.1),
+							new MoveClapperVertically(Clapper.LOADING_SETPOINT),
+							new RotateToAngle(15),
+							new OpenClapper()
+							),
+					new DriveStraight(48),
+					new RotateToAngle(0),
+					new DriveStraight(3),
+					new SequencedMultipleItem(
+							new CloseClapper(),
+							new SetFingersPos(Fingers.PARALLEL), 
+							new RetractRatchet(),
+							new SetFingerRollers(SetFingerRollers.INTAKE, 1)
+							), 
+					new SequencedMultipleItem(
+							new SequencedPause(0.2),
+							new SetFingerRollers(SetFingerRollers.OFF, .1),
+							new ResetRatchet()
+							),
+					new SequencedMultipleItem(
+							new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
+							new SequencedPause(0.1),
+							new MoveClapperVertically(Clapper.LOADING_SETPOINT),
+							new RotateToAngle(15)
+							),
+					new DriveStraight(48),
+					new RotateToAngle(0),
+					new DriveStraight(6),
 			}); 
 
 		case THREE_TOTE_PUSH_CONTAINERS: 
 			return new Sequencer(new SequencedItem[] {
-					new DriveStraight(60) 
+					new DriveStraight(81), 
+					new SequencedPause(1), 
+					new DriveStraight(81) 
 			});
 
 		case CONTAINER_AND_TOTE: 
@@ -97,6 +139,7 @@ public class SequencerFactory {
 									//then finish the auto and stuff
 
 			});
+			
 
 			//			case CONTAINER_STEAL_LEFT: 
 			//				return new Sequencer(new SequencedItem[] {
@@ -127,11 +170,13 @@ public class SequencerFactory {
 			new SequencedMultipleItem(
 					new CloseClapper(),
 					new SetFingersPos(Fingers.PARALLEL), 
+					new RetractRatchet(),
 					new SetFingerRollers(SetFingerRollers.INTAKE, 1)
 					), 
 			new SequencedMultipleItem(
 					new SequencedPause(0.2),
-					new SetFingerRollers(SetFingerRollers.OFF, .1)
+					new SetFingerRollers(SetFingerRollers.OFF, .1),
+					new ResetRatchet()
 					),
 //			new SequencedMultipleItem(
 //			new SetFingersPos(Fingers.PARALLEL),
@@ -144,17 +189,18 @@ public class SequencerFactory {
 	public static Sequencer createDropToteStackRoutine() {
 		return new Sequencer(new SequencedItem[] {
 			new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT), 
-			new ReleaseToteStack(),
+			new RetractRatchet(),
 			new MoveClapperVertically(Clapper.LOADING_SETPOINT), 
 			new OpenClapper(), 
 			new ResetRatchet()
 		});
 	}
-	public static Sequencer pickupContainerRoutine() {
+	
+	public static Sequencer createContainerRightingRoutine() {
 		double kP = Robot.clapper.getkP();
 		double kI = Robot.clapper.getkI();
 		double kD = Robot.clapper.getkD();
-		return new Sequencer( new SequencedItem[] {
+		return new Sequencer(new SequencedItem[] {
 				new SetFingersPos(Fingers.CLOSED),
 				new SequencedPause(0.4),
 				new SetClapperPID(0.02, kI, kD),

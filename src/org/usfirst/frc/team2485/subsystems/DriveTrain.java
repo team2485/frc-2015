@@ -3,6 +3,7 @@ package org.usfirst.frc.team2485.subsystems;
 
 import org.usfirst.frc.com.kauailabs.nav6.frc.IMU;
 import org.usfirst.frc.com.kauailabs.nav6.frc.IMUAdvanced;
+import org.usfirst.frc.team2485.util.CombinedVictorSP;
 import org.usfirst.frc.team2485.util.DualEncoder;
 import org.usfirst.frc.team2485.util.DummyOutput;
 import org.usfirst.frc.team2485.util.ThresholdHandler;
@@ -22,7 +23,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class DriveTrain {
 
-	private VictorSP leftDrive, leftDrive2, rightDrive, rightDrive2, centerDrive, test1, test2, test3, test4;
+	private VictorSP leftDrive, leftDrive2, rightDrive, rightDrive2, test1, test2, test3, test4;
+	private CombinedVictorSP centerDrive; 
 	private Solenoid suspension;
 	private Encoder centerEnc, leftEnc, rightEnc;
 
@@ -86,9 +88,9 @@ public class DriveTrain {
 		strafeEncoder_Kd = 0.0;
 	
 	public static double
-		driveStraightImu_Kp = 0.05, //0.05 - for floor work, 0.07 for bump (tentatively)
+		driveStraightImu_Kp = 0.035, //0.05 - for floor work, 0.07 for bump (tentatively)
 		driveStraightImu_Ki = 0.0,
-		driveStraightImu_Kd = 0.0; 
+		driveStraightImu_Kd = 0.01; 
 
 	public static double
 		rotateImu_kP = 0.0115,
@@ -96,14 +98,14 @@ public class DriveTrain {
 		rotateImu_kD = 0.01;
 
 	public DriveTrain(VictorSP leftDrive, VictorSP leftDrive2, VictorSP rightDrive, 
-			VictorSP rightDrive2, VictorSP centerDrive, Solenoid suspension, IMU imu, Encoder leftEnc, 
+			VictorSP rightDrive2, CombinedVictorSP center, Solenoid suspension, IMU imu, Encoder leftEnc, 
 			Encoder rightEnc, Encoder centerEnc) {
 
 		this.leftDrive      = leftDrive;
 		this.leftDrive2		= leftDrive2; 
 		this.rightDrive     = rightDrive;
 		this.rightDrive2	= rightDrive2; 
-		this.centerDrive	= centerDrive;
+		this.centerDrive	= center;
 		this.suspension 	= suspension;
 		this.imu            = imu;
 		this.centerEnc		= centerEnc;
@@ -120,7 +122,7 @@ public class DriveTrain {
 		driveStraightPID.setAbsoluteTolerance(absTolerance_Enc_DriveStraight);
 		
 		if(centerEnc != null) {
-			strafePID = new PIDController(strafeEncoder_Kp, strafeEncoder_Ki, strafeEncoder_Kd, centerEnc, centerDrive);
+			strafePID = new PIDController(strafeEncoder_Kp, strafeEncoder_Ki, strafeEncoder_Kd, centerEnc, center);
 			strafePID.setAbsoluteTolerance(absTolerance_Enc_Strafe);
 		}
 	}
@@ -129,31 +131,31 @@ public class DriveTrain {
 
 		translateX = -ThresholdHandler.handleThreshold(translateX, TRANSLATE_X_DEADBAND);
 		translateY = -ThresholdHandler.handleThreshold(translateY, TRANSLATE_Y_DEADBAND);
-		rotation   =  ThresholdHandler.handleThreshold(rotation,   ROTATION_DEADBAND   );
+		rotation   =  ThresholdHandler.handleThreshold(rotation,   ROTATION_DEADBAND );
 
 //		System.out.println("x, y \t\t" + translateX + ",\t" + translateY);
 
 //		printLog();    
 
-//		if(rotation != 0) {
+		if(rotation != 0) {
 			if (maintainingHeading) {
 				maintainingHeading = false; 
 				imuPID.disable(); 
 			}
 			rotationalDrive(translateY, rotation);
-//		}
+		}
 //
-//		else {
-//			if (!maintainingHeading) {
-//				maintainingHeading = true; 
-//				desiredHeading = imu.getYaw(); 
-//
-//				setImuForDrivingStraight(); 
-//				imuPID.setSetpoint(desiredHeading);
-//				imuPID.enable();
-//			}
-//			strafeDrive(translateX, translateY);
-//		}
+		else {
+			if (!maintainingHeading) {
+				maintainingHeading = true; 
+				desiredHeading = imu.getYaw(); 
+
+				setImuForDrivingStraight(); 
+				imuPID.setSetpoint(desiredHeading);
+				imuPID.enable();
+			}
+			strafeDrive(translateX, translateY);
+		}
 	}
 
 	public void rotationalDrive(double power, double rotation) {
@@ -306,7 +308,7 @@ public class DriveTrain {
 //		System.out.println("IMU PID enabled" + imuPID.isEnable());
 //
 //		System.out.println("xOut, yOut, pidOut \t" + xOutput + ", " + yOutput + ", " + pidOut);
-//		setMotors(yOutput + pidOut, yOutput - pidOut, xOutput);
+		setMotors(yOutput + pidOut, yOutput - pidOut, xOutput);
 //		System.out.println(imu.getYaw() + " : " + imuPID.getSetpoint());
 //		System.out.println("current kP is: " + imuPID.getP());
 
