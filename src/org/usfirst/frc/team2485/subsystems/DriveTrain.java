@@ -83,10 +83,12 @@ public class DriveTrain {
 		absTolerance_Enc_Strafe = 3.0;
 	
 	private double oldXInput; 
-	private static final double MAX_X_DELTA = 0.04;
+	private static double MAX_DELTA_X_LEFT = 0.015;
+	private static double MAX_DELTA_X_RIGHT = 0.04; 
 
 	public static double 
 		driveStraightEncoder_Kp = 0.0275, 
+		
 		driveStraightEncoder_Ki = 0.0, 
 		driveStraightEncoder_Kd = 0.0;
 
@@ -294,11 +296,25 @@ public class DriveTrain {
 		//suspension.set(true);
 		double pidOut = dummyImuOutput.get(); 
 		
-		if (Math.abs(xInput - oldXInput) > MAX_X_DELTA) {
-			if(xInput > oldXInput)
-				xInput += MAX_X_DELTA;
+		double currMaxDelta = xInput > 0 ? MAX_DELTA_X_RIGHT : MAX_DELTA_X_LEFT; 
+		
+//		if (!(xInput > 0 && oldXInput > 0 || xInput < 0 && oldXInput < 0))
+//			xInput = xInput > 0 ? .003 : -.003;  
+		if ((xInput > 0 && oldXInput < 0) || xInput < 0 && oldXInput > 0) { //change in sign
+			if (xInput > 0)
+				MAX_DELTA_X_LEFT = 0.001; 
 			else
-				xInput -= MAX_X_DELTA;
+				MAX_DELTA_X_RIGHT = 0.001; 
+		} else {
+			MAX_DELTA_X_LEFT = .015; 
+			MAX_DELTA_X_RIGHT = .04; 
+		}
+		if (Math.abs(xInput - oldXInput) > currMaxDelta) {
+			if(xInput > oldXInput)
+				xInput = oldXInput + currMaxDelta;
+			else
+				xInput = oldXInput - currMaxDelta;
+			
 			if(xInput > 1)
 				xInput = 1;
 			else if (xInput < -1)
@@ -442,8 +458,8 @@ public class DriveTrain {
 
 		//System.out.println("Pos: " + imu.getYaw() + " Pos Target: " + imuPID.getSetpoint());
 		
-		System.out.println("Imu yaw: " + imu.getYaw());
-    	System.out.println("Imu pitch: " + imu.getPitch());
+//		System.out.println("Imu yaw: " + imu.getYaw());
+//    	System.out.println("Imu pitch: " + imu.getPitch());
 	}
 	
 	// tune strafe param 
@@ -484,7 +500,7 @@ public class DriveTrain {
 		
 		if (imuPID.onTarget()) {
 			imuOnTargetCounter++;
-			System.out.println("On target with count: " + imuOnTargetCounter);
+//			System.out.println("On target with count: " + imuOnTargetCounter);
 		} else {
 			imuOnTargetCounter = 0;
 		}
@@ -492,7 +508,7 @@ public class DriveTrain {
 		if (imuOnTargetCounter >= MINIMUM_IMU_ON_TARGET_ITERATIONS){
 			setLeftRight(0, 0);
 			imuPID.disable();
-			System.out.println("Disabling PID with count: " + imuOnTargetCounter);
+//			System.out.println("Disabling PID with count: " + imuOnTargetCounter);
 			return true;
 		}
 
@@ -522,14 +538,14 @@ public class DriveTrain {
 		if (!driveStraightPID.isEnable()) {
 			dualEncoder.reset();
 			driveStraightPID.enable();
-			System.out.println("Enabling driveStraight PID in driveTo");
+//			System.out.println("Enabling driveStraight PID in driveTo");
 			driveStraightPID.setSetpoint(inches);
 		}
 
 		if(imuPID != null && !imuPID.isEnable()) {
 			setImuForDrivingStraight();
 			imuPID.setSetpoint(imu.getYaw());
-			System.out.println("enabling IMU PID in driveTo");
+//			System.out.println("enabling IMU PID in driveTo");
 			imuPID.enable();
 		}
 
@@ -546,9 +562,9 @@ public class DriveTrain {
 //		System.out.println("dualEncoder: " + dualEncoder.getDistance());
 
 //		System.out.println("encoderPID output: " + encoderOutput + " imuPID output: " + imuOutput);
-		System.out.println("error from enc PID " + driveStraightPID.getError());
-		System.out.println("dual encoder rate: " + dualEncoder.getRate()); 
-		System.out.println("signal sent: " + driveStraightPID.get());
+//		System.out.println("error from enc PID " + driveStraightPID.getError());
+//		System.out.println("dual encoder rate: " + dualEncoder.getRate()); 
+//		System.out.println("signal sent: " + driveStraightPID.get());
 //		System.out.println("Kp from enc PID " + driveStraightPID.getP());
 
 //		just changed this sign
@@ -556,7 +572,7 @@ public class DriveTrain {
 
 		// Check to see if we're on target
 		if (driveStraightPID.onTarget() && Math.abs(dualEncoder.getRate()) < lowEncRate) {
-			System.out.println("Reached PID on target");
+//			System.out.println("Reached PID on target");
 			setLeftRight(0.0, 0.0);
 			driveStraightPID.disable();
 			imuPID.disable();
@@ -571,6 +587,10 @@ public class DriveTrain {
 	
 	public double getAbsoluteRate(){
 		return dualEncoder.getAbsoluteRate();
+	}
+	
+	public double getRate(){
+		return dualEncoder.getRate();
 	}
 //	public boolean strafeTo(double distance) {
 //		// TODO Auto-generated method stub

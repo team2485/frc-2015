@@ -51,6 +51,7 @@ public class Robot extends IterativeRobot {
 	 
 	private Encoder leftEnc, rightEnc, centerEnc;
 	private DualEncoder dualEncoder;
+	
 	private Solenoid suspension, longFingerActuators, shortFingerActuators, latchActuator;
 	private Compressor compressor;
 	private DoubleSolenoid ds, clapperActuator;
@@ -69,6 +70,7 @@ public class Robot extends IterativeRobot {
 	private double curPos;
 	private double lastPos;
 	private double lastVelocity;
+	private static double curVelocity;
 	
 //	boolean fingersOn = true;
 	
@@ -196,8 +198,8 @@ public class Robot extends IterativeRobot {
     	
     	compressor.start();
 
-//    	strongback.checkSafety();
-    	//strongback.setSetpoint(0);
+    	strongback.checkSafety();
+    	strongback.setSetpoint(0);
     	
 //    	System.out.println("teleop enabled" );
 
@@ -211,7 +213,7 @@ public class Robot extends IterativeRobot {
     	}
     	else if (clapper.isManual()){
     		clapper.setSetpoint(clapper.getPotValue());//set the setpoint to where ever it left off
-    		System.out.println("setting clapper setpoint in isManual detection, teleopPeriodic, getPotValue() is " + clapper.getPotValue());
+//    		System.out.println("setting clapper setpoint in isManual detection, teleopPeriodic, getPotValue() is " + clapper.getPotValue());
     	}
     	else if (clapper.isBelowLowestSetPoint()) {
     		clapper.clapperPID.disable();
@@ -315,12 +317,12 @@ public class Robot extends IterativeRobot {
        	
        	
        	double curPos = dualEncoder.getDistance();
-       	double curVelocity = curPos-lastPos;
+       	curVelocity = curPos-lastPos;
 //       	System.out.println(imu.getWorldLinearAccelX() +"," + imu.getWorldLinearAccelY() + "," + imu.getWorldLinearAccelZ() + "," + imu.getPitch() + "," + imu.getRoll() + "," + imu.getYaw() + "," + curPos + "," + curVelocity + "," + (curVelocity - lastVelocity));
        	
-       	SmartDashboard.putString("Clapper and Container", clapper.getPercentHeight() +"," + 0 + "," + imu.getRoll());
+       	SmartDashboard.putString("Clapper and Container", clapper.getPercentHeight() +"," + 0 + "," + strongback.getIMURoll());
        	
-       	SmartDashboard.putInt("RPM", (int) drive.getAbsoluteRate());
+       	SmartDashboard.putDouble("RPM", (int) drive.getAbsoluteRate());
        	
        	lastPos = curPos;
        	lastVelocity = curVelocity;
@@ -330,7 +332,11 @@ public class Robot extends IterativeRobot {
        	
     }
     
-    public void disabledPeriodic() {
+    public static double getCurVelocity() {
+		return curVelocity;
+	}
+
+	public void disabledPeriodic() {
 //    	System.out.println(clapper.getPotValue());
     	
     	int counter = 0;

@@ -31,11 +31,11 @@ public class Strongback {
 		leadScrew_kI = 0.0, 
 		leadscrew_kD = 0.0; 
 		
-	public Strongback(VictorSP leadScrew, IMUAdvanced imu) {
+	public Strongback(VictorSP leadScrew, IMUAdvanced imu) { 
 		this.leadScrew = leadScrew; 
 		this.imu = imu; 
 				
-		rollPIDSource = new IMURollPIDSource(this.imu); 
+		rollPIDSource = new IMURollPIDSource(this.imu,true); 
 		
 		leadScrewImuPID = new PIDController(leadScrew_kP, leadScrew_kI, leadscrew_kD, rollPIDSource, this.leadScrew); 
 		leadScrewImuPID.setAbsoluteTolerance(absToleranceLeadScrew );
@@ -62,6 +62,10 @@ public class Strongback {
 	
 	public double getError() {
 		return leadScrewImuPID.getError(); 
+	}
+	
+	public double getIMURoll(){
+		return rollPIDSource.pidGet();
 	}
 	
 	public void checkSafety() {
