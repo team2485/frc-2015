@@ -54,6 +54,7 @@ public class Fingers {
 		
 		if (Math.abs(controllerZ) > 0.05) {
 			if (controllerZ > 0) {
+				
 				rotateToteRight(controllerZ);
 			} else if (controllerZ < 0) {
 				rotateToteLeft(controllerZ);

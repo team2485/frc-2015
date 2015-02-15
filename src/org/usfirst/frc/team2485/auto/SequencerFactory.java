@@ -189,6 +189,18 @@ public class SequencerFactory {
 		return new Sequencer();
 	}
 
+	public static Sequencer toteSuckIn(){
+		return new Sequencer(new SequencedItem[] {
+						new SetFingerRollers(SetFingerRollers.INTAKE, 1), 
+						new SetFingerRollers(SetFingerRollers.OFF, .1)			
+		});
+	}
+	public static Sequencer toteSuckInWithFingers(){
+		return new Sequencer(new SequencedItem[] {
+						new SetFingerRollers(SetFingerRollers.INTAKE, 1), 
+						new SetFingerRollers(SetFingerRollers.OFF, .1)			
+		});	
+	}
 	public static Sequencer createIntakeToteRoutine() {
 		double kP = Robot.clapper.getkP();
 		double kI = Robot.clapper.getkI();
@@ -197,27 +209,27 @@ public class SequencerFactory {
 				new SequencedMultipleItem(
 						new CloseClapper(),
 						new SetFingersPos(Fingers.PARALLEL), 
-						new RetractRatchet(),
+						//new RetractRatchet(),
 						new SetFingerRollers(SetFingerRollers.INTAKE, 1)
 						), 
 				new SequencedMultipleItem(
 						new SequencedPause(0.2),
-						new SetFingerRollers(SetFingerRollers.OFF, .1),
-						new ResetRatchet()
-						),
+						new SetFingerRollers(SetFingerRollers.OFF, .1)
+						//,new ResetRatchet()
+						)
 						//			new SequencedMultipleItem(
 						//			new SetFingersPos(Fingers.PARALLEL),
-				new SequencedPause(1),
-				new SequencedMultipleItem(	
-						new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
-						new SetFingerRollers(SetFingerRollers.INTAKE, 1)),
-						//							),
-				new SequencedPause(0.1),
-				new SetClapperPID(0.002, kI, kD),
-				new MoveClapperVertically(Clapper.ON_RATCHET_SETPOINT),
-				new SetClapperPID(kP, kI, kD),
-				new SequencedPause(0.1),
-				new MoveClapperVertically(Clapper.LOADING_SETPOINT)
+//				new SequencedPause(1),
+//				new SequencedMultipleItem(	
+//						new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
+//						new SetFingerRollers(SetFingerRollers.INTAKE, 1)),
+//						//							),
+//				new SequencedPause(0.1),
+//				new SetClapperPID(0.002, kI, kD),
+//				new MoveClapperVertically(Clapper.ON_RATCHET_SETPOINT),
+//				new SetClapperPID(kP, kI, kD),
+//				new SequencedPause(0.1),
+//				new MoveClapperVertically(Clapper.LOADING_SETPOINT)
 		});
 	}
 	public static Sequencer createDropToteStackRoutine() {
@@ -249,9 +261,9 @@ public class SequencerFactory {
 	public static Sequencer createIntakeToteRoutineBackup() {
 		return new Sequencer(new SequencedItem[] {
 				new SequencedMultipleItem(
-						new OpenClapper(),
+						new CloseClapper(),
 						new SetFingersPos(Fingers.CLOSED), 
-						new RetractRatchet(),
+						//new RetractRatchet(),
 						new SetFingerRollers(SetFingerRollers.INTAKE, 1),
 						new DriveSlowConstant()
 						), 
@@ -259,7 +271,7 @@ public class SequencerFactory {
 				new SequencedMultipleItem(
 								//						new SetFingerRollers(SetFingerRollers.REVERSE, 1),
 						new SetFingersPos(Fingers.PARALLEL),
-						new ResetRatchet(),
+						//new ResetRatchet(),
 						new DriveSlowConstant()
 				),
 				new CloseClapper(),
@@ -268,11 +280,11 @@ public class SequencerFactory {
 //				new SequencedMultipleItem(
 //				new SetFingersPos(Fingers.PARALLEL),
 //				new SequencedPause(1),
-				new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
-				new SetFingerRollers(SetFingerRollers.INTAKE, 1), // 0.2
-								//								),
-				new SequencedPause(.2),
-				new MoveClapperVertically(Clapper.LOADING_SETPOINT)
+//				new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
+//				new SetFingerRollers(SetFingerRollers.INTAKE, 1), // 0.2
+//								//								),
+//				new SequencedPause(.2),
+//				new MoveClapperVertically(Clapper.LOADING_SETPOINT)
 		});
 	}
 }

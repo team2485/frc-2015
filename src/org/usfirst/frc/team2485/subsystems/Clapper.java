@@ -20,7 +20,7 @@ public class Clapper {
 
 	private CombinedVictorSP clapperLifter;
 	private DoubleSolenoid clapperActuator;
-	private PIDController clapperPID;
+	public PIDController clapperPID;
 	private AnalogPotentiometer pot;
 	private InvertedPot potInverted;
 	 
@@ -183,7 +183,7 @@ public class Clapper {
 		speed/=3;
 		setManual();
 		
-		if (potInverted.pidGet() < LOWEST_POS || potInverted.pidGet() > LOWEST_POS + POS_RANGE) 
+		if ((potInverted.pidGet() < LOWEST_POS  && speed > 0) || (potInverted.pidGet() > LOWEST_POS + POS_RANGE && speed < 0))
 			return; 
 		
 		//double adjustedSpeed = ThresholdHandler.handleThreshold(speed, LIFT_DEADBAND)/2;
@@ -206,6 +206,10 @@ public class Clapper {
 
 	public double getError() {
 		return clapperPID.getError();
+	}
+
+	public boolean isBelowLowestSetPoint() {
+		return potInverted.pidGet() <= LOADING_SETPOINT; 
 	}
 }
 

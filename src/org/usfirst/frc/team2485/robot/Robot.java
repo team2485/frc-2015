@@ -66,6 +66,9 @@ public class Robot extends IterativeRobot {
 	private Sequencer teleopSequence;
 	
 	int degrees;
+	private double curPos;
+	private double lastPos;
+	private double lastVelocity;
 	
 //	boolean fingersOn = true;
 	
@@ -134,6 +137,8 @@ public class Robot extends IterativeRobot {
     	
         Controllers.set(new Joystick(0), new Joystick(1));
     	
+        
+        
     	System.out.println("initialized");
     }
 
@@ -170,6 +175,8 @@ public class Robot extends IterativeRobot {
     public void teleopInit() {
     	System.out.println("teleop init");
     	imu.zeroYaw();
+    	
+    	drive.setMaintainHeading(false);
 
     	
 //    	drive.setSolenoid(false);
@@ -179,7 +186,7 @@ public class Robot extends IterativeRobot {
     	
     	clapper.setManual();
     	
-		strongback.enablePid();
+		//strongback.enablePid();
 		
 		teleopSequence = null; 
 		System.out.println(clapper.getPotValue());
@@ -189,11 +196,13 @@ public class Robot extends IterativeRobot {
     	
     	compressor.start();
 
-    	strongback.checkSafety();
-    	strongback.setSetpoint(0);
+//    	strongback.checkSafety();
+    	//strongback.setSetpoint(0);
     	
 //    	System.out.println("teleop enabled" );
 
+//    	System.out.println(clapper.getError() + " : " + clapper.getSetpoint() + clapper.clapperPID.isEnable());
+    	
     	
     	//double adjustedJoystickXAxis = (ThresholdHandler.handleThreshold(Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_X,0), 0.1));
     	if (Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_X,(float) 0.1) != 0) {//if the joystick is moved
@@ -204,12 +213,15 @@ public class Robot extends IterativeRobot {
     		clapper.setSetpoint(clapper.getPotValue());//set the setpoint to where ever it left off
     		System.out.println("setting clapper setpoint in isManual detection, teleopPeriodic, getPotValue() is " + clapper.getPotValue());
     	}
+    	else if (clapper.isBelowLowestSetPoint()) {
+    		clapper.clapperPID.disable();
+    	}
     	
 //		System.out.println(imu.getRoll());
     	
-        drive.warlordDrive(Controllers.getAxis(Controllers.XBOX_AXIS_LX, 0.2f),
-        					Controllers.getAxis(Controllers.XBOX_AXIS_LY, 0.2f),
-                			Controllers.getAxis(Controllers.XBOX_AXIS_RX, 0.2f));
+        drive.warlordDrive(-Controllers.getAxis(Controllers.XBOX_AXIS_LX, 0),
+        					Controllers.getAxis(Controllers.XBOX_AXIS_LY, 0),
+                			Controllers.getAxis(Controllers.XBOX_AXIS_RX, 0));
     	
         if(Controllers.getButton(Controllers.XBOX_BTN_RBUMP)) {
         		drive.setQuickTurn(true);
@@ -264,8 +276,11 @@ public class Robot extends IterativeRobot {
        		System.out.println("fingers should open");
        		fingers.setFingerPosition(Fingers.OPEN);
        	}
+       	if (Controllers.getJoystickButton(1)) {
+       		teleopSequence = SequencerFactory.toteSuckIn();
+       	}
        	if (Controllers.getJoystickButton(3)) {
-       		clapper.setSetpoint(clapper.COOP_TWO_TOTES_SETPOINT);
+       		clapper.setSetpoint(clapper.LOADING_SETPOINT);
        	}
        	if (Controllers.getJoystickButton(4)) {
        		clapper.setSetpoint(clapper.COOP_ONE_TOTE_SETPOINT);
@@ -282,10 +297,13 @@ public class Robot extends IterativeRobot {
        		ratchet.setDefaultRatchetPosition();
        	}
     	if (Controllers.getJoystickButton(8)) {
-//       		System.out.println("test");
        		teleopSequence = SequencerFactory.createIntakeToteRoutine();
        	}
        	
+    	if (Controllers.getJoystickButton(2)){
+    		teleopSequence = null;
+    	}
+    	
        	if (teleopSequence != null) {
 //       		System.out.println("running teleop sequence");
        		if (teleopSequence.run()) {
@@ -294,9 +312,18 @@ public class Robot extends IterativeRobot {
        		}
        	}
        	
+       	
+       	
+       	double curPos = dualEncoder.getDistance();
+       	double curVelocity = curPos-lastPos;
+//       	System.out.println(imu.getWorldLinearAccelX() +"," + imu.getWorldLinearAccelY() + "," + imu.getWorldLinearAccelZ() + "," + imu.getPitch() + "," + imu.getRoll() + "," + imu.getYaw() + "," + curPos + "," + curVelocity + "," + (curVelocity - lastVelocity));
+       	
        	SmartDashboard.putString("Clapper and Container", clapper.getPercentHeight() +"," + 0 + "," + imu.getRoll());
        	
        	SmartDashboard.putInt("RPM", (int) drive.getAbsoluteRate());
+       	
+       	lastPos = curPos;
+       	lastVelocity = curVelocity;
        	
 //       	System.out.println("IMU pitch is " + imu.getPitch());
 //       	System.out.println("setpoint " + clapper.getSetpoint() + " potValue " + clapper.getPotValue() + " pid controlled " + clapper.isAutomatic());
@@ -368,12 +395,12 @@ public class Robot extends IterativeRobot {
 //    	leadScrewMotor.set(-.05);
 //    	System.out.println(strongback.leadScrewImuPID.isEnable());
 
-    	strongback.enablePid(); 
+//    	strongback.enablePid(); 
 //		System.out.println(strongback.getError() + " output " + .leadScrewImuPID.get());
     	
-    	SmartDashboard.putString("Clapper and Container", clapper.getPercentHeight() +"," + 0 + "," + imu.getRoll());
+//    	SmartDashboard.putString("Clapper and Container", clapper.getPercentHeight() +"," + 0 + "," + imu.getRoll());
        	
-       	SmartDashboard.putInt("IPS",    (int) drive.getAbsoluteRate());
+//       	SmartDashboard.putInt("IPS",    (int) drive.getAbsoluteRate());
        	
 
     }

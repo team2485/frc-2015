@@ -22,7 +22,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * @author Ben Clark
  */
 public class DriveTrain {
-
 	private VictorSP leftDrive, leftDrive2, rightDrive, rightDrive2, test1, test2, test3, test4;
 	private CombinedVictorSP centerDrive; 
 	private Solenoid suspension;
@@ -40,8 +39,14 @@ public class DriveTrain {
 	private final double TRANSLATE_Y_DEADBAND = 0.125;
 	private final double TRANSLATE_X_DEADBAND = 0.125;
 	private final double ROTATION_DEADBAND = 0.2;
-	private double STRAFE_TUNING_PARAMETER = 3;
-
+	
+	
+	
+	////////////////////////////////////////////////////////////
+	private double STRAFE_TUNING_PARAMETER = 1;
+	////////////////////////////////////////////////////////////
+	
+	
 	private final double SENSITIVITY_HIGH = 0.85;
 	private final double SENSITIVITY_LOW = 0.55;
 	private final double MUCH_TOO_HIGH_SENSITIVITY = 1.7;
@@ -50,7 +55,7 @@ public class DriveTrain {
 
 	//PID 
 	public double desiredHeading = 0.0; 
-	public boolean maintainingHeading = true; //use for auto and while !rotating  
+	public boolean maintainingHeading = false; //use for auto and while !rotating  
 
 	public IMU imu;
 
@@ -75,7 +80,10 @@ public class DriveTrain {
 		absTolerance_Imu_TurnTo = 1.0,
 		absTolerance_Imu_DriveStraight = 2.0,
 		absTolerance_Enc_DriveStraight = 3.0, // needs tuning
-		absTolerance_Enc_Strafe = 3.0; 
+		absTolerance_Enc_Strafe = 3.0;
+	
+	private double oldXInput; 
+	private static final double MAX_X_DELTA = 0.04;
 
 	public static double 
 		driveStraightEncoder_Kp = 0.0275, 
@@ -88,14 +96,14 @@ public class DriveTrain {
 		strafeEncoder_Kd = 0.0;
 	
 	public static double
-		driveStraightImu_Kp = 0.035, //0.05 - for floor work, 0.07 for bump (tentatively)
+		driveStraightImu_Kp = 0.025, // old data?? seems stale - 0.05 - for floor work, 0.07 for bump (tentatively)
 		driveStraightImu_Ki = 0.0,
 		driveStraightImu_Kd = 0.01; 
 
 	public static double
-		rotateImu_kP = 0.0153,
+		rotateImu_kP = 0.0125,
 		rotateImu_kI = 0.00,
-		rotateImu_kD = 0.00;
+		rotateImu_kD = 0.01;
 
 	public DriveTrain(VictorSP leftDrive, VictorSP leftDrive2, VictorSP rightDrive, 
 			VictorSP rightDrive2, CombinedVictorSP center, Solenoid suspension, IMU imu, Encoder leftEnc, 
@@ -131,7 +139,7 @@ public class DriveTrain {
 
 		translateX = -ThresholdHandler.handleThreshold(translateX, TRANSLATE_X_DEADBAND);
 		translateY = -ThresholdHandler.handleThreshold(translateY, TRANSLATE_Y_DEADBAND);
-		rotation   =  ThresholdHandler.handleThreshold(rotation,   ROTATION_DEADBAND );
+		rotation   =  ThresholdHandler.handleThresholdNonLinear(rotation,   ROTATION_DEADBAND );
 
 //		System.out.println("x, y \t\t" + translateX + ",\t" + translateY);
 
@@ -162,18 +170,18 @@ public class DriveTrain {
 		//suspension.set(true);
 
 		//		double maxDelta = 0.05;
-		//		if(Math.abs(wheel - oldWheel) > maxDelta)
-		//			if(wheel > oldWheel)
-		//				wheel = oldWheel + maxDelta;
-		//			else
-		//				wheel = oldWheel - maxDelta;
-		//		if(wheel > 1)
-		//			wheel = 1;
-		//		else if (wheel < -1)
-		//			wheel = -1;
-		//		oldWheel = wheel;
-		//		
-		//		setLeftRight(wheel, -wheel);   
+//				if(Math.abs(wheel - oldWheel) > maxDelta)
+//					if(wheel > oldWheel)
+//						wheel = oldWheel + maxDelta;
+//					else
+//						wheel = oldWheel - maxDelta;
+//				if(wheel > 1)
+//					wheel = 1;
+//				else if (wheel < -1)
+//					wheel = -1;
+//				oldWheel = wheel;
+//				
+//				setLeftRight(wheel, -wheel);   
 		//		return;   
 
 		double negInertia = rotation - oldWheel;
@@ -257,6 +265,7 @@ public class DriveTrain {
 			leftPwm += overPower * (-1.0 - rightPwm);
 			rightPwm = -1.0;
 		}
+		
 
 //		System.out.println("leftPWM/rightPWM after: " + leftPwm + " and " + rightPwm);
 		setLeftRight(leftPwm, rightPwm);
@@ -284,7 +293,18 @@ public class DriveTrain {
 
 		//suspension.set(true);
 		double pidOut = dummyImuOutput.get(); 
-
+		
+		if (Math.abs(xInput - oldXInput) > MAX_X_DELTA) {
+			if(xInput > oldXInput)
+				xInput += MAX_X_DELTA;
+			else
+				xInput -= MAX_X_DELTA;
+			if(xInput > 1)
+				xInput = 1;
+			else if (xInput < -1)
+				xInput = -1;
+		}
+		oldXInput = xInput;
 		this.translateX = xInput; 
 		this.translateY = yInput; 
 
