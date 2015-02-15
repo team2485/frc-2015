@@ -10,6 +10,7 @@ import org.usfirst.frc.team2485.util.CombinedVictorSP;
 import org.usfirst.frc.team2485.util.Controllers;
 import org.usfirst.frc.team2485.util.DualEncoder;
 import org.usfirst.frc.team2485.util.ThresholdHandler;
+import org.usfirst.frc.team2485.util.ToteCount;
 
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.Compressor;
@@ -19,6 +20,7 @@ import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.CameraServer;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
@@ -72,6 +74,9 @@ public class Robot extends IterativeRobot {
 	private double lastVelocity;
 	private static double curVelocity;
 	
+	private ToteCount toteCounter;
+	private boolean toteCounterButtonIsReset = true; 
+	
 //	boolean fingersOn = true;
 	
     public void robotInit() {
@@ -103,6 +108,8 @@ public class Robot extends IterativeRobot {
     	
     	leftEnc.setDistancePerPulse(.0414221608);
     	rightEnc.setDistancePerPulse(.0414221608); 
+    	
+    	toteCounter = new ToteCount(); 
     	
 //    	ds = new DoubleSolenoid(7, 7);
 
@@ -221,9 +228,15 @@ public class Robot extends IterativeRobot {
     	
 //		System.out.println(imu.getRoll());
     	
-        drive.warlordDrive(-Controllers.getAxis(Controllers.XBOX_AXIS_LX, 0),
-        					Controllers.getAxis(Controllers.XBOX_AXIS_LY, 0),
-                			Controllers.getAxis(Controllers.XBOX_AXIS_RX, 0));
+    	 if (Controllers.getAxis(Controllers.XBOX_AXIS_RTRIGGER, .2f) > 0) {
+         	drive.setHighSpeed();
+         }
+         else if (Controllers.getAxis(Controllers.XBOX_AXIS_LTRIGGER, .2f) > 0) {
+         	drive.setLowSpeed();
+         }
+         else {
+         	drive.setNormalSpeed(); 
+         }
     	
         if(Controllers.getButton(Controllers.XBOX_BTN_RBUMP)) {
         		drive.setQuickTurn(true);
@@ -238,6 +251,17 @@ public class Robot extends IterativeRobot {
         	drive.dropCenterWheel(false);
         }
         
+        if (Controllers.getButton(Controllers.XBOX_BTN_LBUMP)) {
+        	drive.setSlowStrafeOnlyMode(true);
+        }
+        else {
+        	drive.setSlowStrafeOnlyMode(false);
+        }
+        
+        drive.warlordDrive(Controllers.getAxis(Controllers.XBOX_AXIS_LX, 0),
+				Controllers.getAxis(Controllers.XBOX_AXIS_LY, 0),
+    			Controllers.getAxis(Controllers.XBOX_AXIS_RX, 0));
+        
 //        
 //    	System.out.println("current setpoint is: " + drive.imuPID.getSetpoint());
 //    	System.out.println("current error is: " + drive.imuPID.getError());
@@ -247,6 +271,17 @@ public class Robot extends IterativeRobot {
 //    	System.out.println("IMU pitch: " + imu.getPitch());
 //    	System.out.println("IMU yaw: " + imu.getYaw());
 //    	System.out.println("IMU roll: " + imu.getRoll());
+        
+        if (Controllers.getButton(Controllers.XBOX_BTN_A) && toteCounterButtonIsReset) {
+        	toteCounter.addTote(); 
+        	toteCounterButtonIsReset = false; 
+        } else if (Controllers.getButton(Controllers.XBOX_BTN_B) && toteCounterButtonIsReset) {
+//        	toteCounter.reset(); 
+        	toteCounter.addTote(-1); //this is stupid
+        	toteCounterButtonIsReset = false; 
+        } else {
+        	toteCounterButtonIsReset  = true; 
+        }
 
     	//basic controls for intake arm
         if (!(clapper.isManual()))
@@ -320,9 +355,10 @@ public class Robot extends IterativeRobot {
        	curVelocity = curPos-lastPos;
 //       	System.out.println(imu.getWorldLinearAccelX() +"," + imu.getWorldLinearAccelY() + "," + imu.getWorldLinearAccelZ() + "," + imu.getPitch() + "," + imu.getRoll() + "," + imu.getYaw() + "," + curPos + "," + curVelocity + "," + (curVelocity - lastVelocity));
        	
-       	SmartDashboard.putString("Clapper and Container", clapper.getPercentHeight() +"," + 0 + "," + strongback.getIMURoll());
-       	
-       	SmartDashboard.putDouble("RPM", (int) drive.getAbsoluteRate());
+       	SmartDashboard.putString("Clapper and Container", clapper.getPercentHeight() +"," + 0 + "," + strongback.getIMURoll());  	
+       	SmartDashboard.putNumber("IPS", (int) drive.getAbsoluteRate());;
+       	SmartDashboard.putNumber("battery", DriverStation.getInstance().getBatteryVoltage());
+        SmartDashboard.putBoolean("disabled", DriverStation.getInstance().isDisabled());
        	
        	lastPos = curPos;
        	lastVelocity = curVelocity;

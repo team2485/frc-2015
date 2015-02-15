@@ -1,8 +1,7 @@
 package org.usfirst.frc.team2485.util;
  
 /**
-  * @author Patrick Wamsley;
-  * @author Ben Clark;
+  * @author Ben Clark
   */
 public class ToteCount {
 	

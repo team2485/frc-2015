@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * @author Ben Clark
  */
 public class DriveTrain {
+	private static final double SLOW_STRAFE_SCALAR = 0.4; //need to tune
 	private VictorSP leftDrive, leftDrive2, rightDrive, rightDrive2, test1, test2, test3, test4;
 	private CombinedVictorSP centerDrive; 
 	private Solenoid suspension;
@@ -43,7 +44,7 @@ public class DriveTrain {
 	
 	
 	////////////////////////////////////////////////////////////
-	private double STRAFE_TUNING_PARAMETER = 1;
+	private final double STRAFE_TUNING_PARAMETER = 1;
 	////////////////////////////////////////////////////////////
 	
 	
@@ -76,6 +77,8 @@ public class DriveTrain {
 	private int imuOnTargetCounter = 0;
 	private final int MINIMUM_IMU_ON_TARGET_ITERATIONS = 6;
 	
+	private boolean slowStrafeOnlyMode = false; 
+	
 	private final double
 		absTolerance_Imu_TurnTo = 1.0,
 		absTolerance_Imu_DriveStraight = 2.0,
@@ -83,7 +86,7 @@ public class DriveTrain {
 		absTolerance_Enc_Strafe = 3.0;
 	
 	private double oldXInput; 
-	private static double MAX_DELTA_X_LEFT = 0.015;
+	private static double MAX_DELTA_X_LEFT = 0.02; //before changing acc code, .015 worked well for left
 	private static double MAX_DELTA_X_RIGHT = 0.04; 
 
 	public static double 
@@ -139,7 +142,7 @@ public class DriveTrain {
 
 	public void warlordDrive(double translateX, double translateY, double rotation) {
 
-		translateX = -ThresholdHandler.handleThreshold(translateX, TRANSLATE_X_DEADBAND);
+		translateX = ThresholdHandler.handleThreshold(translateX, TRANSLATE_X_DEADBAND);
 		translateY = -ThresholdHandler.handleThreshold(translateY, TRANSLATE_Y_DEADBAND);
 		rotation   =  ThresholdHandler.handleThresholdNonLinear(rotation,   ROTATION_DEADBAND );
 
@@ -169,8 +172,10 @@ public class DriveTrain {
 	}
 
 	public void rotationalDrive(double power, double rotation) {
-		//suspension.set(true);
 
+		dropCenterWheel(false);
+		setCenterWheel(0);
+		oldXInput = 0; 
 		//		double maxDelta = 0.05;
 //				if(Math.abs(wheel - oldWheel) > maxDelta)
 //					if(wheel > oldWheel)
@@ -285,42 +290,63 @@ public class DriveTrain {
 
 	public void strafeDrive(double xInput, double yInput) {
 
-		if (Math.abs(yInput) <= .1 && Math.abs(xInput) <= .1) {
-			setLeftRight(0,0);
-			setCenterWheel(0);
-			return;
-		}
-
 		double yOutput = 0, xOutput = 0; 
 
-		//suspension.set(true);
+		dropCenterWheel(true);
+		
+		if (slowStrafeOnlyMode) {
+			yInput = 0; 
+			xInput *= SLOW_STRAFE_SCALAR; 
+		}
+		
 		double pidOut = dummyImuOutput.get(); 
 		
-		double currMaxDelta = xInput > 0 ? MAX_DELTA_X_RIGHT : MAX_DELTA_X_LEFT; 
+		/*
+		 * old acceleration limiting code
+		 */
+//		double currMaxDelta = xInput > 0 ? MAX_DELTA_X_RIGHT : MAX_DELTA_X_LEFT; 
+//		
+////		if (!(xInput > 0 && oldXInput > 0 || xInput < 0 && oldXInput < 0))
+////			xInput = xInput > 0 ? .003 : -.003;  
+//		if ((xInput > 0 && oldXInput < 0) || xInput < 0 && oldXInput > 0) { //change in sign
+//			if (xInput > 0)
+//				MAX_DELTA_X_LEFT  = 0.001; 
+//			else
+//				MAX_DELTA_X_RIGHT = 0.001; 
+//		} else {
+//			MAX_DELTA_X_LEFT = .015; 
+//			MAX_DELTA_X_RIGHT = .04; 
+//		}
+//		if (Math.abs(xInput - oldXInput) > currMaxDelta) {
+//			if(xInput > oldXInput)
+//				xInput = oldXInput + currMaxDelta;
+//			else
+//				xInput = oldXInput - currMaxDelta;
+//			
+//			if(xInput > 1)
+//				xInput = 1;
+//			else if (xInput < -1)
+//				xInput = -1;
+//		}
 		
-//		if (!(xInput > 0 && oldXInput > 0 || xInput < 0 && oldXInput < 0))
-//			xInput = xInput > 0 ? .003 : -.003;  
-		if ((xInput > 0 && oldXInput < 0) || xInput < 0 && oldXInput > 0) { //change in sign
-			if (xInput > 0)
-				MAX_DELTA_X_LEFT = 0.001; 
+		double dXInput = Math.abs(xInput - oldXInput); 
+		
+		if (dXInput > MAX_DELTA_X_LEFT) {
+			
+			if (xInput > oldXInput)
+				xInput = oldXInput + MAX_DELTA_X_LEFT; 
 			else
-				MAX_DELTA_X_RIGHT = 0.001; 
-		} else {
-			MAX_DELTA_X_LEFT = .015; 
-			MAX_DELTA_X_RIGHT = .04; 
-		}
-		if (Math.abs(xInput - oldXInput) > currMaxDelta) {
-			if(xInput > oldXInput)
-				xInput = oldXInput + currMaxDelta;
-			else
-				xInput = oldXInput - currMaxDelta;
+				xInput = oldXInput - MAX_DELTA_X_LEFT; 
 			
 			if(xInput > 1)
 				xInput = 1;
 			else if (xInput < -1)
 				xInput = -1;
 		}
+		
+		
 		oldXInput = xInput;
+		
 		this.translateX = xInput; 
 		this.translateY = yInput; 
 
@@ -596,5 +622,9 @@ public class DriveTrain {
 //		// TODO Auto-generated method stub
 //		return false;
 //	}
+	
+	public void setSlowStrafeOnlyMode(boolean b) {
+		slowStrafeOnlyMode = b; 
+	}
 }
 
