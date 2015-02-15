@@ -13,9 +13,9 @@ import edu.wpi.first.wpilibj.VictorSP;
 /**
  * @author Ben Clark
  * @author Aidan Fay
+ * @author Patrick Wamsley
  */
 
-//TODO: find out where the PID is enabled after a sequence
 public class Clapper {
 
 	private CombinedVictorSP clapperLifter;
@@ -31,7 +31,22 @@ public class Clapper {
 		kP	= 0.05,
 		kI	= 0.00,
 		kD	= 0.00;
-			
+	
+	public static final double //these are not tested at all whatsoever
+		kP_1_TOTES_UP = 0.05,
+		kP_2_TOTES_UP = 0.05,
+		kP_3_TOTES_UP = 0.05,
+		kP_4_TOTES_UP = 0.075,
+		kP_5_TOTES_UP = 0.085,
+		kP_6_TOTES_UP = 0.095;
+	public static final double //these are not tested at all whatsoever
+		kP_1_TOTES_DOWN = 0.05,
+		kP_2_TOTES_DOWN = 0.05,
+		kP_3_TOTES_DOWN = 0.05,
+		kP_4_TOTES_DOWN = 0.075,
+		kP_5_TOTES_DOWN = 0.085,
+		kP_6_TOTES_DOWN = 0.095;
+										
 	private static final double LOWEST_POS = 500; 
 	private static final double POS_RANGE = 375;
 	private static final double POT_TOLERANCE = 12;
@@ -163,14 +178,14 @@ public class Clapper {
 	}
 
 	/**
-	 * Returns if the winch is being controlled by PID.
+	 * Returns true if the winch is being controlled by PID.
 	 */
 	public boolean isAutomatic() {
 		return automatic;
 	}
 	
 	/**
-	 * Returns if the winch can be controlled manually.
+	 * Returns true if the winch can be controlled manually.
 	 */
 	public boolean isManual() {
 		return !automatic;
@@ -211,6 +226,11 @@ public class Clapper {
 	public boolean isBelowLowestSetPoint() {
 		return potInverted.pidGet() <= LOADING_SETPOINT; 
 	}
+	
+	public void setKP(double kP) {
+		this.kP = kP; 
+	}
+		
 }
 
 	//  two belts for intake, pneumatic for finger, pneumatic for opens and closes whole intake, one pneumatic for open/closes 

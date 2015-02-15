@@ -30,12 +30,12 @@ import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.VictorSP;
 
 /**
- * @author Anoushka
- * @author Aidan
- * @author Ben
- * @author Patrick
- * @author Camille
- * @author Maunu
+ * @author Anoushka Bose
+ * @author Aidan Fay
+ * @author Ben Clark
+ * @author Patrick Wamsley
+ * @author Camille Considine
+ * @author Mike Maunu
  */ 
 public class Robot extends IterativeRobot {
 	
@@ -46,6 +46,7 @@ public class Robot extends IterativeRobot {
 	public static Fingers fingers;
 	public static RatchetSystem ratchet;
 	public static Claw claw;
+	public static ToteCount toteCounter;
 
 	
 	private VictorSP left, left2, right, right2, leadScrewMotor, leftBelt, rightBelt, clapperLifter1, clapperLifter2;
@@ -74,7 +75,6 @@ public class Robot extends IterativeRobot {
 	private double lastVelocity;
 	private static double curVelocity;
 	
-	private ToteCount toteCounter;
 	private boolean toteCounterButtonIsReset = true; 
 	
 //	boolean fingersOn = true;
