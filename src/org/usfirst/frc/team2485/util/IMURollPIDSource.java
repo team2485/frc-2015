@@ -29,8 +29,8 @@ public class IMURollPIDSource implements PIDSource {
 	public double pidGet() {
 		encoderRate = Robot.getCurVelocity();
 		if (movementCorrected){
-			System.out.println(imu.getRoll() + "-" + encoderRate/4);
-			return (imu.getRoll() - encoderRate/4);// returns a value adjusted by equation found by Todor
+			System.out.println(imu.getRoll() + "-" + encoderRate*4);
+			return (imu.getRoll() - encoderRate*4);// returns a value adjusted by equation found by Todor
 		} else {
 			return imu.getRoll(); 
 		}
