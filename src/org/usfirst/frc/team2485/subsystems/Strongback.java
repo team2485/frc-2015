@@ -27,7 +27,7 @@ public class Strongback {
 	private IMURollPIDSource rollPIDSource; 
 
 	public static final double
-		leadScrew_kP = 0.15,
+		leadScrew_kP = 0.25,
 		leadScrew_kI = 0.0, 
 		leadscrew_kD = 0.0; 
 		
@@ -57,7 +57,7 @@ public class Strongback {
 	public void setSetpoint(double newSetpoint) {
 		rollSetpoint = newSetpoint;
 		leadScrewImuPID.setSetpoint(rollSetpoint);
-		leadScrewImuPID.enable();
+//		leadScrewImuPID.enable();
 	}
 	
 	public double getError() {
@@ -70,10 +70,11 @@ public class Strongback {
 	
 	public void checkSafety() {
 		if(Math.abs(leadScrewImuPID.getError()) > 10) {
+			System.out.println("ERROR in check safety");
 			leadScrewImuPID.disable();
 		}
-		else {
-			leadScrewImuPID.enable();
-		}
+//		else {
+//			leadScrewImuPID.enable();
+//		}
 	}
 }

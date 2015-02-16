@@ -51,13 +51,10 @@ public class CombinedVictorSP implements SpeedController {
 	}
 	
 	public void invertMotorDirection(boolean isInverted) {
-		if(isInverted) {
+		if(isInverted) 
 			direction = -1;
-		}
-		
-		else {
+		else 
 			direction = 1;
-		}
 	}
 
 	public void disable() {}

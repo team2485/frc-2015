@@ -7,7 +7,7 @@ public class RetractRatchet implements SequencedItem {
 
 	@Override
 	public void run() {
-		Robot.ratchet.releaseToteStack();
+		Robot.ratchet.retractRatchet();
 	}
 
 	@Override

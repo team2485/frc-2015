@@ -18,11 +18,11 @@ public class RatchetSystem {
 		this(new Solenoid(ratchetActuatorPort));
 	}
 	
-	public void releaseToteStack() {
+	public void retractRatchet() {
 		ratchetActuator.set(true);
 	}
 	
-	public void setDefaultRatchetPosition() {
+	public void extendRatchet() {
 		ratchetActuator.set(false);
 	}
 

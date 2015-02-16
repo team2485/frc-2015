@@ -16,12 +16,12 @@ public class ToteIntake implements SequencedItem {
 	@Override
 	public void run() {
 		Robot.fingers.dualIntake(1);
+		finished = Robot.clapper.toteDetected(); 
 	}
 
 	@Override
 	public double duration() {
-//		return finished ? 0 : 2; 
-		return 2; 
+		return finished ? 0 : 2; 
 	}
 
 }

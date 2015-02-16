@@ -6,7 +6,6 @@ import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.VictorSP;
 
 /**
- * @author Camille Considine
  * @author Ben Clark
  */
 public class Fingers {

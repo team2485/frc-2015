@@ -7,9 +7,9 @@ import org.usfirst.frc.team2485.subsystems.Claw;
 public class MoveClawVertically implements SequencedItem {
 	
 	private boolean finished; 
-	private final int setpoint; 
+	private final double setpoint; 
 	
-	public MoveClawVertically(int setpoint) {
+	public MoveClawVertically(double setpoint) {
 		this.setpoint = setpoint; 
 		finished = false; 
 	}

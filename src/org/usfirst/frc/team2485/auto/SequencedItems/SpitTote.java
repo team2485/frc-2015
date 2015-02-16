@@ -14,13 +14,12 @@ public class SpitTote implements SequencedItem {
 	}
 	@Override
 	public void run() {
-		Robot.fingers.dualReverse(1); 
+		Robot.fingers.dualReverse(.3 + .04*Robot.toteCounter.getCount()); 
 	}
 
 	@Override
 	public double duration() {
-		// TODO Auto-generated method stub
-		return 0;
+		return 1;
 	}
 
 }

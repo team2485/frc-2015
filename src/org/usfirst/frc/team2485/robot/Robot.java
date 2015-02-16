@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.CameraServer;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot;
@@ -45,6 +46,9 @@ public class Robot extends IterativeRobot {
 	public static ToteCount toteCounter;
 
 	
+	private long timeLastToteCountProcessed;
+	private long TOTE_COUNT_MIN_DELAY = 500;
+	
 	private VictorSP left, left2, right, right2, strongbackMotor, leftFingerBelt, rightFingerBelt, clapperLifter1, clapperLifter2;
 	private CombinedVictorSP center; 
 	 
@@ -67,13 +71,15 @@ public class Robot extends IterativeRobot {
 	private double curPos;
 	private double lastPos;
 	private double lastVelocity;
-	private static double curVelocity;
+	private static double currVelocity;
 	
 	private boolean toteCounterButtonIsReset = true; 
     private boolean done = false;
 	private Solenoid clawSolenoid;
 	private VictorSP clawMotor;
 	private AnalogPotentiometer clawPot;
+	private DigitalInput clapperSafetyLimitSwitch; 
+	private DigitalInput toteDetectorLimitSwitch; 
 	
 //	boolean fingersOn = true;
 	
@@ -88,7 +94,7 @@ public class Robot extends IterativeRobot {
     	clawMotor				= new VictorSP(12);
     	clapperLifter1 			= new VictorSP(13); 
     	clapperLifter2 			= new VictorSP(3); 
-    	strongbackMotor 			= new VictorSP(2); 
+    	strongbackMotor 		= new VictorSP(2); 
     	center		 			= new CombinedVictorSP(new VictorSP(11), new VictorSP(7)); 
     	
     	longFingerActuators  	= new Solenoid(5);
@@ -100,6 +106,9 @@ public class Robot extends IterativeRobot {
     	
     	clawPot		    		= new AnalogPotentiometer(0);
     	clapperPot		   		= new AnalogPotentiometer(1);  
+    	
+    	clapperSafetyLimitSwitch = new DigitalInput(9); 
+    	toteDetectorLimitSwitch  = new DigitalInput(8);
     	
     	leftEnc = new Encoder(0, 1);
     	rightEnc = new Encoder(4, 5);
@@ -125,7 +134,7 @@ public class Robot extends IterativeRobot {
     	}
     	
     	drive = new DriveTrain(left, left2, right, right2, center, centerWheelSuspension, imu, leftEnc, rightEnc, centerEnc);
-       	clapper = new Clapper(clapperLifter1, clapperLifter2, clapperActuator, clapperPot);
+       	clapper = new Clapper(clapperLifter1, clapperLifter2, clapperActuator, clapperPot, toteDetectorLimitSwitch, clapperSafetyLimitSwitch);
     	claw    = new Claw(clawMotor, clawSolenoid, clawPot);
     	fingers = new Fingers(leftFingerBelt,rightFingerBelt,longFingerActuators,shortFingerActuators);
     	ratchet = new RatchetSystem(latchActuator);    	
@@ -137,10 +146,8 @@ public class Robot extends IterativeRobot {
 //        //the camera name (ex "cam0") can be found through the roborio web interface
 //        camServer.startAutomaticCapture("cam1");
     	
-        Controllers.set(new Joystick(0), new Joystick(1));
+        Controllers.set(new Joystick(0), new Joystick(1), new Joystick(2));
     	
-        
-        
     	System.out.println("initialized");
     }
 
@@ -178,7 +185,6 @@ public class Robot extends IterativeRobot {
     	System.out.println("teleop init");
 //    	imu.zeroYaw();
     	
-    	
     	drive.setMaintainHeading(false);
     	drive.dropCenterWheel(false);
     	
@@ -190,23 +196,37 @@ public class Robot extends IterativeRobot {
     	rightEnc.reset();
     	
     	clapper.setManual();
-    	claw.setManual();
     	
 //		strongback.enablePid();
+		claw.setManual();
 		
 		teleopSequence = null; 
-//    	strongback.setSetpoint(0);
+    	strongback.setSetpoint(0);
+    	claw.liftManually(0);
+    	fingers.dualIntake(0);
+    	clapper.liftManually(0);
+    	
 //		System.out.println(clapper.getPotValue());
     }
 
     public void teleopPeriodic() {
     	
-    	compressor.start();
-
-//    	strongback.checkSafety();
+    	if (Controllers.getButton(Controllers.XBOX_BTN_A)) {
+    		strongback.enablePid();
+    	}
+    	else {
+    		strongback.disablePid();
+    	}
+    	
+    	strongback.checkSafety();
     	
        	updateDashboard();
-    	
+	
+       	  ////////////////////////////////////////////
+       	 ////////////////DRIVE CODE//////////////////
+       	////////////////////////////////////////////
+       	
+       	
     	 if (Controllers.getAxis(Controllers.XBOX_AXIS_RTRIGGER, .2f) > 0) {
          	drive.setHighSpeed();
          }
@@ -222,14 +242,6 @@ public class Robot extends IterativeRobot {
         } else
         	drive.setQuickTurn(false);
         
-        if(Controllers.getButton(Controllers.XBOX_BTN_A)) {
-        	drive.dropCenterWheel(true);
-        }
-        
-        if(Controllers.getButton(Controllers.XBOX_BTN_B)) {
-        	drive.dropCenterWheel(false);
-        }
-        
         if (Controllers.getButton(Controllers.XBOX_BTN_LBUMP)) {
         	drive.setSlowStrafeOnlyMode(true);
         }
@@ -240,81 +252,90 @@ public class Robot extends IterativeRobot {
         drive.warlordDrive(Controllers.getAxis(Controllers.XBOX_AXIS_LX, 0),
 				Controllers.getAxis(Controllers.XBOX_AXIS_LY, 0),
     			Controllers.getAxis(Controllers.XBOX_AXIS_RX, 0));
-             
-//    	System.out.println("current setpoint is: " + drive.imuPID.getSetpoint());
-//    	System.out.println("current error is: " + drive.imuPID.getError());
-//        
-//    	System.out.println("Pot value: " + pot.get());
-//    	System.out.println("Enc value: " + encoder.get());
-//    	System.out.println("IMU pitch: " + imu.getPitch());
-//    	System.out.println("IMU yaw: " + imu.getYaw());
-//    	System.out.println("IMU roll: " + imu.getRoll());
+
+		/////////////////////////////////////////////
+		//////////		TOTE COUNTER
+		/////////////////////////////////////////////
+
         
-        if (Controllers.getButton(Controllers.XBOX_BTN_A) && toteCounterButtonIsReset) {
+        long currTime = System.currentTimeMillis();
+        if (Controllers.getButton(Controllers.XBOX_BTN_Y) && currTime - timeLastToteCountProcessed > TOTE_COUNT_MIN_DELAY) {
         	toteCounter.addTote(); 
-        	toteCounterButtonIsReset = false; 
-        } else if (Controllers.getButton(Controllers.XBOX_BTN_B) && toteCounterButtonIsReset) {
+        	
+        	timeLastToteCountProcessed = currTime;
+        } else if (Controllers.getButton(Controllers.XBOX_BTN_X) && currTime - timeLastToteCountProcessed > TOTE_COUNT_MIN_DELAY) {
 //        	toteCounter.reset(); 
         	toteCounter.addTote(-1); //this is stupid
-        	toteCounterButtonIsReset = false; 
-        } else {
-        	toteCounterButtonIsReset  = true; 
-        }
+        	timeLastToteCountProcessed = currTime;
+        } 
+           
+		/////////////////////////////////////////////
+		//////////		PSEUDO-VELOCITY CALCULATIONS
+		/////////////////////////////////////////////
 
        	double curPos = dualEncoder.getDistance();
-       	curVelocity = curPos-lastPos;
+       	currVelocity = curPos-lastPos;
 //       	System.out.println(imu.getWorldLinearAccelX() +"," + imu.getWorldLinearAccelY() + "," + imu.getWorldLinearAccelZ() + "," + imu.getPitch() + "," + imu.getRoll() + "," + imu.getYaw() + "," + curPos + "," + curVelocity + "," + (curVelocity - lastVelocity));
+       
+       	lastPos = curPos;
+       	lastVelocity = currVelocity;
        	
+       	
+		/////////////////////////////////////////////
+		//////////		CLAPPER LOGIC
+		/////////////////////////////////////////////
 
        	
-       	lastPos = curPos;
-       	lastVelocity = curVelocity;
-       	
-       	if (Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_X,(float) 0.1) != 0) {//if the joystick is moved
-    		clapper.liftManually((Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_X,(float) 0.1)));//right is up
+//       	if (clapperSafetyLimitSwitch.get()) {
+////    		System.out.println("CLAPPERS TOO LOW");
+//    		if (clapper.isAutomatic())
+//    			clapper.setManual(); 
+//    	}
+       	if (Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_Y,(float) 0.1) != 0) {//if the joystick is moved
+    		clapper.liftManually((Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_Y,(float) 0.1))); //back is up
     	}
     	else if (clapper.isManual()){
+    		System.out.println("enabling clapper PID after manual operation");
     		clapper.setSetpoint(clapper.getPotValue());//set the setpoint to where ever it left off
     	}
-    	else if (clapper.isBelowLowestSetPoint()) {
-    		clapper.clapperPID.disable();
+//    	else if (clapper.isBelowLowestSetPoint()) {
+//    		clapper.clapperPID.disable();
+//    	}
+//       	
+       	clapper.updateToteCount(toteCounter.getCount());
+       	
+       	if (Controllers.getJoystickButton(1) && teleopSequence == null) {
+       		teleopSequence = SequencerFactory.createToteIntakeWithLift();
+       	}
+       	if (Controllers.getJoystickButton(2) && teleopSequence == null) {
+    		teleopSequence = SequencerFactory.createToteIntakeNoLift();
     	}
        	
+       	if(Controllers.getJoystickButton(3))
+       		clapper.openClapper();
+       	if(Controllers.getJoystickButton(4))
+       		clapper.closeClapper();
        	
-       	if (Controllers.getJoystickButton(1)) {
-       		teleopSequence = SequencerFactory.toteSuckIn();
-       		//claw.close();
-       	}
-       	if (Controllers.getJoystickButton(2)) {
-    		teleopSequence = null;
-    		return;
-    	}
-       	if (Controllers.getJoystickButton(3)) {
-       		System.out.println("Joystick button 3 pressed, claw should move down");
-       		claw.liftManually(0.4);
-       	} else if (Controllers.getJoystickButton(4)) {
-       		System.out.println("joystick button 4 pressed, claw should move up");
-       		claw.liftManually(-0.4);
-       	} else { //if (claw.isManual()){
-    		//claw.setSetpoint(claw.getPotValue());
-       		claw.liftManually(0);
-       	}
+		/////////////////////////////////////////////
+		//////////		FINGERS, RATCHET, AND ONE CLAPPER SETPOINT 
+       	//////////		(ONLY ENABLING A SINGLE CLAPPER SETPOINT)
+		/////////////////////////////////////////////
+
        	
-       	if (Controllers.getJoystickButton(5)) {
-       		
-       		claw.close();
-       	}
        	
-       	if (Controllers.getJoystickButton(6)) {
-       		claw.open();
-       	}
-       	
+       	//FINGERS, RATCHET, AND ONE CLAPPER SETPOINT (ONLY ENABLING A CLAPPER SETPOINT)
+       	if(Controllers.getJoystickButton(5))
+       		fingers.dualIntake(1);
+       	else if(Controllers.getJoystickButton(6))
+       		fingers.dualReverse(.75);
+       	else
+       		fingers.dualIntake(0); 
        	if (Controllers.getJoystickButton(7)) {
        		System.out.println("fingers should close now");
        		fingers.setFingerPosition(Fingers.CLOSED);
        	}
        	if (Controllers.getJoystickButton(8)) {
-       		teleopSequence = SequencerFactory.createIntakeToteRoutineBackup();       		
+       		clapper.setSetpoint(Clapper.COOP_THREE_TOTES_SETPOINT);       		
        	}
        	if (Controllers.getJoystickButton(9)) {
        		System.out.println("fingers should go parallel");
@@ -322,7 +343,7 @@ public class Robot extends IterativeRobot {
        	}
        	if (Controllers.getJoystickButton(10)) {
        		System.out.println("hook should go back to normal");
-       		ratchet.setDefaultRatchetPosition();
+       		ratchet.extendRatchet();
        	}
        	if (Controllers.getJoystickButton(11)) {
        		System.out.println("fingers should open");
@@ -330,47 +351,121 @@ public class Robot extends IterativeRobot {
        	}
        	if (Controllers.getJoystickButton(12)) {
        		System.out.println("hook should release");
-       		ratchet.releaseToteStack();
+       		ratchet.retractRatchet();
+       	}
+
+       	
+       	///////////////////////////////////////////////////////////////////////
+       	///////////////////////////////////////////////////////////////////////
+       	//
+       	//	SECONDARY JOYSTICK CONTROLS...ALL CONTAINER/CLAW RELATED
+       	//
+       	///////////////////////////////////////////////////////////////////////
+       	///////////////////////////////////////////////////////////////////////
+       	
+       	
+       	if (Controllers.getSecondaryJoystickAxis(Controllers.JOYSTICK_AXIS_Y, .1f) != 0) {
+       		claw.liftManually(Controllers.getSecondaryJoystickAxis(Controllers.JOYSTICK_AXIS_Y));
+       	} else if (claw.isManual()) {
+    		//claw.setSetpoint(claw.getPotValue());
+       		claw.liftManually(0);
        	}
        	
+       	if(Controllers.getSecondaryJoystickButton(1) && teleopSequence == null)
+       		teleopSequence = SequencerFactory.createContainerLiftRoutine();
+       	if(Controllers.getSecondaryJoystickButton(2) && teleopSequence == null)
+       		teleopSequence = SequencerFactory.createPrepareForContainerLiftRoutine();
+       	
+    	if(Controllers.getSecondaryJoystickButton(3))
+       		claw.open();
+       	if(Controllers.getSecondaryJoystickButton(4))
+       		claw.close();
+       	
+       	if (Controllers.getSecondaryJoystickButton(5) && teleopSequence == null) {
+       		teleopSequence = SequencerFactory.createContainerRightingRoutine();
+       	}
+       	
+       	if (Controllers.getSecondaryJoystickButton(6)) {
+       		//this space left intentionally blank
+       	}
+       	
+       	if(Controllers.getSecondaryJoystickButton(7) && teleopSequence == null) {
+       		teleopSequence = SequencerFactory.createDropToteStackRoutine();
+       	}
+       	
+       	if(Controllers.getSecondaryJoystickButton(8)) {
+       		//nothing to see here
+       	}
+       	
+       	if(Controllers.getSecondaryJoystickButton(9)) {
+       		claw.setSetpoint(Claw.PLACE_ON_EXISTING_STACK_THREE_TOTES);
+       	}
+       	
+       	if(Controllers.getSecondaryJoystickButton(10)) {
+       		claw.setSetpoint(Claw.PLACE_ON_EXISTING_STACK_FOUR_TOTES);
+       	}
+       	
+       	if(Controllers.getSecondaryJoystickButton(11)) {
+       		claw.setSetpoint(Claw.PLACE_ON_EXISTING_STACK_FIVE_TOTES);
+       	}
+       	
+       	if(Controllers.getSecondaryJoystickButton(12)) {
+       		claw.setSetpoint(Claw.PLACE_ON_EXISTING_STACK_SIX_TOTES);
+       	}
+       	
+       	
+   		if ((Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_THROTTLE) > 0) ||
+   				Controllers.getSecondaryJoystickAxis(Controllers.JOYSTICK_AXIS_THROTTLE) > 0) {
+   			//kill ALL THE THINGS@!#@#!!@@
+   			if(teleopSequence != null) {
+   				teleopSequence.clear();
+   				teleopSequence = null;
+   			}
+   			System.out.println("Killing all the things");
+   		}
+   	
+       	
        	if (teleopSequence != null) {
+       		System.out.println("running sequence here in teleopPeriodic");
        		if (teleopSequence.run()) {
        			teleopSequence = null;
        		}
        	}
        	
-       	if (!(clapper.isManual()))
-    		fingers.handleTote((Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_Y)),
-    				Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_Z));
-
-       	if(teleopSequence == null) {
-       		if ((Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_THROTTLE) > 0)) {
-       			clapper.openClapper();
-       			//TODO: figure out how to only open the clapper if a sequence isn't running
-       		} else {
-       			clapper.closeClapper();
-       		}
-       	}
     }
     
-    public static double getCurVelocity() {
-		return curVelocity;
+    public static double getCurrVelocity() {
+		return currVelocity;
 	}
 
+    public void disabledInit() {
+    	if(teleopSequence != null) {
+    		System.out.println("teleopSequence not null here in disabledInit");
+    		teleopSequence = null;
+    	}
+    	
+    	
+    }
+    
 	public void disabledPeriodic() {
 //    	System.out.println(clapper.getPotValue());
-    	int counter = 0;
-    	
-    	if (Controllers.getButton(Controllers.XBOX_BTN_A)) {
-    		counter++;
-    	}
-    	
-    	if(counter > 50) {
-    		degrees += 30;
-//    		System.out.println("degrees is now " + degrees);
-    		counter = 0;
-    	}
-    	
+//    	int counter = 0;
+//    	
+//    	if (Controllers.getButton(Controllers.XBOX_BTN_A)) {
+//    		counter++;
+//    	}
+//    	
+//    	if(counter > 50) {
+//    		degrees += 30;
+////    		System.out.println("degrees is now " + degrees);
+//    		counter = 0;
+//    	}
+		if(teleopSequence != null) {
+			System.out.println("teleopSequence not null in disabledPeriodic");
+			teleopSequence.clear();
+			teleopSequence = null;
+		}
+    	updateDashboard();
     }
     
     public void testInit() {
@@ -379,15 +474,20 @@ public class Robot extends IterativeRobot {
     	rightEnc.reset();
     	drive.disableDriveStraightPID();
     	drive.disableIMUPID();
-    	imu.zeroYaw();
+    	
     	done = false;
     }
         
     public void testPeriodic() {
     	
+    	clapper.setSetpoint(Clapper.ON_RATCHET_SETPOINT);
+//    	claw.setSetpoint(Claw.ONE_TOTE_RESTING);
+    	
+ //   	clapper.liftManually(.4);
+    	
 //    	leftFingerBelt.set(.2);
     	
-    	clawMotor.set(.2);
+//clawMotor.set(.2);
 
 //    	compressor.start();
 
@@ -434,14 +534,17 @@ public class Robot extends IterativeRobot {
 
     }
     
-    public void updateDashboard(){
-     	SmartDashboard.putString("Clapper and Container", clapper.getPercentHeight() +"," + 0 + "," + strongback.getIMURoll());  	
-       	SmartDashboard.putNumber("IPS", (int) drive.getAbsoluteRate());;
-       	SmartDashboard.putNumber("battery", DriverStation.getInstance().getBatteryVoltage());
-        SmartDashboard.putBoolean("disabled", DriverStation.getInstance().isDisabled());
-        SmartDashboard.putNumber("claw pot", claw.getPotValue());
-        SmartDashboard.putNumber("clapper pot", clapper.getPotValue());
-        SmartDashboard.putNumber("tote count", toteCounter.get());
+    public void updateDashboard() {
+     	SmartDashboard.putString("Clapper and Container", clapper.getPercentHeight() + "," + clapper.getPotValue() + ","+ claw.getPercentHeight()+ "," + claw.getPotValue() + "," + strongback.getIMURoll());  
+//    	SmartDashboard.putString("Clapper and Container", clapper.getPercentHeight() + ","+ claw.getPercentHeight() + "," + strongback.getIMURoll());  	
+       	SmartDashboard.putNumber("IPS", (int) drive.getAbsoluteRate());
+       	SmartDashboard.putNumber("Battery", DriverStation.getInstance().getBatteryVoltage());
+        SmartDashboard.putBoolean("Disabled", DriverStation.getInstance().isDisabled());
+        SmartDashboard.putNumber("Claw Pot", claw.getPotValue());
+        SmartDashboard.putNumber("Clapper Pot", clapper.getPotValue());
+        SmartDashboard.putNumber("Tote Count", toteCounter.getCount());
+        SmartDashboard.putNumber("Error from Claw", claw.getError());
+        SmartDashboard.putNumber("Clapper kP", clapper.getkP());
+        SmartDashboard.putBoolean("Clapper is manual: ", clapper.isManual());
     }
-    
 }

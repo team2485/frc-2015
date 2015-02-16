@@ -23,11 +23,11 @@ public class ToteCount {
 		numTotes = numTotes >= 6 ? 6 : numTotes + totes;
 	}
 	
-	public void reset() {
+	public void resetCount() {
 		numTotes = 0;
 	}
 	
-	public int get() {
+	public int getCount() {
 		return numTotes;
 	}
 }

@@ -16,9 +16,8 @@ import edu.wpi.first.wpilibj.VictorSP;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
- * @author Camille Considine
- * @author Patrick Wamsley
  * @author Anoushka Bose
+ * @author Patrick Wamsley
  * @author Ben Clark
  */
 public class DriveTrain {
@@ -37,8 +36,8 @@ public class DriveTrain {
 
 	private double oldWheel = 0.0;
 	private double quickStopAccumulator = 0.0;
-	private final double TRANSLATE_Y_DEADBAND = 0.125;
-	private final double TRANSLATE_X_DEADBAND = 0.125;
+	private final double TRANSLATE_Y_DEADBAND = 0.2;
+	private final double TRANSLATE_X_DEADBAND = 0.25;
 	private final double ROTATION_DEADBAND = 0.2;
 
 
@@ -145,11 +144,12 @@ public class DriveTrain {
 
 		translateX = ThresholdHandler.handleThreshold(translateX, TRANSLATE_X_DEADBAND);
 		translateY = -ThresholdHandler.handleThreshold(translateY, TRANSLATE_Y_DEADBAND);
-		rotation   =  ThresholdHandler.handleThresholdNonLinear(rotation,   ROTATION_DEADBAND );
-
-		//		System.out.println("x, y \t\t" + translateX + ",\t" + translateY);
-
-		//		printLog();    
+		rotation   =  ThresholdHandler.handleThresholdNonLinear(rotation, ROTATION_DEADBAND );
+		
+		if (slowStrafeOnlyMode) {
+			translateY = 0; 
+			translateX *= SLOW_STRAFE_SCALAR; 
+		}
 		
 		double dXInput = Math.abs(translateX - oldXInput), dYInput = Math.abs(translateY - oldYInput); 
 
@@ -184,11 +184,12 @@ public class DriveTrain {
 		oldXInput = translateX;
 		oldYInput = translateY;
 
-		if(rotation != 0) {
+		if(Math.abs(rotation) > 0.1) {
 			if (maintainingHeading) {
 				maintainingHeading = false; 
 				imuPID.disable(); 
 			}
+			System.out.println("In warlordDrive, about to call rotational: " + translateY + ", " + rotation + "\t\tROTATION");
 			rotationalDrive(translateY, rotation);
 		}
 		
@@ -201,6 +202,7 @@ public class DriveTrain {
 				imuPID.setSetpoint(desiredHeading);
 				imuPID.enable();
 			}
+			System.out.println("In warlordDrive, about to call strafe: " + translateX + ", " + translateY + "\t\tSTRAFE");
 			strafeDrive(translateX, translateY);
 		}
 	}
@@ -210,20 +212,6 @@ public class DriveTrain {
 		dropCenterWheel(false);
 		setCenterWheel(0);
 		oldXInput = 0; 
-		//		double maxDelta = 0.05;
-		//				if(Math.abs(wheel - oldWheel) > maxDelta)
-		//					if(wheel > oldWheel)
-		//						wheel = oldWheel + maxDelta;
-		//					else
-		//						wheel = oldWheel - maxDelta;
-		//				if(wheel > 1)
-		//					wheel = 1;
-		//				else if (wheel < -1)
-		//					wheel = -1;
-		//				oldWheel = wheel;
-		//				
-		//				setLeftRight(wheel, -wheel);   
-		//		return;   
 
 		double negInertia = rotation - oldWheel;
 		oldWheel = rotation;
@@ -283,13 +271,12 @@ public class DriveTrain {
 		leftPwm  += angularPower;
 		rightPwm -= angularPower;
 
-		//		System.out.println("leftPWM/rightPWM before: " + leftPwm + " and " + rightPwm);
-
-		////////////////////////////////////////////////////////////////////////////////////
-		//lower sensitivity -- 1/31/15 debugging 
-		///////////  DOES THIS NEED TO BE HERE!!!!
-		///////////
-		////////////////////////////////////////////////////////////////////////////////////
+		leftPwm  *= Math.abs(leftPwm); 
+		rightPwm *= Math.abs(rightPwm); 
+		
+		leftPwm  *= Math.abs(leftPwm); 
+		rightPwm *= Math.abs(rightPwm); 
+		
 		leftPwm  *= Math.abs(leftPwm); 
 		rightPwm *= Math.abs(rightPwm); 
 
@@ -326,12 +313,11 @@ public class DriveTrain {
 
 		double yOutput = 0, xOutput = 0; 
 
-		dropCenterWheel(true);
-
-		if (slowStrafeOnlyMode) {
-			yInput = 0; 
-			xInput *= SLOW_STRAFE_SCALAR; 
-		}
+		if (Math.abs(xInput) > 0)
+			dropCenterWheel(true);
+		else 
+			dropCenterWheel(false);
+		
 
 		double pidOut = dummyImuOutput.get(); 
 
