@@ -10,27 +10,30 @@ public class IMURollPIDSource implements PIDSource {
 	
 	private IMUAdvanced imu;
 	private double encoderRate;
-	private boolean movementCorrected; 
+	private boolean isDataFiltered; 
 	
-	public boolean isMovementCorrected() {
-		return movementCorrected;
+	private static final double MAGIC_ROLL_CORRECTION_SCALAR = 3; 
+	
+	public boolean isDataFiltered() {
+		return isDataFiltered;
 	}
 
-	public void setMovementCorrected(boolean movementCorrected) {
-		this.movementCorrected = movementCorrected;
+	public void filterData(boolean movementCorrected) {
+		this.isDataFiltered = movementCorrected;
 	}
 
-	public IMURollPIDSource(IMUAdvanced imu, boolean movementCorrected) {
+	public IMURollPIDSource(IMUAdvanced imu, boolean filterData) {
 		this.imu = imu; 
-		this.movementCorrected = movementCorrected;
+		this.isDataFiltered = filterData;
 	}
 
 	@Override
 	public double pidGet() {
 		encoderRate = Robot.getCurVelocity();
-		if (movementCorrected){
-			System.out.println(imu.getRoll() + "-" + encoderRate*4);
-			return (imu.getRoll() - encoderRate*4);// returns a value adjusted by equation found by Todor
+		if (isDataFiltered) {
+			if (Math.abs(encoderRate) > .02)
+				System.out.println(imu.getRoll() +  " \t:\t " + encoderRate * MAGIC_ROLL_CORRECTION_SCALAR);
+			return (imu.getRoll() - encoderRate * MAGIC_ROLL_CORRECTION_SCALAR);// returns a value adjusted by equation found by Todor
 		} else {
 			return imu.getRoll(); 
 		}

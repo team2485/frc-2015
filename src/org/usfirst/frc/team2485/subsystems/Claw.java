@@ -55,8 +55,8 @@ public class Claw {
 	 */
 	public void liftManually(double speed) {
 		setManual();
-		double adjustedSpeed = ThresholdHandler.handleThreshold(speed, 0.1)/4;
-		System.out.println(speed + " | " + adjustedSpeed);
+		double adjustedSpeed = ThresholdHandler.handleThreshold(speed, 0.1);
+		//System.out.println(speed + " | " + adjustedSpeed);
 		if (adjustedSpeed > 1){
 			adjustedSpeed = 1;
 		} else if (adjustedSpeed < -1){
@@ -73,9 +73,9 @@ public class Claw {
 		elevationPID.setPID(kP, kI, kD);
 	}
 	
-	public void setSetpoint(int setpoint) {
+	public void setSetpoint(double d) {
 		setAutomatic();
-		elevationPID.setSetpoint(setpoint);
+		elevationPID.setSetpoint(d);
 	}
 	
 	/**

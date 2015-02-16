@@ -26,4 +26,8 @@ public class ToteCount {
 	public void reset() {
 		numTotes = 0;
 	}
+	
+	public int get() {
+		return numTotes;
+	}
 }

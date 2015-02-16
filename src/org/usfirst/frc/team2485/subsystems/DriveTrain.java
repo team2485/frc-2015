@@ -29,9 +29,9 @@ public class DriveTrain {
 	private Encoder centerEnc, leftEnc, rightEnc;
 
 	private final double 
-		NORMAL_SPEED_RATING = 0.75,
-		FAST_SPEED_RATING = 1.0,
-		SLOW_SPEED_RATING = 0.5;
+	NORMAL_SPEED_RATING = 0.75,
+	FAST_SPEED_RATING = 1.0,
+	SLOW_SPEED_RATING = 0.5;
 
 	private double driveSpeed = NORMAL_SPEED_RATING;
 
@@ -40,19 +40,19 @@ public class DriveTrain {
 	private final double TRANSLATE_Y_DEADBAND = 0.125;
 	private final double TRANSLATE_X_DEADBAND = 0.125;
 	private final double ROTATION_DEADBAND = 0.2;
-	
-	
-	
+
+
+
 	////////////////////////////////////////////////////////////
 	private final double STRAFE_TUNING_PARAMETER = 1;
 	////////////////////////////////////////////////////////////
-	
-	
+
+
 	private final double SENSITIVITY_HIGH = 0.85;
 	private final double SENSITIVITY_LOW = 0.55;
 	private final double MUCH_TOO_HIGH_SENSITIVITY = 1.7;
 	private boolean isQuickTurn = false;
-	
+
 
 	//PID 
 	public double desiredHeading = 0.0; 
@@ -76,39 +76,40 @@ public class DriveTrain {
 	private double lowEncRate = 40;
 	private int imuOnTargetCounter = 0;
 	private final int MINIMUM_IMU_ON_TARGET_ITERATIONS = 6;
-	
+
 	private boolean slowStrafeOnlyMode = false; 
-	
+
 	private final double
-		absTolerance_Imu_TurnTo = 1.0,
-		absTolerance_Imu_DriveStraight = 2.0,
-		absTolerance_Enc_DriveStraight = 3.0, // needs tuning
-		absTolerance_Enc_Strafe = 3.0;
-	
-	private double oldXInput; 
+	absTolerance_Imu_TurnTo = 1.0,
+	absTolerance_Imu_DriveStraight = 2.0,
+	absTolerance_Enc_DriveStraight = 3.0, // needs tuning
+	absTolerance_Enc_Strafe = 3.0;
+
+	private double oldXInput, oldYInput; 
 	private static double MAX_DELTA_X_LEFT = 0.02; //before changing acc code, .015 worked well for left
 	private static double MAX_DELTA_X_RIGHT = 0.04; 
 
+	private static double MAX_DELTA_Y_NORMAL = 0.05, MAX_DELTA_Y_DANGER = 0.025; 
 	public static double 
-		driveStraightEncoder_Kp = 0.0275, 
-		
-		driveStraightEncoder_Ki = 0.0, 
-		driveStraightEncoder_Kd = 0.0;
+	driveStraightEncoder_Kp = 0.0275, 
+
+	driveStraightEncoder_Ki = 0.0, 
+	driveStraightEncoder_Kd = 0.0;
 
 	public static double 
-		strafeEncoder_Kp = 0.005,
-		strafeEncoder_Ki = 0.0,
-		strafeEncoder_Kd = 0.0;
-	
-	public static double
-		driveStraightImu_Kp = 0.025, // old data?? seems stale - 0.05 - for floor work, 0.07 for bump (tentatively)
-		driveStraightImu_Ki = 0.0,
-		driveStraightImu_Kd = 0.01; 
+	strafeEncoder_Kp = 0.005,
+	strafeEncoder_Ki = 0.0,
+	strafeEncoder_Kd = 0.0;
 
 	public static double
-		rotateImu_kP = 0.0125,
-		rotateImu_kI = 0.00,
-		rotateImu_kD = 0.01;
+	driveStraightImu_Kp = 0.025, // old data?? seems stale - 0.05 - for floor work, 0.07 for bump (tentatively)
+	driveStraightImu_Ki = 0.0,
+	driveStraightImu_Kd = 0.01; 
+
+	public static double
+	rotateImu_kP = 0.0125,
+	rotateImu_kI = 0.00,
+	rotateImu_kD = 0.01;
 
 	public DriveTrain(VictorSP leftDrive, VictorSP leftDrive2, VictorSP rightDrive, 
 			VictorSP rightDrive2, CombinedVictorSP center, Solenoid suspension, IMU imu, Encoder leftEnc, 
@@ -133,7 +134,7 @@ public class DriveTrain {
 		dualEncoder = new DualEncoder(leftEnc, rightEnc);
 		driveStraightPID = new PIDController(driveStraightEncoder_Kp, driveStraightEncoder_Ki, driveStraightEncoder_Kd, dualEncoder, dummyEncoderOutput);
 		driveStraightPID.setAbsoluteTolerance(absTolerance_Enc_DriveStraight);
-		
+
 		if(centerEnc != null) {
 			strafePID = new PIDController(strafeEncoder_Kp, strafeEncoder_Ki, strafeEncoder_Kd, centerEnc, center);
 			strafePID.setAbsoluteTolerance(absTolerance_Enc_Strafe);
@@ -146,9 +147,42 @@ public class DriveTrain {
 		translateY = -ThresholdHandler.handleThreshold(translateY, TRANSLATE_Y_DEADBAND);
 		rotation   =  ThresholdHandler.handleThresholdNonLinear(rotation,   ROTATION_DEADBAND );
 
-//		System.out.println("x, y \t\t" + translateX + ",\t" + translateY);
+		//		System.out.println("x, y \t\t" + translateX + ",\t" + translateY);
 
-//		printLog();    
+		//		printLog();    
+		
+		double dXInput = Math.abs(translateX - oldXInput), dYInput = Math.abs(translateY - oldYInput); 
+
+		if (dXInput > MAX_DELTA_X_LEFT) {
+
+			if (translateX > oldXInput)
+				translateX = oldXInput + MAX_DELTA_X_LEFT; 
+			else
+				translateX = oldXInput - MAX_DELTA_X_LEFT; 
+
+			if(translateX > 1)
+				translateX = 1;
+			else if (translateX < -1)
+				translateX = -1;
+		}
+		
+		double currMaxDeltaY = translateY > oldYInput && oldYInput < 0 ? MAX_DELTA_Y_DANGER : MAX_DELTA_Y_NORMAL; 
+
+		if (dYInput > currMaxDeltaY) {
+
+			if (translateY > oldYInput)
+				translateY = oldYInput + currMaxDeltaY; 
+			else
+				translateY = oldYInput - currMaxDeltaY; 
+
+			if(translateY > 1)
+				translateY = 1;
+			else if (translateY < -1)
+				translateY = -1;
+		}
+
+		oldXInput = translateX;
+		oldYInput = translateY;
 
 		if(rotation != 0) {
 			if (maintainingHeading) {
@@ -157,7 +191,7 @@ public class DriveTrain {
 			}
 			rotationalDrive(translateY, rotation);
 		}
-//
+		
 		else {
 			if (!maintainingHeading) {
 				maintainingHeading = true; 
@@ -177,18 +211,18 @@ public class DriveTrain {
 		setCenterWheel(0);
 		oldXInput = 0; 
 		//		double maxDelta = 0.05;
-//				if(Math.abs(wheel - oldWheel) > maxDelta)
-//					if(wheel > oldWheel)
-//						wheel = oldWheel + maxDelta;
-//					else
-//						wheel = oldWheel - maxDelta;
-//				if(wheel > 1)
-//					wheel = 1;
-//				else if (wheel < -1)
-//					wheel = -1;
-//				oldWheel = wheel;
-//				
-//				setLeftRight(wheel, -wheel);   
+		//				if(Math.abs(wheel - oldWheel) > maxDelta)
+		//					if(wheel > oldWheel)
+		//						wheel = oldWheel + maxDelta;
+		//					else
+		//						wheel = oldWheel - maxDelta;
+		//				if(wheel > 1)
+		//					wheel = 1;
+		//				else if (wheel < -1)
+		//					wheel = -1;
+		//				oldWheel = wheel;
+		//				
+		//				setLeftRight(wheel, -wheel);   
 		//		return;   
 
 		double negInertia = rotation - oldWheel;
@@ -210,7 +244,7 @@ public class DriveTrain {
 		double angularPower;
 		double linearPower;
 
-//		// Negative inertia!
+		//		// Negative inertia!
 		double negInertiaAccumulator = 0.0;
 		double negInertiaScalar;
 
@@ -249,8 +283,8 @@ public class DriveTrain {
 		leftPwm  += angularPower;
 		rightPwm -= angularPower;
 
-//		System.out.println("leftPWM/rightPWM before: " + leftPwm + " and " + rightPwm);
-		
+		//		System.out.println("leftPWM/rightPWM before: " + leftPwm + " and " + rightPwm);
+
 		////////////////////////////////////////////////////////////////////////////////////
 		//lower sensitivity -- 1/31/15 debugging 
 		///////////  DOES THIS NEED TO BE HERE!!!!
@@ -272,17 +306,17 @@ public class DriveTrain {
 			leftPwm += overPower * (-1.0 - rightPwm);
 			rightPwm = -1.0;
 		}
-		
 
-//		System.out.println("leftPWM/rightPWM after: " + leftPwm + " and " + rightPwm);
+
+		//		System.out.println("leftPWM/rightPWM after: " + leftPwm + " and " + rightPwm);
 		setLeftRight(leftPwm, rightPwm);
 	}
-	
+
 	public void setImuForDrivingStraight() {
 		imuPID.setPID(driveStraightImu_Kp, driveStraightImu_Ki, driveStraightImu_Kd);
 		imuPID.setAbsoluteTolerance(absTolerance_Imu_DriveStraight);
 	}
-	
+
 	public void setImuForRotating() {
 		imuPID.setPID(rotateImu_kP, rotateImu_kI, rotateImu_kD);
 		imuPID.setAbsoluteTolerance(absTolerance_Imu_TurnTo);
@@ -293,60 +327,14 @@ public class DriveTrain {
 		double yOutput = 0, xOutput = 0; 
 
 		dropCenterWheel(true);
-		
+
 		if (slowStrafeOnlyMode) {
 			yInput = 0; 
 			xInput *= SLOW_STRAFE_SCALAR; 
 		}
-		
+
 		double pidOut = dummyImuOutput.get(); 
-		
-		/*
-		 * old acceleration limiting code
-		 */
-//		double currMaxDelta = xInput > 0 ? MAX_DELTA_X_RIGHT : MAX_DELTA_X_LEFT; 
-//		
-////		if (!(xInput > 0 && oldXInput > 0 || xInput < 0 && oldXInput < 0))
-////			xInput = xInput > 0 ? .003 : -.003;  
-//		if ((xInput > 0 && oldXInput < 0) || xInput < 0 && oldXInput > 0) { //change in sign
-//			if (xInput > 0)
-//				MAX_DELTA_X_LEFT  = 0.001; 
-//			else
-//				MAX_DELTA_X_RIGHT = 0.001; 
-//		} else {
-//			MAX_DELTA_X_LEFT = .015; 
-//			MAX_DELTA_X_RIGHT = .04; 
-//		}
-//		if (Math.abs(xInput - oldXInput) > currMaxDelta) {
-//			if(xInput > oldXInput)
-//				xInput = oldXInput + currMaxDelta;
-//			else
-//				xInput = oldXInput - currMaxDelta;
-//			
-//			if(xInput > 1)
-//				xInput = 1;
-//			else if (xInput < -1)
-//				xInput = -1;
-//		}
-		
-		double dXInput = Math.abs(xInput - oldXInput); 
-		
-		if (dXInput > MAX_DELTA_X_LEFT) {
-			
-			if (xInput > oldXInput)
-				xInput = oldXInput + MAX_DELTA_X_LEFT; 
-			else
-				xInput = oldXInput - MAX_DELTA_X_LEFT; 
-			
-			if(xInput > 1)
-				xInput = 1;
-			else if (xInput < -1)
-				xInput = -1;
-		}
-		
-		
-		oldXInput = xInput;
-		
+
 		this.translateX = xInput; 
 		this.translateY = yInput; 
 
@@ -367,12 +355,12 @@ public class DriveTrain {
 
 		this.outputTX = xOutput; 
 		this.outputTY = yOutput; 
-//		System.out.println("IMU PID enabled" + imuPID.isEnable());
-//
-//		System.out.println("xOut, yOut, pidOut \t" + xOutput + ", " + yOutput + ", " + pidOut);
+		//		System.out.println("IMU PID enabled" + imuPID.isEnable());
+		//
+		//		System.out.println("xOut, yOut, pidOut \t" + xOutput + ", " + yOutput + ", " + pidOut);
 		setMotors(yOutput + pidOut, yOutput - pidOut, xOutput);
-//		System.out.println(imu.getYaw() + " : " + imuPID.getSetpoint());
-//		System.out.println("current kP is: " + imuPID.getP());
+		//		System.out.println(imu.getYaw() + " : " + imuPID.getSetpoint());
+		//		System.out.println("current kP is: " + imuPID.getP());
 
 	}
 
@@ -483,22 +471,22 @@ public class DriveTrain {
 		//				" xOutput:" + outputTX + " yOutput: " + outputTY);
 
 		//System.out.println("Pos: " + imu.getYaw() + " Pos Target: " + imuPID.getSetpoint());
-		
-//		System.out.println("Imu yaw: " + imu.getYaw());
-//    	System.out.println("Imu pitch: " + imu.getPitch());
+
+		//		System.out.println("Imu yaw: " + imu.getYaw());
+		//    	System.out.println("Imu pitch: " + imu.getPitch());
 	}
-	
+
 	// tune strafe param 
 	public void tuneDriveKp(double d) {
 		if (buttonClicked) {
 			driveStraightEncoder_Kd += d; 
-//			STRAFE_TUNING_PARAMETER += Math.abs(d)/d; 
+			//			STRAFE_TUNING_PARAMETER += Math.abs(d)/d; 
 			buttonClicked = false; 
 			System.out.println("new kP: " + driveStraightEncoder_Kd);
 			SmartDashboard.putNumber("Driving Straight Encoder kP", driveStraightEncoder_Kp);
 		}
 	}
-	
+
 	// tune strafe param
 	public void resetButtonClicked() {
 		buttonClicked = true; 
@@ -512,7 +500,7 @@ public class DriveTrain {
 	public boolean rotateTo(double angle) { //may need to check for moving to fast when pid is on target
 		if (imuPID == null) 
 			throw new IllegalStateException("can't rotateTo when imu is null"); 
-		
+
 
 		if (!imuPID.isEnable()) {
 			setImuForRotating();
@@ -523,23 +511,23 @@ public class DriveTrain {
 			driveStraightPID.disable();
 
 		// Check to see if we're on target
-		
+
 		if (imuPID.onTarget()) {
 			imuOnTargetCounter++;
-//			System.out.println("On target with count: " + imuOnTargetCounter);
+			//			System.out.println("On target with count: " + imuOnTargetCounter);
 		} else {
 			imuOnTargetCounter = 0;
 		}
-		
+
 		if (imuOnTargetCounter >= MINIMUM_IMU_ON_TARGET_ITERATIONS){
 			setLeftRight(0, 0);
 			imuPID.disable();
-//			System.out.println("Disabling PID with count: " + imuOnTargetCounter);
+			//			System.out.println("Disabling PID with count: " + imuOnTargetCounter);
 			return true;
 		}
 
-//		System.out.println("IMU Error: " + imuPID.getError());
-		
+		//		System.out.println("IMU Error: " + imuPID.getError());
+
 		double imuOutput = dummyImuOutput.get();
 		setLeftRight(imuOutput, -imuOutput);
 		return false;
@@ -564,14 +552,14 @@ public class DriveTrain {
 		if (!driveStraightPID.isEnable()) {
 			dualEncoder.reset();
 			driveStraightPID.enable();
-//			System.out.println("Enabling driveStraight PID in driveTo");
+			//			System.out.println("Enabling driveStraight PID in driveTo");
 			driveStraightPID.setSetpoint(inches);
 		}
 
 		if(imuPID != null && !imuPID.isEnable()) {
 			setImuForDrivingStraight();
 			imuPID.setSetpoint(imu.getYaw());
-//			System.out.println("enabling IMU PID in driveTo");
+			//			System.out.println("enabling IMU PID in driveTo");
 			imuPID.enable();
 		}
 
@@ -583,26 +571,26 @@ public class DriveTrain {
 		if(imuPID != null)
 			imuOutput = dummyImuOutput.get();
 
-		
-//		System.out.println("leftEnc value: " + leftEnc.getDistance() + " rightEnc value: " + rightEnc.getDistance());
-//		System.out.println("dualEncoder: " + dualEncoder.getDistance());
 
-//		System.out.println("encoderPID output: " + encoderOutput + " imuPID output: " + imuOutput);
-//		System.out.println("error from enc PID " + driveStraightPID.getError());
-//		System.out.println("dual encoder rate: " + dualEncoder.getRate()); 
-//		System.out.println("signal sent: " + driveStraightPID.get());
-//		System.out.println("Kp from enc PID " + driveStraightPID.getP());
+		//		System.out.println("leftEnc value: " + leftEnc.getDistance() + " rightEnc value: " + rightEnc.getDistance());
+		//		System.out.println("dualEncoder: " + dualEncoder.getDistance());
 
-//		just changed this sign
+		//		System.out.println("encoderPID output: " + encoderOutput + " imuPID output: " + imuOutput);
+		//		System.out.println("error from enc PID " + driveStraightPID.getError());
+		//		System.out.println("dual encoder rate: " + dualEncoder.getRate()); 
+		//		System.out.println("signal sent: " + driveStraightPID.get());
+		//		System.out.println("Kp from enc PID " + driveStraightPID.getP());
+
+		//		just changed this sign
 		setLeftRight(leftOutput + imuOutput, rightOutput - imuOutput);
 
 		// Check to see if we're on target
 		if (driveStraightPID.onTarget() && Math.abs(dualEncoder.getRate()) < lowEncRate) {
-//			System.out.println("Reached PID on target");
+			//			System.out.println("Reached PID on target");
 			setLeftRight(0.0, 0.0);
 			driveStraightPID.disable();
 			imuPID.disable();
-//			System.out.println("driveTo finished inside of driveTo");
+			//			System.out.println("driveTo finished inside of driveTo");
 			return true;
 		}
 		return false;
@@ -610,19 +598,19 @@ public class DriveTrain {
 	public IMU getIMU() {
 		return imu;
 	}
-	
+
 	public double getAbsoluteRate(){
 		return dualEncoder.getAbsoluteRate();
 	}
-	
+
 	public double getRate(){
 		return dualEncoder.getRate();
 	}
-//	public boolean strafeTo(double distance) {
-//		// TODO Auto-generated method stub
-//		return false;
-//	}
-	
+	//	public boolean strafeTo(double distance) {
+	//		// TODO Auto-generated method stub
+	//		return false;
+	//	}
+
 	public void setSlowStrafeOnlyMode(boolean b) {
 		slowStrafeOnlyMode = b; 
 	}
