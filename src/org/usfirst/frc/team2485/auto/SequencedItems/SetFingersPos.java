@@ -23,6 +23,6 @@ public class SetFingersPos implements SequencedItem {
 
 	@Override
 	public double duration() {
-		return 0;
+		return 0.05;
 	}
 }

@@ -19,7 +19,7 @@ public class OpenClapper implements SequencedItem {
 
 	@Override
 	public double duration() {
-		return finished ? 0 : 1; //1 untested
+		return finished ? 0 : .1; //1 untested
 	}
 	
 }

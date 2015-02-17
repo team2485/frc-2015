@@ -4,6 +4,7 @@ import org.usfirst.frc.team2485.auto.SequencedItems.AutoTestPrint;
 import org.usfirst.frc.team2485.auto.SequencedItems.CloseClapper;
 import org.usfirst.frc.team2485.auto.SequencedItems.CloseClaw;
 import org.usfirst.frc.team2485.auto.SequencedItems.DisableClawPID;
+import org.usfirst.frc.team2485.auto.SequencedItems.DisableStrongbackPID;
 import org.usfirst.frc.team2485.auto.SequencedItems.DriveSlowConstant;
 import org.usfirst.frc.team2485.auto.SequencedItems.DriveStraight;
 import org.usfirst.frc.team2485.auto.SequencedItems.DriveStraightLowAcceleration;
@@ -19,6 +20,7 @@ import org.usfirst.frc.team2485.auto.SequencedItems.RetractRatchet;
 import org.usfirst.frc.team2485.auto.SequencedItems.RotateToAngle;
 import org.usfirst.frc.team2485.auto.SequencedItems.SetClapperPID;
 import org.usfirst.frc.team2485.auto.SequencedItems.SetClapperPIDByToteCount;
+import org.usfirst.frc.team2485.auto.SequencedItems.SetClawPID;
 import org.usfirst.frc.team2485.auto.SequencedItems.SetFingerRollers;
 import org.usfirst.frc.team2485.auto.SequencedItems.SetFingersPos;
 import org.usfirst.frc.team2485.auto.SequencedItems.TiltStrongback;
@@ -275,6 +277,7 @@ public class SequencerFactory {
 							new MoveClapperVertically(Clapper.LIFT_BOTTOM_TOTE_TO_RAISE_STACK_OFF_RATCHET_SETPOINT),
 							new MoveClawRelativeToClapper(Clapper.LIFT_BOTTOM_TOTE_TO_RAISE_STACK_OFF_RATCHET_SETPOINT) ),
 					new RetractRatchet(),
+					new SequencedPause(.1),
 					new SequencedMultipleItem(
 							new MoveClapperVertically(Clapper.LOADING_SETPOINT), 
 							new MoveClawRelativeToClapper(Clapper.LOADING_SETPOINT) ),		
@@ -282,7 +285,12 @@ public class SequencerFactory {
 					new OpenClapper() 
 			});
 		else {
+			//assumption is that all of the totes are on the hook...start by making sure that the clapper is in the correct position
 			returnSequence = new Sequencer(new SequencedItem[] {
+					new SequencedMultipleItem(
+							new OpenClapper(),
+							new MoveClapperVertically(Clapper.HOLDING_TOTE_SETPOINT)
+							),
 					new SequencedMultipleItem(
 							new CloseClapper(),
 							new SetFingersPos(Fingers.OPEN) ),
@@ -320,8 +328,24 @@ public class SequencerFactory {
 	
 	public static Sequencer createContainerPickupRoutine() {
 		return new Sequencer(new SequencedItem[] {
+				new SetClawPID(Claw.AGGRESSIVE_KP, 0, 0),
 				new CloseClaw(),
-				new MoveClawVertically(Claw.ONE_TOTE_LOADING),
+				//new MoveClawVertically(Claw.ONE_TOTE_LOADING),	//see comment below
+				
+				//added this to attempt fixing the positioning of the container
+				//within the claw...then put the container down in a position
+				//ready for the first tote to slide in (just above the bottom
+				//of the claw's lower plate)
+				new MoveClawVertically(Claw.FIX_CONTAINER_POSITION_IN_CLAW),
+				new CloseClapper(),
+				new MoveClapperVertically(Clapper.FIX_CONTAINER_IN_CLAW_POS),
+				new SequencedPause(.25),
+				new MoveClapperVertically(Clapper.LOADING_SETPOINT),
+				new SetClawPID(Claw.kP, Claw.kI, Claw.kD),
+				new SequencedMultipleItem( 
+						new SetFingersPos(Fingers.OPEN),
+						new MoveClawVertically(Claw.FIRST_TOTE_POSITION_BELOW_RATCHET)
+					)
 		}); 
 	}
 	
@@ -340,8 +364,6 @@ public class SequencerFactory {
 	
 	public static Sequencer createTestPickupWithStrongbackTilt() {
 		
-		double offset = Robot.claw.isOpen() ? Claw.NO_CONTAINER_OFFSET : 0; 
-		
 		return new Sequencer( new SequencedItem[] {
 				new RetractRatchet(),
 				new MoveClapperVertically(Clapper.LOADING_SETPOINT),
@@ -358,16 +380,16 @@ public class SequencerFactory {
 				
 				new IncrementToteCount(),
 				new SetClapperPIDByToteCount(),
-				new SequencedPause(0.25), // TODO: check this
+				//new SequencedPause(0.25), // TODO: check this
 				new SequencedMultipleItem(	
 						new ExtendRatchet(), 
 						new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT), 
 						new MoveClawWithToteIntake(),
 						new TiltStrongback(6),
-						new SetFingerRollers(SetFingerRollers.INTAKE, .5, .5)
+						new SetFingerRollers(SetFingerRollers.INTAKE, .25, .5)
 				),
-				new SequencedPause(0.25), // TODO: check this
-				new SetFingerRollers(SetFingerRollers.OFF, .05, 0),
+				//new SequencedPause(0.25), // TODO: check this
+				new SetFingerRollers(SetFingerRollers.OFF, .1, 0),
 				new SequencedPause(0.1),
 				new SetClapperPID(0.001, 0, 0),
 				new SequencedMultipleItem( 
@@ -377,8 +399,8 @@ public class SequencerFactory {
 				new SetClapperPIDByToteCount(),
 				new TiltStrongback(0),
 				new MoveClapperVertically(Clapper.LOADING_SETPOINT),
-				new SetFingersPos(Fingers.OPEN)
-				
+				new SetFingersPos(Fingers.OPEN),
+				new DisableStrongbackPID()
 				});
 	}
 }

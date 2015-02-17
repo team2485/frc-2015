@@ -13,6 +13,7 @@ public class SetClawPID implements SequencedItem {
 		this.kP = kP;
 		this.kI = kI;
 		this.kD = kD;
+		Robot.claw.setPID(kP, kI, kD);
 	}
 
 	@Override
@@ -22,7 +23,7 @@ public class SetClawPID implements SequencedItem {
 
 	@Override
 	public double duration() {
-		return 0;
+		return 0.05;
 	}
 
 }

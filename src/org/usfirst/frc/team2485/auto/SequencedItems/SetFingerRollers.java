@@ -7,7 +7,8 @@ public class SetFingerRollers implements SequencedItem {
 
 	public static final int INTAKE = 0, REVERSE = 1, OFF = 2; 
 	private int type; 
-	private double timing, speed; 
+	private double timing, speed;
+	private boolean done;
 	
 //	private static int numTotes = 0; 
 	
@@ -24,6 +25,8 @@ public class SetFingerRollers implements SequencedItem {
 	@Override
 	public void run() {
 		
+		done = Robot.clapper.toteDetected();
+		
 		if (type == INTAKE)
 			Robot.fingers.dualIntake(speed); 
 		else if (type == REVERSE) 
@@ -36,7 +39,7 @@ public class SetFingerRollers implements SequencedItem {
 
 	@Override
 	public double duration() {
-		return Robot.clapper.toteDetected() ? 0 : timing;
+		return done ? 0 : timing;
 	}
 
 	

@@ -261,7 +261,6 @@ public class Robot extends IterativeRobot {
         long currTime = System.currentTimeMillis();
         if (Controllers.getButton(Controllers.XBOX_BTN_Y) && currTime - timeLastToteCountProcessed > TOTE_COUNT_MIN_DELAY) {
         	toteCounter.addTote(); 
-        	
         	timeLastToteCountProcessed = currTime;
         } else if (Controllers.getButton(Controllers.XBOX_BTN_X) && currTime - timeLastToteCountProcessed > TOTE_COUNT_MIN_DELAY) {
 //        	toteCounter.reset(); 
@@ -409,7 +408,7 @@ public class Robot extends IterativeRobot {
        	}
        	
        	if(Controllers.getSecondaryJoystickButton(10) && teleopSequence == null) {
-       		teleopSequence = SequencerFactory.createDropToteStackRoutine(true);
+       		teleopSequence = SequencerFactory.createDropToteStackRoutine(true);//totes on the ratchet and one underneath
        	}
        	
        	if(Controllers.getSecondaryJoystickButton(11)) {
@@ -418,7 +417,7 @@ public class Robot extends IterativeRobot {
        	}
        	
        	if(Controllers.getSecondaryJoystickButton(12) && teleopSequence == null) {
-       		teleopSequence = SequencerFactory.createDropToteStackRoutine(false);
+       		teleopSequence = SequencerFactory.createDropToteStackRoutine(false);//only totes on the ratchet
        	}
        		
    		if ((Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_THROTTLE) > 0) ||
@@ -570,5 +569,6 @@ public class Robot extends IterativeRobot {
 //        SmartDashboard.putNumber("Clapper inches", clapper.getInchHeight());
         SmartDashboard.putNumber("Clapper change in height" ,  (float)Robot.clapper.getChangeInHeightInInches());
         SmartDashboard.putNumber("Encoder Distance", leftEnc.getDistance());
+        SmartDashboard.putBoolean("Tote detected by limit switch", clapper.toteDetected());
     }
 }

@@ -18,13 +18,14 @@ import edu.wpi.first.wpilibj.VictorSP;
 
 public class Claw {
 	
-	private double kP = 0.002, kI = 0.00, kD = 0;
+	public static double kP = 0.002, kI = 0.00, kD = 0;
+	public static final double AGGRESSIVE_KP = 0.02;
 	private CombinedVictorSP winchMotor;
 	private Solenoid actuator;
 	private ScaledPot potScaled;
 	private DummyOutput dummyWinch;
 
-	private static final double LOWEST_POS = 105; 	// top: 850 bottom: 112
+	private static final double LOWEST_POS = 91; 	// top: 850 bottom: 112
 	private static final double POS_RANGE = 740;
 	public static final double POT_TOLERANCE = 12;
 	private static final double INCH_RANGE  = 63.75; // 11.25 in from floor (corresponds to a pot value of LOWEST_POS) - 75 in
@@ -48,7 +49,11 @@ public class Claw {
 		FIVE_TOTE_LOADING		= FIVE_TOTE_RESTING + LOADING_RESTING_OFFSET,
 		SIX_TOTE_RESTING		= FIVE_TOTE_RESTING + TOTE_HEIGHT,
 		SIX_TOTE_LOADING		= SIX_TOTE_RESTING + LOADING_RESTING_OFFSET,
-		RATCHET_COLLISION		= 265;
+		RATCHET_COLLISION		= LOWEST_POS + 160,
+		FIX_CONTAINER_POSITION_IN_CLAW	= LOWEST_POS + 185,
+		FIRST_TOTE_POSITION_BELOW_RATCHET	= LOWEST_POS + 65;
+	
+	
 	
 	public static final double 	PLACE_ON_EXISTING_STACK_THREE_TOTES = LOWEST_POS + 455,
 								PLACE_ON_EXISTING_STACK_FOUR_TOTES = LOWEST_POS + 600,
@@ -56,7 +61,8 @@ public class Claw {
 								PLACE_ON_EXISTING_STACK_FIVE_TOTES = LOWEST_POS + 750,
 								PLACE_ON_EXISTING_STACK_SIX_TOTES = LOWEST_POS + POS_RANGE;
 	
-	public static final double NO_CONTAINER_OFFSET = -120; 
+	public static final double NO_CONTAINER_OFFSET = -120;
+	 
 	
 	// top of the claw: 870
 	// bottom of the claw: 118
