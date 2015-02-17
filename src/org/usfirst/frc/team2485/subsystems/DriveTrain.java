@@ -32,7 +32,7 @@ public class DriveTrain {
 	FAST_SPEED_RATING = 1.0,
 	SLOW_SPEED_RATING = 0.5;
 
-	private double driveSpeed = NORMAL_SPEED_RATING;
+	private double driveSpeed = SLOW_SPEED_RATING; //asked by drivers to have this setting
 
 	private double oldWheel = 0.0;
 	private double quickStopAccumulator = 0.0;
@@ -76,7 +76,7 @@ public class DriveTrain {
 	private int imuOnTargetCounter = 0;
 	private final int MINIMUM_IMU_ON_TARGET_ITERATIONS = 6;
 
-	private boolean slowStrafeOnlyMode = false; 
+	private boolean slowStrafeOnlyMode = false, forcedNoStrafeMode = false; 
 
 	private final double
 	absTolerance_Imu_TurnTo = 1.0,
@@ -149,7 +149,18 @@ public class DriveTrain {
 		if (slowStrafeOnlyMode) {
 			translateY = 0; 
 			translateX *= SLOW_STRAFE_SCALAR; 
+			rotation = 0; //no rotation if we only want to strafe
+		} else if (forcedNoStrafeMode) {
+			translateX = 0; 
+			translateY *= 1.25; //boosts to full power on this axis 
+			rotation = 0; //no rotatino if we only want to move forward
 		}
+		
+		//clamp
+		if (translateY > 1)
+			translateY = 1; 
+		else if (translateY < -1)
+			translateY = -1; 
 		
 		double dXInput = Math.abs(translateX - oldXInput), dYInput = Math.abs(translateY - oldYInput); 
 
@@ -599,6 +610,10 @@ public class DriveTrain {
 
 	public void setSlowStrafeOnlyMode(boolean b) {
 		slowStrafeOnlyMode = b; 
+	}
+	
+	public void setForcedNoStrafeMode(boolean b) {
+		forcedNoStrafeMode = b; 
 	}
 }
 

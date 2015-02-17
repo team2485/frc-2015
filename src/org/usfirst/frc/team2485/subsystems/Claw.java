@@ -1,6 +1,8 @@
 package org.usfirst.frc.team2485.subsystems;
 
+import org.usfirst.frc.team2485.robot.Robot;
 import org.usfirst.frc.team2485.util.CombinedVictorSP;
+import org.usfirst.frc.team2485.util.DummyOutput;
 import org.usfirst.frc.team2485.util.ScaledPot;
 import org.usfirst.frc.team2485.util.ThresholdHandler;
 
@@ -20,18 +22,19 @@ public class Claw {
 	private CombinedVictorSP winchMotor;
 	private Solenoid actuator;
 	private ScaledPot potScaled;
+	private DummyOutput dummyWinch;
 
-	private static final double LOWEST_POS = 112; 	// top: 850 bottom: 112
+	private static final double LOWEST_POS = 110; 	// top: 850 bottom: 112
 	private static final double POS_RANGE = 740;
 	public static final double POT_TOLERANCE = 12;
 	private static final double INCH_RANGE  = 63.75; // 11.25 in from floor (corresponds to a pot value of LOWEST_POS) - 75 in
 	
-	private static final double LOADING_RESTING_OFFSET = 30; 
+	private static final double LOADING_RESTING_OFFSET = 50; 
 	
 	public static final double 
 		CONTAINER_LOADING_POINT	= LOWEST_POS,
-		ONE_TOTE_RESTING		= LOWEST_POS + 340,
-		ONE_TOTE_LOADING		= ONE_TOTE_RESTING + LOADING_RESTING_OFFSET; 
+		ONE_TOTE_RESTING		= LOWEST_POS + 370,
+		ONE_TOTE_LOADING		= ONE_TOTE_RESTING + LOADING_RESTING_OFFSET; // 469
 //		TWO_TOTE_RESTING		= LOWEST_POS + 340,
 //		TWO_TOTE_LOADING		= TWO_TOTE_RESTING + LOADING_RESTING_OFFSET,
 //		THREE_TOTE_RESTING		= LOWEST_POS + 340,
@@ -59,8 +62,9 @@ public class Claw {
 		this.winchMotor.invertMotorDirection(true);
 		this.actuator 	= actuator;
 		this.potScaled	= new ScaledPot(pot);
+		this.dummyWinch = new DummyOutput();
 		
-		elevationPID = new PIDController(kP, kI, kD, potScaled, this.winchMotor);
+		elevationPID = new PIDController(kP, kI, kD, potScaled, this.dummyWinch);
 		elevationPID.setAbsoluteTolerance(POT_TOLERANCE);
 //		elevationPID.setOutputRange(-0.7,  0.7);
 		
@@ -110,8 +114,18 @@ public class Claw {
 	public void setSetpoint(double d) {
 		setAutomatic();
 		elevationPID.setSetpoint(d);
-		elevationPID.enable(); 
 	}
+	
+	public void updateWinchPeriodic() {
+		if(isAutomatic()) {
+			double dummyInput = dummyWinch.get();
+			double deltaHeight = Robot.clapper.getChangeInHeightInInches();
+			
+			winchMotor.set(dummyInput + 0.2 * deltaHeight); 
+			System.out.println("Input: height" + dummyInput + " \t\t" + deltaHeight);
+				
+			}
+		}
 	
 	public double getP() {
 		return kP;
@@ -176,5 +190,10 @@ public class Claw {
 		return elevationPID.getError();
 	}
 
+	
+	
+	public void runWithClapper() {
+		
+	}
 }
 

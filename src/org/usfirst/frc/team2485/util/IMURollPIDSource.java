@@ -57,11 +57,11 @@ public class IMURollPIDSource implements PIDSource {
 //	private double timeInState = 0;		// Amount of time in current state.
 //	// I'm new to java, so I hope I got the enumerated types syntax right...
 //	// If this doesn't work, switch to three integer constants and we'll make this pretty later.
-//	public enum rollState { rs_NORMAL, rs_RACING, rs_SLOWING };
-//	private rollState rs_SLOWING;
-//	private rollState rs_NORMAL;
-//	private rollState rs_RACING; 
-//	private rollState myState = rs_NORMAL;
+//	//public enum rollState { rs_NORMAL, rs_RACING, rs_SLOWING };
+//	private int rs_SLOWING = 0;
+//	private int rs_NORMAL  = 1;
+//	private int rs_RACING  = 2;
+//	private int myState = rs_NORMAL;
 //	private double lastRoll; 			// Keep track of last Roll, to see if changing.
 //	
 //	private boolean isDataFiltered;

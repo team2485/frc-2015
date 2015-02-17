@@ -211,43 +211,38 @@ public class Robot extends IterativeRobot {
 
     public void teleopPeriodic() {
     	
-    	if (Controllers.getButton(Controllers.XBOX_BTN_A)) {
+    	if (Controllers.getButton(Controllers.XBOX_BTN_A)) 
     		strongback.enablePid();
-    	}
-    	else {
+    	else 
     		strongback.disablePid();
-    	}
     	
     	strongback.checkSafety();
     	
        	updateDashboard();
 	
        	  ////////////////////////////////////////////
-       	 ////////////////DRIVE CODE//////////////////
+       	 ///////////	 DRIVE CODE	   //////////////
        	////////////////////////////////////////////
+     
+       	if (Controllers.getAxis(Controllers.XBOX_AXIS_RTRIGGER, .2f) > 0) 
+       		drive.setForcedNoStrafeMode(true);
+       	else 
+       		drive.setForcedNoStrafeMode(false);
        	
+       	if (Controllers.getAxis(Controllers.XBOX_AXIS_LTRIGGER, .2f) > 0) 
+       		drive.setSlowStrafeOnlyMode(true);
+       	else 
+       		drive.setSlowStrafeOnlyMode(false);
+      
+       	if (Controllers.getButton(Controllers.XBOX_BTN_RBUMP)) 
+       		drive.setQuickTurn(true);
+       	else
+       		drive.setQuickTurn(false);		
        	
-    	 if (Controllers.getAxis(Controllers.XBOX_AXIS_RTRIGGER, .2f) > 0) {
-         	drive.setHighSpeed();
-         }
-         else if (Controllers.getAxis(Controllers.XBOX_AXIS_LTRIGGER, .2f) > 0) {
-         	drive.setLowSpeed();
-         }
-         else {
-         	drive.setNormalSpeed(); 
-         }
-    	
-        if(Controllers.getButton(Controllers.XBOX_BTN_RBUMP)) {
-        		drive.setQuickTurn(true);
-        } else
-        	drive.setQuickTurn(false);
-        
-        if (Controllers.getButton(Controllers.XBOX_BTN_LBUMP)) {
-        	drive.setSlowStrafeOnlyMode(true);
-        }
-        else {
-        	drive.setSlowStrafeOnlyMode(false);
-        }
+        if (Controllers.getButton(Controllers.XBOX_BTN_LBUMP))
+        	drive.setNormalSpeed(); 	
+        else 
+        	drive.setLowSpeed();
         
         drive.warlordDrive(Controllers.getAxis(Controllers.XBOX_AXIS_LX, 0),
 				Controllers.getAxis(Controllers.XBOX_AXIS_LY, 0),
@@ -282,10 +277,8 @@ public class Robot extends IterativeRobot {
        	
        	
 		/////////////////////////////////////////////
-		//////////		CLAPPER LOGIC
-		/////////////////////////////////////////////
-
-       	
+		///////////////CLAPPER LOGIC////////////////
+		///////////////////////////////////////////
 //       	if (clapperSafetyLimitSwitch.get()) {
 ////    		System.out.println("CLAPPERS TOO LOW");
 //    		if (clapper.isAutomatic())
@@ -335,11 +328,13 @@ public class Robot extends IterativeRobot {
        		fingers.setFingerPosition(Fingers.CLOSED);
        	}
        	if (Controllers.getJoystickButton(8)) {
-       		clapper.setSetpoint(Clapper.COOP_THREE_TOTES_SETPOINT);       		
+//       		clapper.setSetpoint(Clapper.COOP_THREE_TOTES_SETPOINT); 
+       		clapper.setSetpoint(Clapper.ABOVE_RATCHET_SETPOINT);
        	}
        	if (Controllers.getJoystickButton(9)) {
        		System.out.println("fingers should go parallel");
-       		fingers.setFingerPosition(Fingers.PARALLEL);
+//       		fingers.setFingerPosition(Fingers.PARALLEL);
+       		clapper.setSetpoint(Clapper.ON_RATCHET_SETPOINT);
        	}
        	if (Controllers.getJoystickButton(10)) {
        		System.out.println("hook should go back to normal");
@@ -402,18 +397,20 @@ public class Robot extends IterativeRobot {
        	}
        	
        	if(Controllers.getSecondaryJoystickButton(10)) {
-       		claw.setSetpoint(Claw.PLACE_ON_EXISTING_STACK_FOUR_TOTES);
+//       		claw.setSetpoint(Claw.PLACE_ON_EXISTING_STACK_FOUR_TOTES);
+      		claw.setSetpoint(Claw.CONTAINER_LOADING_POINT);
        	}
        	
        	if(Controllers.getSecondaryJoystickButton(11)) {
-       		claw.setSetpoint(Claw.PLACE_ON_EXISTING_STACK_FIVE_TOTES);
+//       		claw.setSetpoint(Claw.PLACE_ON_EXISTING_STACK_FIVE_TOTES);
+      		claw.setSetpoint(Claw.ONE_TOTE_RESTING);
        	}
        	
        	if(Controllers.getSecondaryJoystickButton(12)) {
-       		claw.setSetpoint(Claw.PLACE_ON_EXISTING_STACK_SIX_TOTES);
+//       		claw.setSetpoint(Claw.PLACE_ON_EXISTING_STACK_SIX_TOTES);
+      		claw.setSetpoint(Claw.ONE_TOTE_LOADING);
        	}
-       	
-       	
+       		
    		if ((Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_THROTTLE) > 0) ||
    				Controllers.getSecondaryJoystickAxis(Controllers.JOYSTICK_AXIS_THROTTLE) > 0) {
    			//kill ALL THE THINGS@!#@#!!@@
@@ -432,6 +429,9 @@ public class Robot extends IterativeRobot {
        		}
        	}
        	
+       	claw.updateWinchPeriodic();
+    	clapper.updateLastHeight(); 
+
     }
     
     public static double getCurrVelocity() {
@@ -481,6 +481,8 @@ public class Robot extends IterativeRobot {
     public void testPeriodic() {
     	
     	clapper.setSetpoint(Clapper.ON_RATCHET_SETPOINT);
+    	claw.close(); 
+    	claw.setSetpoint(Claw.ONE_TOTE_LOADING);
 //    	claw.setSetpoint(Claw.ONE_TOTE_RESTING);
     	
  //   	clapper.liftManually(.4);
@@ -546,5 +548,7 @@ public class Robot extends IterativeRobot {
         SmartDashboard.putNumber("Error from Claw", claw.getError());
         SmartDashboard.putNumber("Clapper kP", clapper.getkP());
         SmartDashboard.putBoolean("Clapper is manual: ", clapper.isManual());
+//        SmartDashboard.putNumber("Clapper inches", clapper.getInchHeight());
+        SmartDashboard.putNumber("Clapper change in height" ,  Robot.clapper.getChangeInHeightInInches());
     }
 }

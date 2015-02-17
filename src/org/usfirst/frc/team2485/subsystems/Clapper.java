@@ -54,6 +54,8 @@ public class Clapper {
 	 
 	private DigitalInput toteDetectorLimitSwitch, bottomSafetyLimitSwitch;
 	
+	private double lastHeight;
+	
 	public static final double 
 		ABOVE_RATCHET_SETPOINT		= LOWEST_POS + 170,
 		DROP_OFF_POS 				= 133, 
@@ -90,6 +92,8 @@ public class Clapper {
 		this.toteDetectorLimitSwitch = toteDetectorLimitSwitch;
 		this.bottomSafetyLimitSwitch = bottomSafetyLimitSwitch;
 		//clapperLifter.invertMotorDirection(true);
+		
+		lastHeight = getPotValue(); 
 	}
 	
 	public Clapper(int clapperLifter1Port, int clapperLifter2Port, 
@@ -98,8 +102,15 @@ public class Clapper {
 		this(new VictorSP(clapperLifter1Port), new VictorSP(clapperLifter2Port),
 				new DoubleSolenoid(clapperActuatorPort1, clapperActuatorPort2),
 				new AnalogPotentiometer(potPort), new DigitalInput(detectorswitchport), new DigitalInput(safetyswitchport));
+	} 
+	
+	public double getChangeInHeightInInches() {
+		return ((potScaled.pidGet() - lastHeight)/(POS_RANGE))*INCH_RANGE; 
 	}
 	
+	public void updateLastHeight() {
+		lastHeight = getPotValue(); //need to map to inches?  
+	}
 	public double getPotValue() {
 		return potScaled.pidGet();
 	}
@@ -173,7 +184,7 @@ public class Clapper {
 	
 	public double getInchHeight() {
 		// TODO: Test
-		return(potScaled.pidGet() - LOWEST_POS)/INCH_RANGE + 6.125;
+		return(potScaled.pidGet() - LOWEST_POS)/(POS_RANGE)*INCH_RANGE + 6.125;
 	}
 	/**
 	 * Sets the claw to automatic control, PID will control the winch, moveManually will not function
