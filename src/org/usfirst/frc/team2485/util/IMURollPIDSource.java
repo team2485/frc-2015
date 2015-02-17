@@ -58,26 +58,27 @@ public class IMURollPIDSource implements PIDSource {
 //	// I'm new to java, so I hope I got the enumerated types syntax right...
 //	// If this doesn't work, switch to three integer constants and we'll make this pretty later.
 //	//public enum rollState { rs_NORMAL, rs_RACING, rs_SLOWING };
-//	private int rs_SLOWING = 0;
-//	private int rs_NORMAL  = 1;
-//	private int rs_RACING  = 2;
+//	
+//	private static final int rs_RACING = 0;
+//	private static final int rs_SLOWING= 1;
+//	private static final int rs_NORMAL = 2;	
+//	
 //	private int myState = rs_NORMAL;
 //	private double lastRoll; 			// Keep track of last Roll, to see if changing.
 //	
 //	private boolean isDataFiltered;
-//	private double timeinState;
-//
+//	private int timeinState; 
 //	
-//	private static final double MAGIC_ROLL_CORRECTION_SCALAR = 3.0; 
+//	private static final double MAGIC_ROLL_CORRECTION_SCALAR = 4.0; 
 //	// Velocity at which we know we are running fast and should transition into or out of rs_RACING
-//	private static final double RACING_VELOCITY_THRESHOLD = 0.3; 
+//	private static final double RACING_VELOCITY_THRESHOLD = 0.5; 
 //	// Interval between calls, so we can track how long we are in a particular state. This really should be derived from update_rate_hz in robotInit(). 
 //	private static final double INTERVAL_TIME = 20.0;
 //	// Maximum time to be in the SLOWING state before we can listen to ROLL again.
 //	private static final double MAX_SLOWING_TIME = 200.0;
 //	// Minimum Roll value, below which we consider the value calmed down.
-//	private static final double MIN_ROLL = 0.5;	
-//	
+//	private static final double MIN_ROLL = 0.5;
+//
 //	
 //	public boolean isDataFiltered() {
 //		return isDataFiltered;
@@ -106,13 +107,13 @@ public class IMURollPIDSource implements PIDSource {
 //				{
 //					// All is good, just return the value.
 //					lastRoll = roll;
-//					return roll;
+//					return (roll - encoderRate * MAGIC_ROLL_CORRECTION_SCALAR);
 //				}
 //				// We must be racing, so set the state.
 //				myState = rs_RACING;
 //				timeInState = 0;
-//				return roll;
 //				// And fall on through to the racing case. (This works in C++, I assume it does in java too...)
+//				return roll;// It wont't fall through in Java, just wait until the next cycle
 //			case rs_RACING:
 //				// We are currently going too fast. Check to see if we've slowed down enough.
 //				if (velocity < RACING_VELOCITY_THRESHOLD)
@@ -120,10 +121,11 @@ public class IMURollPIDSource implements PIDSource {
 //					// Dropped out of the racing state.
 //					myState = rs_SLOWING;
 //					timeinState = 0;
+//					return (roll - encoderRate * MAGIC_ROLL_CORRECTION_SCALAR);
 //				}
 //				// Always return a flattened Roll.
 //				lastRoll = roll;
-//				return 0;
+//				return 0;//Essentially just make the strongback happy
 //			case rs_SLOWING:
 //				// First, check to see if we've sped up enough to be back in RACING.
 //				if (velocity > RACING_VELOCITY_THRESHOLD)
@@ -145,13 +147,15 @@ public class IMURollPIDSource implements PIDSource {
 //				}
 //				lastRoll = roll;
 //				return 0;
+//			default:
+//				return roll;
 //			}
+//			
 ////			if (Math.abs(encoderRate) > .02)
 ////				System.out.println(imu.getRoll() +  " \t:\t " + encoderRate * MAGIC_ROLL_CORRECTION_SCALAR);
 ////			return (imu.getRoll() - encoderRate * MAGIC_ROLL_CORRECTION_SCALAR);// returns a value adjusted by equation found by Todor
-//		} //else {
+//		} else {
 //			return imu.getRoll(); 
-//		//}
+//		}
 //	}
 //}
-

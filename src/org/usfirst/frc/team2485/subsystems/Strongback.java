@@ -27,7 +27,7 @@ public class Strongback {
 	private IMURollPIDSource rollPIDSource; 
 
 	public static final double
-		leadScrew_kP = 0.25,
+		leadScrew_kP = 0.4,
 		leadScrew_kI = 0.0, 
 		leadscrew_kD = 0.0; 
 		

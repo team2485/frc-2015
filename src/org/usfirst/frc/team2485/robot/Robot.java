@@ -142,8 +142,8 @@ public class Robot extends IterativeRobot {
     	
     	
 //    	camServer = CameraServer.getInstance();
-//        //camServer.setQuality(50);
-//        //the camera name (ex "cam0") can be found through the roborio web interface
+        //camServer.setQuality(50);
+        //the camera name (ex "cam0") can be found through the roborio web interface
 //        camServer.startAutomaticCapture("cam1");
     	
         Controllers.set(new Joystick(0), new Joystick(1), new Joystick(2));
@@ -158,7 +158,7 @@ public class Robot extends IterativeRobot {
 //    	dualEncoder.reset();
 //    	strongback.disablePid(); 
 //    	
-//    	autoSequence = SequencerFactory.createAuto(SequencerFactory.THREE_TOTE_STRAIGHT);
+//    	autoSequence = SequencerFactory.createAuto(Se	quencerFactory.THREE_TOTE_STRAIGHT);
 //    	autoSequence.reset();
 //    	autoSequence = null;
     	
@@ -207,7 +207,7 @@ public class Robot extends IterativeRobot {
     	clapper.liftManually(0);
     	
 //		System.out.println(clapper.getPotValue());
-    }
+    }	
 
     public void teleopPeriodic() {
     	
@@ -224,6 +224,7 @@ public class Robot extends IterativeRobot {
        	 ///////////	 DRIVE CODE	   //////////////
        	////////////////////////////////////////////
      
+       	//controls changed 2/16/15 per driver request
        	if (Controllers.getAxis(Controllers.XBOX_AXIS_RTRIGGER, .2f) > 0) 
        		drive.setForcedNoStrafeMode(true);
        	else 
@@ -243,6 +244,9 @@ public class Robot extends IterativeRobot {
         	drive.setNormalSpeed(); 	
         else 
         	drive.setLowSpeed();
+        
+        if (Controllers.getButton(Controllers.XBOX_BTN_B))
+        	drive.dropCenterWheel(false);
         
         drive.warlordDrive(Controllers.getAxis(Controllers.XBOX_AXIS_LX, 0),
 				Controllers.getAxis(Controllers.XBOX_AXIS_LY, 0),
@@ -389,7 +393,7 @@ public class Robot extends IterativeRobot {
        	}
        	
        	if(Controllers.getSecondaryJoystickButton(8)) {
-       		//nothing to see here
+       		claw.setSetpoint(Claw.CONTAINER_LOADING_POINT);
        	}
        	
        	if(Controllers.getSecondaryJoystickButton(9)) {
@@ -479,10 +483,10 @@ public class Robot extends IterativeRobot {
     }
         
     public void testPeriodic() {
-    	
-    	clapper.setSetpoint(Clapper.ON_RATCHET_SETPOINT);
-    	claw.close(); 
-    	claw.setSetpoint(Claw.ONE_TOTE_LOADING);
+//    	
+//    	clapper.setSetpoint(Clapper.ON_RATCHET_SETPOINT);
+//    	claw.close(); 
+//    	claw.setSetpoint(Claw.ONE_TOTE_LOADING);
 //    	claw.setSetpoint(Claw.ONE_TOTE_RESTING);
     	
  //   	clapper.liftManually(.4);
@@ -537,18 +541,20 @@ public class Robot extends IterativeRobot {
     }
     
     public void updateDashboard() {
-     	SmartDashboard.putString("Clapper and Container", clapper.getPercentHeight() + "," + clapper.getPotValue() + ","+ claw.getPercentHeight()+ "," + claw.getPotValue() + "," + strongback.getIMURoll());  
+     	SmartDashboard.putString("Clapper and Container", clapper.getPercentHeight() + "," + (float)clapper.getPotValue() + ","+ claw.getPercentHeight()+ "," + (float)claw.getPotValue() + "," + strongback.getIMURoll());  
 //    	SmartDashboard.putString("Clapper and Container", clapper.getPercentHeight() + ","+ claw.getPercentHeight() + "," + strongback.getIMURoll());  	
        	SmartDashboard.putNumber("IPS", (int) drive.getAbsoluteRate());
        	SmartDashboard.putNumber("Battery", DriverStation.getInstance().getBatteryVoltage());
         SmartDashboard.putBoolean("Disabled", DriverStation.getInstance().isDisabled());
         SmartDashboard.putNumber("Claw Pot", claw.getPotValue());
+        System.out.println(claw.getPotValue());
         SmartDashboard.putNumber("Clapper Pot", clapper.getPotValue());
         SmartDashboard.putNumber("Tote Count", toteCounter.getCount());
         SmartDashboard.putNumber("Error from Claw", claw.getError());
         SmartDashboard.putNumber("Clapper kP", clapper.getkP());
         SmartDashboard.putBoolean("Clapper is manual: ", clapper.isManual());
 //        SmartDashboard.putNumber("Clapper inches", clapper.getInchHeight());
-        SmartDashboard.putNumber("Clapper change in height" ,  Robot.clapper.getChangeInHeightInInches());
+        SmartDashboard.putNumber("Clapper change in height" ,  (float)Robot.clapper.getChangeInHeightInInches());
+        SmartDashboard.putNumber("Encoder Distance", leftEnc.getDistance());
     }
 }

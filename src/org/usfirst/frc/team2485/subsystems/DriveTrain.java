@@ -21,7 +21,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * @author Ben Clark
  */
 public class DriveTrain {
-	private static final double SLOW_STRAFE_SCALAR = 0.4; //need to tune
+	private static final double SLOW_STRAFE_SCALAR = 0.6; //need to tune
 	private VictorSP leftDrive, leftDrive2, rightDrive, rightDrive2, test1, test2, test3, test4;
 	private CombinedVictorSP centerDrive; 
 	private Solenoid suspension;
@@ -151,8 +151,9 @@ public class DriveTrain {
 			translateX *= SLOW_STRAFE_SCALAR; 
 			rotation = 0; //no rotation if we only want to strafe
 		} else if (forcedNoStrafeMode) {
+			
 			translateX = 0; 
-			translateY *= 1.25; //boosts to full power on this axis 
+			translateY = translateY; //drivers prefur to have it this way rather than a 1.25X boost. 
 			rotation = 0; //no rotatino if we only want to move forward
 		}
 		
@@ -200,7 +201,7 @@ public class DriveTrain {
 				maintainingHeading = false; 
 				imuPID.disable(); 
 			}
-			System.out.println("In warlordDrive, about to call rotational: " + translateY + ", " + rotation + "\t\tROTATION");
+//			System.out.println("In warlordDrive, about to call rotational: " + translateY + ", " + rotation + "\t\tROTATION");
 			rotationalDrive(translateY, rotation);
 		}
 		
@@ -213,7 +214,7 @@ public class DriveTrain {
 				imuPID.setSetpoint(desiredHeading);
 				imuPID.enable();
 			}
-			System.out.println("In warlordDrive, about to call strafe: " + translateX + ", " + translateY + "\t\tSTRAFE");
+//			System.out.println("In warlordDrive, about to call strafe: " + translateX + ", " + translateY + "\t\tSTRAFE");
 			strafeDrive(translateX, translateY);
 		}
 	}
@@ -329,7 +330,7 @@ public class DriveTrain {
 		else 
 			dropCenterWheel(false);
 		
-
+		
 		double pidOut = dummyImuOutput.get(); 
 
 		this.translateX = xInput; 

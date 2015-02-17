@@ -122,8 +122,7 @@ public class Claw {
 			double deltaHeight = Robot.clapper.getChangeInHeightInInches();
 			
 			winchMotor.set(dummyInput + 0.2 * deltaHeight); 
-			System.out.println("Input: height" + dummyInput + " \t\t" + deltaHeight);
-				
+			System.out.println(" " + dummyInput + ", " + deltaHeight);
 			}
 		}
 	
