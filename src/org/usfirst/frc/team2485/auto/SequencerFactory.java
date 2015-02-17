@@ -1,7 +1,5 @@
 package org.usfirst.frc.team2485.auto;
 
-import javax.sound.midi.Sequence;
-
 import org.usfirst.frc.team2485.auto.SequencedItems.AutoTestPrint;
 import org.usfirst.frc.team2485.auto.SequencedItems.CloseClapper;
 import org.usfirst.frc.team2485.auto.SequencedItems.CloseClaw;
@@ -9,21 +7,20 @@ import org.usfirst.frc.team2485.auto.SequencedItems.DisableClawPID;
 import org.usfirst.frc.team2485.auto.SequencedItems.DriveSlowConstant;
 import org.usfirst.frc.team2485.auto.SequencedItems.DriveStraight;
 import org.usfirst.frc.team2485.auto.SequencedItems.DriveStraightLowAcceleration;
+import org.usfirst.frc.team2485.auto.SequencedItems.ExtendRatchet;
 import org.usfirst.frc.team2485.auto.SequencedItems.IncrementToteCount;
-import org.usfirst.frc.team2485.auto.SequencedItems.MoveClapperManually;
 import org.usfirst.frc.team2485.auto.SequencedItems.MoveClapperVertically;
+import org.usfirst.frc.team2485.auto.SequencedItems.MoveClawRelativeToClapper;
 import org.usfirst.frc.team2485.auto.SequencedItems.MoveClawVertically;
+import org.usfirst.frc.team2485.auto.SequencedItems.MoveClawWithToteIntake;
 import org.usfirst.frc.team2485.auto.SequencedItems.OpenClapper;
 import org.usfirst.frc.team2485.auto.SequencedItems.OpenClaw;
 import org.usfirst.frc.team2485.auto.SequencedItems.RetractRatchet;
-import org.usfirst.frc.team2485.auto.SequencedItems.ExtendRatchet;
 import org.usfirst.frc.team2485.auto.SequencedItems.RotateToAngle;
 import org.usfirst.frc.team2485.auto.SequencedItems.SetClapperPID;
 import org.usfirst.frc.team2485.auto.SequencedItems.SetClapperPIDByToteCount;
 import org.usfirst.frc.team2485.auto.SequencedItems.SetFingerRollers;
 import org.usfirst.frc.team2485.auto.SequencedItems.SetFingersPos;
-import org.usfirst.frc.team2485.auto.SequencedItems.SpitTote;
-import org.usfirst.frc.team2485.auto.SequencedItems.ToteIntake;
 import org.usfirst.frc.team2485.robot.Robot;
 import org.usfirst.frc.team2485.subsystems.Clapper;
 import org.usfirst.frc.team2485.subsystems.Claw;
@@ -203,6 +200,7 @@ public class SequencerFactory {
 
 	public static Sequencer createToteIntakeNoLift(){
 		return new Sequencer(new SequencedItem[] {
+				new MoveClapperVertically(Clapper.LOADING_SETPOINT),
 				new SequencedMultipleItem( 
 						new CloseClapper(),
 						new SetFingersPos(Fingers.CLOSED),
@@ -217,86 +215,69 @@ public class SequencerFactory {
 		});	
 	}
 	
-	public static Sequencer createToteIntakeWithLift() {
+	public static Sequencer createToteLift() {
 		double kP = Robot.clapper.getkP();
 		double kI = Robot.clapper.getkI();
 		double kD = Robot.clapper.getkD();
 		return new Sequencer(new SequencedItem[] {
-				//take in the totes
-				new SequencedMultipleItem( 
-						new CloseClapper(),
-						new SetFingersPos(Fingers.CLOSED),
-						new RetractRatchet(),
-						new SetFingerRollers(SetFingerRollers.INTAKE, 2, .8)
-				),
-				new SequencedMultipleItem(
-						new SetFingerRollers(SetFingerRollers.OFF, .1, 0),
-						new CloseClapper(),
-						new SetFingersPos(Fingers.PARALLEL)
-				),
-				
-				//now lift up
 				new IncrementToteCount(),
 				new SequencedPause(0.25),
 				new SequencedMultipleItem(	
-						new ExtendRatchet(),
-						new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),						
+						new ExtendRatchet(), 
+						new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
+						new MoveClawWithToteIntake(),
 						new SetFingerRollers(SetFingerRollers.INTAKE, .5, .5)
 				),
 				new SequencedPause(0.25),
-				new SetClapperPID(0.0005, kI, kD),
+//				new SetClapperPID(0.0005, kI, kD),
 				//try to stay in place but with a weak motor value...which lets gravity pull the stack down slowly
 				//new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
 				//alternative attempt...set to manual with a small positive value that can't hold the load
-				new MoveClapperManually(.15, .5),
+//				new MoveClapperManually(.15, .5),
 				//new SetClapperPID(kP, kI, kD),
 				new SetClapperPIDByToteCount(),
 				new SetFingerRollers(SetFingerRollers.OFF, .05, 0),
 				new SequencedPause(0.1),
-				new MoveClapperVertically(Clapper.LOADING_SETPOINT)
+				new MoveClapperVertically(Clapper.HOLDING_TOTE_SETPOINT)
 		});
 	}
-	
-//	public static Sequencer createIntakeToteRoutine() {
-//		double kP = Robot.clapper.getkP();
-//		double kI = Robot.clapper.getkI();
-//		double kD = Robot.clapper.getkD();
-//		return new Sequencer(new SequencedItem[] {
-//				new SequencedMultipleItem(
-//						new CloseClapper(),
-//						new SetFingersPos(Fingers.PARALLEL), 
-//						//new RetractRatchet(),
-//						new SetFingerRollers(SetFingerRollers.INTAKE, 1)
-//						), 
-//				new SequencedMultipleItem(
-//						new SequencedPause(0.2),
-//						new SetFingerRollers(SetFingerRollers.OFF, .1)
-//						//,new ResetRatchet()
-//						)
-//						//			new SequencedMultipleItem(
-//						//			new SetFingersPos(Fingers.PARALLEL),
-////				new SequencedPause(1),
-////				new SequencedMultipleItem(	
-////						new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
-////						new SetFingerRollers(SetFingerRollers.INTAKE, 1)),
-////						//							),
-////				new SequencedPause(0.1),
-////				new SetClapperPID(0.002, kI, kD),
-////				new MoveClapperVertically(Clapper.ON_RATCHET_SETPOINT),
-////				new SetClapperPID(kP, kI, kD),
-////				new SequencedPause(0.1),
-////				new MoveClapperVertically(Clapper.LOADING_SETPOINT)
-//		});
-//	}
-	public static Sequencer createDropToteStackRoutine() { //tune kp down a bit? add a seq pause? 
-		return new Sequencer(new SequencedItem[] {
-				new MoveClapperVertically(Clapper.DROP_OFF_POS), 
-				new DisableClawPID(), 
-				new OpenClaw(), 
-				new RetractRatchet(),
-				new MoveClapperVertically(Clapper.LOADING_SETPOINT), 
-				new ExtendRatchet()
-		});
+
+	public static Sequencer createDropToteStackRoutine(boolean withToteOnFloor) { //tune kp down a bit? add a seq pause? 
+		// have tote underneath (corraled OR not (check this)) or no tote underneath (all on hook)
+		
+		Sequencer returnSequence = null; 
+		
+		if (withToteOnFloor)
+			returnSequence = new Sequencer(new SequencedItem[] {
+					new SequencedMultipleItem(
+							new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
+							new MoveClawRelativeToClapper(Clapper.ABOVE_RATCHET_SETPOINT) ),
+					new RetractRatchet(),
+//					new DisableClawPID(),
+//					new OpenClaw(), 
+					new SequencedMultipleItem(
+							new MoveClapperVertically(Clapper.DROP_OFF_POS_ON_ONE_TOTE), 
+							new MoveClawRelativeToClapper(Clapper.DROP_OFF_POS_ON_ONE_TOTE) ),		
+					new OpenClaw(),
+					new OpenClapper() 
+			});
+		else {
+			returnSequence = new Sequencer(new SequencedItem[] {
+					new SequencedMultipleItem(
+							new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
+							new MoveClawRelativeToClapper(Clapper.ABOVE_RATCHET_SETPOINT) ), 
+					new RetractRatchet(),
+//					new DisableClawPID(),
+//					new OpenClaw(), 
+					new SequencedMultipleItem(
+							new MoveClapperVertically(Clapper.LOADING_SETPOINT), // figure out if this should be new setpoint that is higher
+							new MoveClawRelativeToClapper(Clapper.LOADING_SETPOINT) ),		
+					new OpenClaw(),
+					new OpenClapper() 
+			});
+			}
+		Robot.toteCounter.resetCount(); 
+		return returnSequence;
 	}
 
 	public static Sequencer createContainerRightingRoutine() {
@@ -315,37 +296,8 @@ public class SequencerFactory {
 
 		});
 	}
-//	public static Sequencer createIntakeToteRoutineBackup() {
-//		return new Sequencer(new SequencedItem[] {
-//				new SequencedMultipleItem(
-//						new CloseClapper(),
-//						new SetFingersPos(Fingers.CLOSED), 
-//						//new RetractRatchet(),
-//						new SetFingerRollers(SetFingerRollers.INTAKE, 1),
-//						new DriveSlowConstant()
-//						), 
-//				new SequencedPause(.2),
-//				new SequencedMultipleItem(
-//								//						new SetFingerRollers(SetFingerRollers.REVERSE, 1),
-//						new SetFingersPos(Fingers.PARALLEL),
-//						//new ResetRatchet(),
-//						new DriveSlowConstant()
-//				),
-//				new CloseClapper(),
-//				new SequencedPause(.2),
-////				new SetFingerRollers(SetFingerRollers.INTAKE, 1),
-////				new SequencedMultipleItem(
-////				new SetFingersPos(Fingers.PARALLEL),
-////				new SequencedPause(1),
-////				new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
-////				new SetFingerRollers(SetFingerRollers.INTAKE, 1), // 0.2
-////								//								),
-////				new SequencedPause(.2),
-////				new MoveClapperVertically(Clapper.LOADING_SETPOINT)
-//		});
-//	}
 	
-	public static Sequencer createContainerLiftRoutine() {
+	public static Sequencer createContainerPickupRoutine() {
 		return new Sequencer(new SequencedItem[] {
 				new CloseClaw(),
 				new MoveClawVertically(Claw.ONE_TOTE_LOADING),

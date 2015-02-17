@@ -6,12 +6,11 @@ import org.usfirst.frc.team2485.subsystems.Claw;
 
 public class MoveClawVertically implements SequencedItem {
 	
-	private boolean finished; 
+	private boolean finished = false; 
 	private final double setpoint; 
 	
 	public MoveClawVertically(double setpoint) {
-		this.setpoint = setpoint; 
-		finished = false; 
+		this.setpoint = setpoint;
 	}
 
 	@Override
@@ -20,12 +19,13 @@ public class MoveClawVertically implements SequencedItem {
 		Claw claw = Robot.claw; 
 		
 		claw.setSetpoint(setpoint);
-		finished = claw.isPidOnTarget(); 
+		claw.updateWinchPeriodic();
+//		finished = claw.isPidOnTarget(); 
 	}
 
 	@Override
 	public double duration() {
-		return finished ? 0 : 2; //2 untested 
+		return finished ? 0 : 2; // TODO: fix this shit
 	}
 	
 }

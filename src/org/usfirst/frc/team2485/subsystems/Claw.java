@@ -18,7 +18,7 @@ import edu.wpi.first.wpilibj.VictorSP;
 
 public class Claw {
 	
-	private double kP = 0.01, kI = 0, kD = 0;
+	private double kP = 0.0025, kI = 0, kD = 0;
 	private CombinedVictorSP winchMotor;
 	private Solenoid actuator;
 	private ScaledPot potScaled;
@@ -33,18 +33,20 @@ public class Claw {
 	
 	public static final double 
 		CONTAINER_LOADING_POINT	= LOWEST_POS,
+		HIGHEST_POS				= LOWEST_POS + POS_RANGE - 5,
 		ONE_TOTE_RESTING		= LOWEST_POS + 370,
-		ONE_TOTE_LOADING		= ONE_TOTE_RESTING + LOADING_RESTING_OFFSET; // 469
-//		TWO_TOTE_RESTING		= LOWEST_POS + 340,
-//		TWO_TOTE_LOADING		= TWO_TOTE_RESTING + LOADING_RESTING_OFFSET,
-//		THREE_TOTE_RESTING		= LOWEST_POS + 340,
-//		THREE_TOTE_LOADING		= THREE_TOTE_RESTING + LOADING_RESTING_OFFSET,
-//		FOUR_TOTE_RESTING		= LOWEST_POS + 340,
-//		FOUR_TOTE_LOADING		= ONE_TOTE_RESTING + LOADING_RESTING_OFFSET,
-//		FIVE_TOTE_RESTING		= LOWEST_POS + 340,
-//		FIVE_TOTE_LOADING		= ONE_TOTE_RESTING + LOADING_RESTING_OFFSET,
-//		SIX_TOTE_RESTING		= LOWEST_POS + 340,
-//		SIX_TOTE_LOADING		= ONE_TOTE_RESTING + LOADING_RESTING_OFFSET; 
+		ONE_TOTE_LOADING		= ONE_TOTE_RESTING + LOADING_RESTING_OFFSET, // 469
+		TWO_TOTE_RESTING		= LOWEST_POS + 340,
+		TWO_TOTE_LOADING		= TWO_TOTE_RESTING + LOADING_RESTING_OFFSET,
+		THREE_TOTE_RESTING		= LOWEST_POS + 340,
+		THREE_TOTE_LOADING		= THREE_TOTE_RESTING + LOADING_RESTING_OFFSET,
+		FOUR_TOTE_RESTING		= LOWEST_POS + 340,
+		FOUR_TOTE_LOADING		= FOUR_TOTE_RESTING + LOADING_RESTING_OFFSET,
+		FIVE_TOTE_RESTING		= LOWEST_POS + 340,
+		FIVE_TOTE_LOADING		= FIVE_TOTE_RESTING + LOADING_RESTING_OFFSET,
+		SIX_TOTE_RESTING		= LOWEST_POS + 340,
+		SIX_TOTE_LOADING		= SIX_TOTE_RESTING + LOADING_RESTING_OFFSET; 
+	
 	public static final double 	PLACE_ON_EXISTING_STACK_THREE_TOTES = LOWEST_POS + 455,
 								PLACE_ON_EXISTING_STACK_FOUR_TOTES = LOWEST_POS + 600,
 								PLACE_ON_EXISTING_STACK_FIVE_TOTES = LOWEST_POS + 750,
@@ -117,15 +119,15 @@ public class Claw {
 	}
 	
 	public void updateWinchPeriodic() {
-		if(isAutomatic()) {
+		if (isAutomatic()) {
 			double dummyInput = dummyWinch.get();
 			double deltaHeight = Robot.clapper.getChangeInHeightInInches();
-			
-			winchMotor.set(dummyInput + 0.2 * deltaHeight); 
+
+			winchMotor.set(dummyInput + 0.2 * deltaHeight); //TODO: take data and then derive formula
 			System.out.println(" " + dummyInput + ", " + deltaHeight);
-			}
 		}
-	
+	}
+
 	public double getP() {
 		return kP;
 	}
@@ -189,10 +191,37 @@ public class Claw {
 		return elevationPID.getError();
 	}
 
-	
-	
-	public void runWithClapper() {
+	public double translateClapperSetpoint(double clapperSetpoint) {
 		
+		int toteCount = Robot.toteCounter.getCount();
+		
+		if(clapperSetpoint == Clapper.ABOVE_RATCHET_SETPOINT) {
+			if(toteCount == 1)
+				return ONE_TOTE_LOADING;
+			if(toteCount == 2)
+				return TWO_TOTE_LOADING;
+			if(toteCount == 3)
+				return THREE_TOTE_LOADING;
+			if(toteCount == 4)
+				return FOUR_TOTE_LOADING;
+			if(toteCount == 5)
+				return FIVE_TOTE_LOADING;
+		}
+		
+		if(clapperSetpoint == Clapper.ON_RATCHET_SETPOINT) {
+			if(toteCount == 1)
+				return ONE_TOTE_RESTING;
+			if(toteCount == 2)
+				return TWO_TOTE_RESTING;
+			if(toteCount == 3)
+				return THREE_TOTE_RESTING;
+			if(toteCount == 4)
+				return FOUR_TOTE_RESTING;
+			if(toteCount == 5)
+				return FIVE_TOTE_RESTING;
+		}
+		
+		throw new IllegalArgumentException("Clapper setpoint " + clapperSetpoint + " invalid.");
 	}
 }
 

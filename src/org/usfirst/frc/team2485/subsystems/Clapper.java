@@ -58,8 +58,10 @@ public class Clapper {
 	
 	public static final double 
 		ABOVE_RATCHET_SETPOINT		= LOWEST_POS + 170,
-		DROP_OFF_POS 				= 133, 
+		DROP_OFF_POS				= LOWEST_POS, // TODO: find value
+		DROP_OFF_POS_ON_ONE_TOTE	= 133, // shitty and should be fixed, but it's the right pot value, or at least it was, to place stack on one tote
 		ON_RATCHET_SETPOINT			= LOWEST_POS + 125, 
+		HOLDING_TOTE_SETPOINT		= LOWEST_POS + 100, //TODO: find value
 		LOADING_SETPOINT			= LOWEST_POS + 2,
 		COOP_ZERO_TOTE_SETPOINT		= LOWEST_POS + 77, 
 		COOP_ONE_TOTE_SETPOINT		= LOWEST_POS + 175, 

@@ -302,7 +302,7 @@ public class Robot extends IterativeRobot {
        	clapper.updateToteCount(toteCounter.getCount());
        	
        	if (Controllers.getJoystickButton(1) && teleopSequence == null) {
-       		teleopSequence = SequencerFactory.createToteIntakeWithLift();
+       		teleopSequence = SequencerFactory.createToteLift();
        	}
        	if (Controllers.getJoystickButton(2) && teleopSequence == null) {
     		teleopSequence = SequencerFactory.createToteIntakeNoLift();
@@ -371,7 +371,7 @@ public class Robot extends IterativeRobot {
        	}
        	
        	if(Controllers.getSecondaryJoystickButton(1) && teleopSequence == null)
-       		teleopSequence = SequencerFactory.createContainerLiftRoutine();
+       		teleopSequence = SequencerFactory.createContainerPickupRoutine();
        	if(Controllers.getSecondaryJoystickButton(2) && teleopSequence == null)
        		teleopSequence = SequencerFactory.createPrepareForContainerLiftRoutine();
        	
@@ -388,9 +388,9 @@ public class Robot extends IterativeRobot {
        		//this space left intentionally blank
        	}
        	
-       	if(Controllers.getSecondaryJoystickButton(7) && teleopSequence == null) {
-       		teleopSequence = SequencerFactory.createDropToteStackRoutine();
-       	}
+//       	if(Controllers.getSecondaryJoystickButton(7) && teleopSequence == null) {
+//       		teleopSequence = SequencerFactory.createDropToteStackRoutine();
+//       	}
        	
        	if(Controllers.getSecondaryJoystickButton(8)) {
        		claw.setSetpoint(Claw.CONTAINER_LOADING_POINT);
