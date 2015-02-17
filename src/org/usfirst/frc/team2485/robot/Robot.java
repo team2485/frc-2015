@@ -264,7 +264,7 @@ public class Robot extends IterativeRobot {
         	timeLastToteCountProcessed = currTime;
         } else if (Controllers.getButton(Controllers.XBOX_BTN_X) && currTime - timeLastToteCountProcessed > TOTE_COUNT_MIN_DELAY) {
 //        	toteCounter.reset(); 
-        	toteCounter.addTote(-1); //this is stupid
+        	toteCounter.subtractTote(); //this is stupid
         	timeLastToteCountProcessed = currTime;
         } 
            
@@ -302,7 +302,7 @@ public class Robot extends IterativeRobot {
        	clapper.updateToteCount(toteCounter.getCount());
        	
        	if (Controllers.getJoystickButton(1) && teleopSequence == null) {
-       		teleopSequence = SequencerFactory.createToteIntakeWithLift();
+       		teleopSequence = SequencerFactory.createTestPickupWithStrongbackTilt();
        	}
        	if (Controllers.getJoystickButton(2) && teleopSequence == null) {
     		teleopSequence = SequencerFactory.createToteIntakeNoLift();
@@ -397,7 +397,7 @@ public class Robot extends IterativeRobot {
 		//////////////////////////////////////////////
 		//////////////////////////////////////////////
        	if(Controllers.getSecondaryJoystickButton(8) && teleopSequence == null) {
-       		teleopSequence = SequencerFactory.createTestPickupWithStrongbackTilt();
+//       		teleopSequence = SequencerFactory.createTestPickupWithStrongbackTilt();
        	}
        	//////////////////////////////////////////////
 		//////////////////////////////////////////////
@@ -554,7 +554,7 @@ public class Robot extends IterativeRobot {
     }
     
     public void updateDashboard() {
-     	SmartDashboard.putString("Clapper and Container", clapper.getPercentHeight() + "," + (float)claw.getPotValue() + ","+ claw.getPercentHeight()+ "," + (float)clapper.getPotValue() + "," + strongback.getIMURoll());  
+     	SmartDashboard.putString("Clapper and Container", clapper.getPercentHeight() + "," + (int)claw.getPotValue() + ","+ claw.getPercentHeight()+ "," + (int)clapper.getPotValue() + "," + -1 * strongback.getIMURoll());  
 //    	SmartDashboard.putString("Clapper and Container", clapper.getPercentHeight() + ","+ claw.getPercentHeight() + "," + strongback.getIMURoll());  	
        	SmartDashboard.putNumber("IPS", (int) drive.getAbsoluteRate());
        	SmartDashboard.putNumber("Battery", DriverStation.getInstance().getBatteryVoltage());
@@ -564,7 +564,7 @@ public class Robot extends IterativeRobot {
         SmartDashboard.putNumber("Clapper Pot", clapper.getPotValue());
         SmartDashboard.putNumber("Tote Count", toteCounter.getCount());
         SmartDashboard.putNumber("Error from Claw", claw.getError());
-        SmartDashboard.putNumber("Clapper kP", clapper.getkP());
+        SmartDashboard.putNumber("Claw kP", claw.getP());
         SmartDashboard.putBoolean("Clapper is manual: ", clapper.isManual());
 //        SmartDashboard.putNumber("Clapper inches", clapper.getInchHeight());
         SmartDashboard.putNumber("Clapper change in height" ,  (float)Robot.clapper.getChangeInHeightInInches());

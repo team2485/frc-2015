@@ -19,6 +19,10 @@ public class ToteCount {
 		numTotes = numTotes >= 5 ? 5 : numTotes + 1;
 	}
 	
+	public void subtractTote() {
+		numTotes = numTotes <= 0 ? 0 : numTotes - 1;
+	}
+	
 	public void addTote(int totes) {
 		numTotes = numTotes >= 5 ? 5 : numTotes + totes;
 	}
