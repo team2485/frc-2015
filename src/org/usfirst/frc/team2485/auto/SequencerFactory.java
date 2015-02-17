@@ -34,11 +34,17 @@ import org.usfirst.frc.team2485.subsystems.Fingers;
 public class SequencerFactory {
 
 	// auto types
-	public static final int SEQ_TEST = -1, DRIVE_TO_AUTO_ZONE = 0,
-			ONE_TOTE = 1, TWO_TOTE = 2, THREE_TOTE_STRAIGHT = 3,
-			THREE_TOTE_PUSH_CONTAINERS = 4, CONTAINER_AND_TOTE = 5,
-			CONTAINER_STEAL = 6, SECRET_CONTAINER_STEAL_START_LEFT = 7,
-			SECRET_CONTAINER_STEAL_START_RIGHT = 8;
+	public static final int SEQ_TEST = -1, 
+			DRIVE_TO_AUTO_ZONE = 0,
+			ONE_TOTE = 1, 
+			TWO_TOTE = 2, 
+			THREE_TOTE_STRAIGHT = 3,
+			THREE_TOTE_PUSH_CONTAINERS = 4, 
+			CONTAINER_AND_TOTE = 5,
+			CONTAINER_STEAL = 6,
+			SECRET_CONTAINER_STEAL_START_LEFT = 7,
+			SECRET_CONTAINER_STEAL_START_RIGHT = 8,
+			MOBILITY = 9;
 
 	public static Sequencer createAuto(int autoType) {
 
@@ -165,6 +171,10 @@ public class SequencerFactory {
 		case CONTAINER_STEAL:
 			return new Sequencer(new SequencedItem[] {
 					new LiberateContainer(LiberateContainer.BOTH),
+					new DriveStraight(60), });
+			
+		case MOBILITY:
+			return new Sequencer(new SequencedItem[] {
 					new DriveStraight(60), });
 
 			// case SECRET_CONTAINER_STEAL_START_LEFT:
