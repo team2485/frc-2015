@@ -11,7 +11,7 @@ public class LiberateContainer implements SequencedItem{
 	public static final int LEFT = 0, RIGHT = 1, BOTH = 2;
 
 	public LiberateContainer(int direction) {
-		
+		this.direction = direction;
 	}
 
 	@Override
