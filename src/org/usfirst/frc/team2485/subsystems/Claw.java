@@ -18,8 +18,8 @@ import edu.wpi.first.wpilibj.VictorSP;
 
 public class Claw {
 	
-	public static double kP = 0.002, kI = 0.00, kD = 0;
-	public static final double AGGRESSIVE_KP = 0.02;
+	public static double kP = 0.03, kI = 0.00, kD = 0;
+	public static final double AGGRESSIVE_KP = 0.035;
 	private CombinedVictorSP winchMotor;
 	private Solenoid actuator;
 	private ScaledPot potScaled;
@@ -122,9 +122,9 @@ public class Claw {
 	}
 	
 	public void setPID(double kP, double kI, double kD) {
-		this.kP = kP;
-		this.kI = kI;
-		this.kD = kD;
+//		this.kP = kP;
+//		this.kI = kI;
+//		this.kD = kD;
 		
 		elevationPID.setPID(kP, kI, kD);
 	}
