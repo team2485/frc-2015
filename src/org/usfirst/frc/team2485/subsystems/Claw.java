@@ -18,39 +18,45 @@ import edu.wpi.first.wpilibj.VictorSP;
 
 public class Claw {
 	
-	private double kP = 0.0025, kI = 0, kD = 0;
+	private double kP = 0.002, kI = 0.00, kD = 0;
 	private CombinedVictorSP winchMotor;
 	private Solenoid actuator;
 	private ScaledPot potScaled;
 	private DummyOutput dummyWinch;
 
-	private static final double LOWEST_POS = 110; 	// top: 850 bottom: 112
+	private static final double LOWEST_POS = 105; 	// top: 850 bottom: 112
 	private static final double POS_RANGE = 740;
 	public static final double POT_TOLERANCE = 12;
 	private static final double INCH_RANGE  = 63.75; // 11.25 in from floor (corresponds to a pot value of LOWEST_POS) - 75 in
 	
 	private static final double LOADING_RESTING_OFFSET = 50; 
 	
+	private static final double TOTE_HEIGHT = 136;
+	
 	public static final double 
 		CONTAINER_LOADING_POINT	= LOWEST_POS,
 		HIGHEST_POS				= LOWEST_POS + POS_RANGE - 5,
 		ONE_TOTE_RESTING		= LOWEST_POS + 370,
 		ONE_TOTE_LOADING		= ONE_TOTE_RESTING + LOADING_RESTING_OFFSET, // 469
-		TWO_TOTE_RESTING		= LOWEST_POS + 340,
+		TWO_TOTE_RESTING		= ONE_TOTE_RESTING + TOTE_HEIGHT,
 		TWO_TOTE_LOADING		= TWO_TOTE_RESTING + LOADING_RESTING_OFFSET,
-		THREE_TOTE_RESTING		= LOWEST_POS + 340,
+		THREE_TOTE_RESTING		= TWO_TOTE_RESTING + TOTE_HEIGHT,
 		THREE_TOTE_LOADING		= THREE_TOTE_RESTING + LOADING_RESTING_OFFSET,
-		FOUR_TOTE_RESTING		= LOWEST_POS + 340,
+		FOUR_TOTE_RESTING		= THREE_TOTE_RESTING + TOTE_HEIGHT,
 		FOUR_TOTE_LOADING		= FOUR_TOTE_RESTING + LOADING_RESTING_OFFSET,
-		FIVE_TOTE_RESTING		= LOWEST_POS + 340,
+		FIVE_TOTE_RESTING		= FOUR_TOTE_RESTING + TOTE_HEIGHT,
 		FIVE_TOTE_LOADING		= FIVE_TOTE_RESTING + LOADING_RESTING_OFFSET,
-		SIX_TOTE_RESTING		= LOWEST_POS + 340,
-		SIX_TOTE_LOADING		= SIX_TOTE_RESTING + LOADING_RESTING_OFFSET; 
+		SIX_TOTE_RESTING		= FIVE_TOTE_RESTING + TOTE_HEIGHT,
+		SIX_TOTE_LOADING		= SIX_TOTE_RESTING + LOADING_RESTING_OFFSET,
+		RATCHET_COLLISION		= 265;
 	
 	public static final double 	PLACE_ON_EXISTING_STACK_THREE_TOTES = LOWEST_POS + 455,
 								PLACE_ON_EXISTING_STACK_FOUR_TOTES = LOWEST_POS + 600,
+								
 								PLACE_ON_EXISTING_STACK_FIVE_TOTES = LOWEST_POS + 750,
 								PLACE_ON_EXISTING_STACK_SIX_TOTES = LOWEST_POS + POS_RANGE;
+	
+	public static final double NO_CONTAINER_OFFSET = -120; 
 	
 	// top of the claw: 870
 	// bottom of the claw: 118
@@ -68,7 +74,7 @@ public class Claw {
 		
 		elevationPID = new PIDController(kP, kI, kD, potScaled, this.dummyWinch);
 		elevationPID.setAbsoluteTolerance(POT_TOLERANCE);
-//		elevationPID.setOutputRange(-0.7,  0.7);
+		elevationPID.setOutputRange(-0.5,  0.5);
 		
 	}
 	
@@ -102,7 +108,11 @@ public class Claw {
 		} else if (adjustedSpeed < -1){
 			adjustedSpeed = -1;
 		}
-		winchMotor.set(adjustedSpeed);
+		if (isClawAboutToCollideWithRachet(adjustedSpeed)){
+			winchMotor.set(0);
+		} else {
+			winchMotor.set(adjustedSpeed);
+		}
 	}
 	
 	public void setPID(double kP, double kI, double kD) {
@@ -208,7 +218,20 @@ public class Claw {
 				return FIVE_TOTE_LOADING;
 		}
 		
-		if(clapperSetpoint == Clapper.ON_RATCHET_SETPOINT) {
+		if(clapperSetpoint == Clapper.LOADING_SETPOINT) {
+			if (toteCount == 1)
+				return ONE_TOTE_RESTING - TOTE_HEIGHT;
+			if(toteCount == 2)
+				return ONE_TOTE_RESTING;
+			if(toteCount == 3)
+				return TWO_TOTE_RESTING;
+			if(toteCount == 4)
+				return THREE_TOTE_RESTING;
+			if(toteCount == 5)
+				return FOUR_TOTE_RESTING;
+		}
+		
+		if(clapperSetpoint == Clapper.ON_RATCHET_SETPOINT || clapperSetpoint == Clapper.HOLDING_TOTE_SETPOINT) {
 			if(toteCount == 1)
 				return ONE_TOTE_RESTING;
 			if(toteCount == 2)
@@ -221,7 +244,24 @@ public class Claw {
 				return FIVE_TOTE_RESTING;
 		}
 		
+		if(clapperSetpoint == Clapper.LIFT_BOTTOM_TOTE_TO_RAISE_STACK_OFF_RATCHET_SETPOINT) {
+			if(toteCount == 1)
+				return ONE_TOTE_LOADING;
+			if(toteCount == 2)
+				return TWO_TOTE_LOADING;
+			if(toteCount == 3)
+				return THREE_TOTE_LOADING;
+			if(toteCount == 4)
+				return FOUR_TOTE_LOADING;
+			if(toteCount == 5)
+				return FIVE_TOTE_LOADING;
+		}
+		
 		throw new IllegalArgumentException("Clapper setpoint " + clapperSetpoint + " invalid.");
+	}
+	
+	public boolean isClawAboutToCollideWithRachet(double speedInput){
+		return ((getPotValue() < RATCHET_COLLISION + 150) && (getPotValue() > RATCHET_COLLISION) && (speedInput < 0) && Robot.ratchet.isExtended());
 	}
 }
 

@@ -16,11 +16,11 @@ public class ToteCount {
 	}
 	
 	public void addTote() {
-		numTotes = numTotes >= 6 ? 6 : numTotes + 1;
+		numTotes = numTotes >= 5 ? 5 : numTotes + 1;
 	}
 	
 	public void addTote(int totes) {
-		numTotes = numTotes >= 6 ? 6 : numTotes + totes;
+		numTotes = numTotes >= 5 ? 5 : numTotes + totes;
 	}
 	
 	public void resetCount() {

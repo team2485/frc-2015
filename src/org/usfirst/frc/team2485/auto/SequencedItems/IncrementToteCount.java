@@ -7,9 +7,12 @@ public class IncrementToteCount implements SequencedItem {
 
 	private boolean done = false;
 	
+	public IncrementToteCount() {
+		Robot.toteCounter.addTote();
+	}
+	
 	@Override
 	public void run() {
-		Robot.toteCounter.addTote();
 		done = true;
 	}
 

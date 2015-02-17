@@ -49,7 +49,7 @@ public class Clapper {
 										
 	public static final double LOWEST_POS = 84; 	
 	private static final double POS_RANGE = 375;
-	public static final double POT_TOLERANCE = 12;
+	public static final double POT_TOLERANCE = 18;
 	private static final double INCH_RANGE  = 44.375; // 6 and 1/8 in from floor (corresponds to a pot value of 84) - 50.5 in
 	 
 	private DigitalInput toteDetectorLimitSwitch, bottomSafetyLimitSwitch;
@@ -57,9 +57,8 @@ public class Clapper {
 	private double lastHeight;
 	
 	public static final double 
-		ABOVE_RATCHET_SETPOINT		= LOWEST_POS + 170,
-		DROP_OFF_POS				= LOWEST_POS, // TODO: find value
-		DROP_OFF_POS_ON_ONE_TOTE	= 133, // shitty and should be fixed, but it's the right pot value, or at least it was, to place stack on one tote
+		ABOVE_RATCHET_SETPOINT									= LOWEST_POS + 170,
+		DROP_OFF_POS_ON_ONE_TOTE	= ABOVE_RATCHET_SETPOINT,
 		ON_RATCHET_SETPOINT			= LOWEST_POS + 125, 
 		HOLDING_TOTE_SETPOINT		= LOWEST_POS + 100, //TODO: find value
 		LOADING_SETPOINT			= LOWEST_POS + 2,
@@ -67,10 +66,11 @@ public class Clapper {
 		COOP_ONE_TOTE_SETPOINT		= LOWEST_POS + 175, 
 		COOP_TWO_TOTES_SETPOINT		= LOWEST_POS + 275,
 		COOP_THREE_TOTES_SETPOINT	= LOWEST_POS + 370, 
-		SCORING_PLATFORM_HEIGHT		= LOWEST_POS + 25;
+		SCORING_PLATFORM_HEIGHT		= LOWEST_POS + 25,
+		LIFT_BOTTOM_TOTE_TO_RAISE_STACK_OFF_RATCHET_SETPOINT	= LOWEST_POS + 50;
 	
 	private static final double LIFT_DEADBAND = 0.5;
-	private double pidOutputMin, pidOutputMinNormal = -0.3, pidOutputMax, pidOutputMaxNormal = 0.5;
+	private double pidOutputMin, pidOutputMinNormal = -0.2, pidOutputMax, pidOutputMaxNormal = 0.5;
 
 	public Clapper(VictorSP clapperLifter1, VictorSP clapperLifter2,
 			DoubleSolenoid clapperActuator, AnalogPotentiometer pot, 

@@ -26,4 +26,8 @@ public class RatchetSystem {
 		ratchetActuator.set(false);
 	}
 
+	public boolean isExtended() {
+		return !ratchetActuator.get();
+	}
+
 }

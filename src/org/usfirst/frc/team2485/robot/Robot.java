@@ -72,6 +72,7 @@ public class Robot extends IterativeRobot {
 	private double lastPos;
 	private double lastVelocity;
 	private static double currVelocity;
+	public static ContainerLiberator containerLiberator;
 	
 	private boolean toteCounterButtonIsReset = true; 
     private boolean done = false;
@@ -213,9 +214,9 @@ public class Robot extends IterativeRobot {
     	
     	if (Controllers.getButton(Controllers.XBOX_BTN_A)) 
     		strongback.enablePid();
-    	else 
-    		strongback.disablePid();
-    	
+//    	else 
+//    		strongback.disablePid();
+//    	
     	strongback.checkSafety();
     	
        	updateDashboard();
@@ -302,7 +303,7 @@ public class Robot extends IterativeRobot {
        	clapper.updateToteCount(toteCounter.getCount());
        	
        	if (Controllers.getJoystickButton(1) && teleopSequence == null) {
-       		teleopSequence = SequencerFactory.createToteLift();
+       		teleopSequence = SequencerFactory.createToteIntakeWithLift();
        	}
        	if (Controllers.getJoystickButton(2) && teleopSequence == null) {
     		teleopSequence = SequencerFactory.createToteIntakeNoLift();
@@ -327,18 +328,19 @@ public class Robot extends IterativeRobot {
        		fingers.dualReverse(.75);
        	else
        		fingers.dualIntake(0); 
+       	
        	if (Controllers.getJoystickButton(7)) {
        		System.out.println("fingers should close now");
        		fingers.setFingerPosition(Fingers.CLOSED);
        	}
        	if (Controllers.getJoystickButton(8)) {
 //       		clapper.setSetpoint(Clapper.COOP_THREE_TOTES_SETPOINT); 
-       		clapper.setSetpoint(Clapper.ABOVE_RATCHET_SETPOINT);
+       		clapper.setSetpoint(Clapper.COOP_THREE_TOTES_SETPOINT);
        	}
        	if (Controllers.getJoystickButton(9)) {
        		System.out.println("fingers should go parallel");
 //       		fingers.setFingerPosition(Fingers.PARALLEL);
-       		clapper.setSetpoint(Clapper.ON_RATCHET_SETPOINT);
+       		fingers.setFingerPosition(Fingers.PARALLEL);
        	}
        	if (Controllers.getJoystickButton(10)) {
        		System.out.println("hook should go back to normal");
@@ -385,34 +387,38 @@ public class Robot extends IterativeRobot {
        	}
        	
        	if (Controllers.getSecondaryJoystickButton(6)) {
-       		//this space left intentionally blank
+//       		null so far
        	}
        	
-//       	if(Controllers.getSecondaryJoystickButton(7) && teleopSequence == null) {
-//       		teleopSequence = SequencerFactory.createDropToteStackRoutine();
-//       	}
-       	
-       	if(Controllers.getSecondaryJoystickButton(8)) {
-       		claw.setSetpoint(Claw.CONTAINER_LOADING_POINT);
+       	if(Controllers.getSecondaryJoystickButton(7)) {
+       		claw.setSetpoint(Claw.PLACE_ON_EXISTING_STACK_FIVE_TOTES);
        	}
+       	
+       	//////////////////////////////////////////////
+		//////////////////////////////////////////////
+		//////////////////////////////////////////////
+       	if(Controllers.getSecondaryJoystickButton(8) && teleopSequence == null) {
+       		teleopSequence = SequencerFactory.createTestPickupWithStrongbackTilt();
+       	}
+       	//////////////////////////////////////////////
+		//////////////////////////////////////////////
+		//////////////////////////////////////////////
        	
        	if(Controllers.getSecondaryJoystickButton(9)) {
-       		claw.setSetpoint(Claw.PLACE_ON_EXISTING_STACK_THREE_TOTES);
+       		claw.setSetpoint(Claw.PLACE_ON_EXISTING_STACK_FOUR_TOTES);
        	}
        	
-       	if(Controllers.getSecondaryJoystickButton(10)) {
-//       		claw.setSetpoint(Claw.PLACE_ON_EXISTING_STACK_FOUR_TOTES);
-      		claw.setSetpoint(Claw.CONTAINER_LOADING_POINT);
+       	if(Controllers.getSecondaryJoystickButton(10) && teleopSequence == null) {
+       		teleopSequence = SequencerFactory.createDropToteStackRoutine(true);
        	}
        	
        	if(Controllers.getSecondaryJoystickButton(11)) {
-//       		claw.setSetpoint(Claw.PLACE_ON_EXISTING_STACK_FIVE_TOTES);
-      		claw.setSetpoint(Claw.ONE_TOTE_RESTING);
+       		claw.setSetpoint(Claw.PLACE_ON_EXISTING_STACK_THREE_TOTES);
+//      		claw.setSetpoint(Claw.ONE_TOTE_RESTING);
        	}
        	
-       	if(Controllers.getSecondaryJoystickButton(12)) {
-//       		claw.setSetpoint(Claw.PLACE_ON_EXISTING_STACK_SIX_TOTES);
-      		claw.setSetpoint(Claw.ONE_TOTE_LOADING);
+       	if(Controllers.getSecondaryJoystickButton(12) && teleopSequence == null) {
+       		teleopSequence = SequencerFactory.createDropToteStackRoutine(false);
        	}
        		
    		if ((Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_THROTTLE) > 0) ||
@@ -436,6 +442,8 @@ public class Robot extends IterativeRobot {
        	claw.updateWinchPeriodic();
     	clapper.updateLastHeight(); 
 
+    	
+    	System.out.println("Strongback: isEnabled " + strongback.leadScrewImuPID.isEnable() + "\t\tSetpoint" + strongback.leadScrewImuPID.getSetpoint());
     }
     
     public static double getCurrVelocity() {
@@ -483,7 +491,13 @@ public class Robot extends IterativeRobot {
     }
         
     public void testPeriodic() {
-//    	
+
+    	if(toteDetectorLimitSwitch.get())
+    		System.out.println("get returned true");
+    	else
+    		System.out.println("get returned false");
+    	
+    	//    	
 //    	clapper.setSetpoint(Clapper.ON_RATCHET_SETPOINT);
 //    	claw.close(); 
 //    	claw.setSetpoint(Claw.ONE_TOTE_LOADING);
@@ -541,7 +555,7 @@ public class Robot extends IterativeRobot {
     }
     
     public void updateDashboard() {
-     	SmartDashboard.putString("Clapper and Container", clapper.getPercentHeight() + "," + (float)clapper.getPotValue() + ","+ claw.getPercentHeight()+ "," + (float)claw.getPotValue() + "," + strongback.getIMURoll());  
+     	SmartDashboard.putString("Clapper and Container", clapper.getPercentHeight() + "," + (float)claw.getPotValue() + ","+ claw.getPercentHeight()+ "," + (float)clapper.getPotValue() + "," + strongback.getIMURoll());  
 //    	SmartDashboard.putString("Clapper and Container", clapper.getPercentHeight() + ","+ claw.getPercentHeight() + "," + strongback.getIMURoll());  	
        	SmartDashboard.putNumber("IPS", (int) drive.getAbsoluteRate());
        	SmartDashboard.putNumber("Battery", DriverStation.getInstance().getBatteryVoltage());

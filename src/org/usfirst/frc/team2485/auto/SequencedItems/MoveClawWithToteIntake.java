@@ -26,22 +26,18 @@ public class MoveClawWithToteIntake implements SequencedItem {
 			case 5: 
 				setpoint = Claw.HIGHEST_POS;
 				break;
-			case 6:
-				setpoint = Claw.HIGHEST_POS;
-				break;
 			default: 
 				throw new IllegalStateException("We must have 1 - 6 totes.");
 		}
+		
+		Robot.claw.setSetpoint(setpoint);
 	}
 
 	@Override
 	public void run() {
-		
-		Claw claw = Robot.claw; 
-		
-		claw.setSetpoint(setpoint);
-		claw.updateWinchPeriodic();
-//		finished = claw.isPidOnTarget(); // TODO: fix duration and finishing condition 
+		Robot.claw.setSetpoint(setpoint);
+
+		finished = Robot.claw.isPidOnTarget(); // TODO: fix duration and finishing condition 
 	}
 
 	@Override
