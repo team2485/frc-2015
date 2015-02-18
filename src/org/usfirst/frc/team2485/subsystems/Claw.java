@@ -18,7 +18,7 @@ import edu.wpi.first.wpilibj.VictorSP;
 
 public class Claw {
 	
-	public static double kP = 0.03, kI = 0.00, kD = 0;
+	public final static double kP = 0.02, kI = 0.00, kD = 0; // TODO: check kP BADLY
 	public static final double AGGRESSIVE_KP = 0.035;
 	private CombinedVictorSP winchMotor;
 	private Solenoid actuator;
@@ -37,9 +37,9 @@ public class Claw {
 	public static final double 
 		CONTAINER_LOADING_POINT	= LOWEST_POS,
 		HIGHEST_POS				= LOWEST_POS + POS_RANGE - 5,
-		ONE_TOTE_RESTING		= LOWEST_POS + 370,
+		ONE_TOTE_RESTING		= LOWEST_POS + 370, // TODO: tune
 		ONE_TOTE_LOADING		= ONE_TOTE_RESTING + LOADING_RESTING_OFFSET, // 469
-		TWO_TOTE_RESTING		= ONE_TOTE_RESTING + TOTE_HEIGHT,
+		TWO_TOTE_RESTING		= ONE_TOTE_RESTING + TOTE_HEIGHT, // TODO: make independent of one tote resting, should depend on lowest pos
 		TWO_TOTE_LOADING		= TWO_TOTE_RESTING + LOADING_RESTING_OFFSET,
 		THREE_TOTE_RESTING		= TWO_TOTE_RESTING + TOTE_HEIGHT,
 		THREE_TOTE_LOADING		= THREE_TOTE_RESTING + LOADING_RESTING_OFFSET,
@@ -47,8 +47,6 @@ public class Claw {
 		FOUR_TOTE_LOADING		= FOUR_TOTE_RESTING + LOADING_RESTING_OFFSET,
 		FIVE_TOTE_RESTING		= FOUR_TOTE_RESTING + TOTE_HEIGHT,
 		FIVE_TOTE_LOADING		= FIVE_TOTE_RESTING + LOADING_RESTING_OFFSET,
-		SIX_TOTE_RESTING		= FIVE_TOTE_RESTING + TOTE_HEIGHT,
-		SIX_TOTE_LOADING		= SIX_TOTE_RESTING + LOADING_RESTING_OFFSET,
 		RATCHET_COLLISION		= LOWEST_POS + 160,
 		FIX_CONTAINER_POSITION_IN_CLAW	= LOWEST_POS + 185,
 		FIRST_TOTE_POSITION_BELOW_RATCHET	= LOWEST_POS + 65;
@@ -145,15 +143,15 @@ public class Claw {
 	}
 
 	public double getP() {
-		return kP;
+		return elevationPID.getP();
 	}
 	
 	public double getI() {
-		return kI;
+		return elevationPID.getI();
 	}
 	
 	public double getD() {
-		return kD;
+		return elevationPID.getD();
 	}
 	
 	public double getPotValue() {
@@ -211,7 +209,8 @@ public class Claw {
 		
 		int toteCount = Robot.toteCounter.getCount();
 		
-		if(clapperSetpoint == Clapper.ABOVE_RATCHET_SETPOINT) {
+		if(clapperSetpoint == Clapper.ABOVE_RATCHET_SETPOINT || 
+				clapperSetpoint == Clapper.LIFT_BOTTOM_TOTE_TO_RAISE_STACK_OFF_RATCHET_SETPOINT) {
 			if(toteCount == 1)
 				return ONE_TOTE_LOADING;
 			if(toteCount == 2)
@@ -224,20 +223,8 @@ public class Claw {
 				return FIVE_TOTE_LOADING;
 		}
 		
-		if(clapperSetpoint == Clapper.LOADING_SETPOINT) {
-			if (toteCount == 1)
-				return ONE_TOTE_RESTING - TOTE_HEIGHT;
-			if(toteCount == 2)
-				return ONE_TOTE_RESTING;
-			if(toteCount == 3)
-				return TWO_TOTE_RESTING;
-			if(toteCount == 4)
-				return THREE_TOTE_RESTING;
-			if(toteCount == 5)
-				return FOUR_TOTE_RESTING;
-		}
-		
-		if(clapperSetpoint == Clapper.ON_RATCHET_SETPOINT || clapperSetpoint == Clapper.HOLDING_TOTE_SETPOINT) {
+		if(clapperSetpoint == Clapper.ON_RATCHET_SETPOINT || clapperSetpoint == Clapper.HOLDING_TOTE_SETPOINT || 
+				clapperSetpoint == Clapper.LOADING_SETPOINT) {
 			if(toteCount == 1)
 				return ONE_TOTE_RESTING;
 			if(toteCount == 2)
@@ -248,19 +235,6 @@ public class Claw {
 				return FOUR_TOTE_RESTING;
 			if(toteCount == 5)
 				return FIVE_TOTE_RESTING;
-		}
-		
-		if(clapperSetpoint == Clapper.LIFT_BOTTOM_TOTE_TO_RAISE_STACK_OFF_RATCHET_SETPOINT) {
-			if(toteCount == 1)
-				return ONE_TOTE_LOADING;
-			if(toteCount == 2)
-				return TWO_TOTE_LOADING;
-			if(toteCount == 3)
-				return THREE_TOTE_LOADING;
-			if(toteCount == 4)
-				return FOUR_TOTE_LOADING;
-			if(toteCount == 5)
-				return FIVE_TOTE_LOADING;
 		}
 		
 		throw new IllegalArgumentException("Clapper setpoint " + clapperSetpoint + " invalid.");

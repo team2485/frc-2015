@@ -9,8 +9,7 @@ public class MoveClawRelativeToClapper implements SequencedItem {
 	private double clawSetpoint;
 	
 	public MoveClawRelativeToClapper(double clapperSetpoint) {
-		double offset = Robot.claw.isOpen() ? Claw.NO_CONTAINER_OFFSET : 0; 
-		this.clawSetpoint = Robot.claw.translateClapperSetpoint(clapperSetpoint) + offset;
+		this.clawSetpoint = Robot.claw.translateClapperSetpoint(clapperSetpoint);
 		
 		Robot.claw.setSetpoint(clawSetpoint);
 	}

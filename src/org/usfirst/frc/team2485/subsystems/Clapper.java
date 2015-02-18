@@ -57,7 +57,7 @@ public class Clapper {
 	private double lastHeight;
 	
 	public static final double 
-		ABOVE_RATCHET_SETPOINT									= LOWEST_POS + 170,
+		ABOVE_RATCHET_SETPOINT		= LOWEST_POS + 170,
 		DROP_OFF_POS_ON_ONE_TOTE	= ABOVE_RATCHET_SETPOINT,
 		ON_RATCHET_SETPOINT			= LOWEST_POS + 125, 
 		HOLDING_TOTE_SETPOINT		= LOWEST_POS + 100, //TODO: find value

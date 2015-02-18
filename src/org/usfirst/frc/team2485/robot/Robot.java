@@ -214,9 +214,9 @@ public class Robot extends IterativeRobot {
     	
     	if (Controllers.getButton(Controllers.XBOX_BTN_A)) 
     		strongback.enablePid();
-//    	else 
-//    		strongback.disablePid();
-//    	
+    	else if (Controllers.getButton(Controllers.XBOX_BTN_B))
+    		strongback.disablePid();
+    	
     	strongback.checkSafety();
     	
        	updateDashboard();
@@ -246,8 +246,10 @@ public class Robot extends IterativeRobot {
         else 
         	drive.setLowSpeed();
         
-        if (Controllers.getButton(Controllers.XBOX_BTN_B))
-        	drive.dropCenterWheel(false);
+        if (Controllers.getButton(Controllers.XBOX_BTN_BACK))
+        	drive.dropCenterWheel(false); 
+        if (Controllers.getButton(Controllers.XBOX_BTN_START))
+        	drive.dropCenterWheel(true);
         
         drive.warlordDrive(Controllers.getAxis(Controllers.XBOX_AXIS_LX, 0),
 				Controllers.getAxis(Controllers.XBOX_AXIS_LY, 0),
@@ -305,7 +307,7 @@ public class Robot extends IterativeRobot {
        		teleopSequence = SequencerFactory.createTestPickupWithStrongbackTilt();
        	}
        	if (Controllers.getJoystickButton(2) && teleopSequence == null) {
-    		teleopSequence = SequencerFactory.createToteIntakeNoLift();
+    		teleopSequence = SequencerFactory.createToteIntakeNoHang();
     	}
        	
        	if(Controllers.getJoystickButton(3))
@@ -367,8 +369,7 @@ public class Robot extends IterativeRobot {
        	if (Controllers.getSecondaryJoystickAxis(Controllers.JOYSTICK_AXIS_Y, .1f) != 0) {
        		claw.liftManually(Controllers.getSecondaryJoystickAxis(Controllers.JOYSTICK_AXIS_Y));
        	} else if (claw.isManual()) {
-    		//claw.setSetpoint(claw.getPotValue());
-       		claw.liftManually(0);
+    		claw.setSetpoint(claw.getPotValue());
        	}
        	
        	if(Controllers.getSecondaryJoystickButton(1) && teleopSequence == null)
@@ -560,13 +561,14 @@ public class Robot extends IterativeRobot {
        	SmartDashboard.putNumber("Battery", DriverStation.getInstance().getBatteryVoltage());
         SmartDashboard.putBoolean("Disabled", DriverStation.getInstance().isDisabled());
         SmartDashboard.putNumber("Claw Pot", claw.getPotValue());
-        System.out.println(claw.getPotValue());
+//        System.out.println(claw.getPotValue());
         SmartDashboard.putNumber("Clapper Pot", clapper.getPotValue());
         SmartDashboard.putNumber("Tote Count", toteCounter.getCount());
         SmartDashboard.putNumber("Error from Claw", claw.getError());
         SmartDashboard.putNumber("Claw kP", claw.getP());
-        SmartDashboard.putBoolean("Clapper is manual: ", clapper.isManual());
-//        SmartDashboard.putNumber("Clapper inches", clapper.getInchHeight());
+        //SmartDashboard.putBoolean("Clapper is manual: ", clapper.isManual());
+        SmartDashboard.putNumber("Clapper Inches", clapper.getInchHeight());
+        SmartDashboard.putNumber("Claw Inches", claw.getInchHeight());
         SmartDashboard.putNumber("Clapper change in height" ,  (float)Robot.clapper.getChangeInHeightInInches());
         SmartDashboard.putNumber("Encoder Distance", leftEnc.getDistance());
         SmartDashboard.putBoolean("Tote detected by limit switch", clapper.toteDetected());

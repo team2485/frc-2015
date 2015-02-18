@@ -12,7 +12,7 @@ public class MoveClawWithToteIntake implements SequencedItem {
 	public MoveClawWithToteIntake() {
 		switch (Robot.toteCounter.getCount()) {
 			case 1:
-				setpoint = Claw.ONE_TOTE_LOADING;
+				setpoint = Claw.ONE_TOTE_LOADING; 
 				break;
 			case 2:
 				setpoint = Claw.TWO_TOTE_LOADING;
