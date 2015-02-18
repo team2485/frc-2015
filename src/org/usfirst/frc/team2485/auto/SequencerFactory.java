@@ -36,8 +36,8 @@ public class SequencerFactory {
 	// auto types
 	public static final int SEQ_TEST = -1, 
 			DRIVE_TO_AUTO_ZONE = 0,
-			ONE_TOTE = 1, 
-			TWO_TOTE = 2, 
+			ONE_TOTE_ONE_CONTAINER = 1, 
+			TWO_TOTE_ONE_CONTAINER = 2, 
 			THREE_TOTE_STRAIGHT = 3,
 			THREE_TOTE_PUSH_CONTAINERS = 4, 
 			CONTAINER_AND_TOTE = 5,
@@ -56,31 +56,32 @@ public class SequencerFactory {
 																				// fix
 																				// this
 					});
-
-		case ONE_TOTE:
+		case ONE_TOTE_ONE_CONTAINER:
 			return new Sequencer(
 					new SequencedItem[] {
-							new SequencedMultipleItem(new CloseClapper(),
-									new SetFingersPos(Fingers.PARALLEL),
-									new SetFingerRollers(
-											SetFingerRollers.INTAKE, 1, 1)),
-							new SequencedPause(0.7),
-							// new SequencedMultipleItem(
-							// new SetFingersPos(Fingers.PARALLEL),
-							new MoveClapperVertically(
-									Clapper.ABOVE_RATCHET_SETPOINT),
-							new SetFingerRollers(SetFingerRollers.OFF, .1, 0),
-							// ),
-							new SequencedPause(0.3),
-							new MoveClapperVertically(Clapper.LOADING_SETPOINT),
-							new RotateToAngle(90), // TODO: fix this
-							new DriveStraight(60) // TODO: fix this
+							new InnerSequencer(createContainerPickupRoutine()), 
+							new DriveStraight(15), // TODO: untested distance
+							new InnerSequencer(createToteIntakeWithHang()), 
+							new DriveStraight(15), // TODO: untested distance
+							new RotateToAngle(90), // TODO: untested distance
+							new DriveStraight(15, 0), // TODO: untested distance
+							new InnerSequencer(createDropToteStackRoutine(false))	
 					});
 
-		case TWO_TOTE:
-			return new Sequencer(new SequencedItem[] { new DriveStraight(60) // TODO:
-																				// fix
-																				// this
+		case TWO_TOTE_ONE_CONTAINER:
+			return new Sequencer(
+					new SequencedItem[] {
+							new InnerSequencer(createContainerPickupRoutine()), 
+							new DriveStraight(15), // TODO: untested distance
+							new InnerSequencer(createToteIntakeWithHang()), 
+							new DriveStraight(33), // TODO: untested distance
+							new RotateToAngle(15), //push container out of the way
+							new RotateToAngle(0), 
+							new DriveStraight(5), // TODO: untested distance
+							new InnerSequencer(createToteIntakeWithHang()), 
+							new RotateToAngle(90), // TODO: untested distance
+							new DriveStraight(15, 0), // TODO: untested distance
+							new InnerSequencer(createDropToteStackRoutine(false))
 					});
 
 		case THREE_TOTE_STRAIGHT:
