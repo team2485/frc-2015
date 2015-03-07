@@ -37,9 +37,9 @@ public class SequencerFactory {
 	// auto types
 	public static final int SEQ_TEST = -1, 
 			DRIVE_TO_AUTO_ZONE = 0,
-			ONE_TOTE = 1, 
-			TWO_TOTE = 2, 
-			ONE_CONTAINER_THREE_TOTES = 3,
+			ONE_TOTE_ONE_CONTAINER = 1, 
+			TWO_TOTE_ONE_CONTAINER = 2, 
+			THREE_TOTE_STRAIGHT = 3,
 			THREE_TOTE_PUSH_CONTAINERS = 4, 
 			CONTAINER_AND_TOTE = 5,
 			CONTAINER_STEAL = 6,
@@ -57,8 +57,7 @@ public class SequencerFactory {
 					new DriveStraight(70), // TODO:
 //					new SetClawPID(Claw.kP_LESS_POWER_ALLOWS_MORE_ERROR, Robot.claw.getI(), Robot.claw.getD()),											// fix															// this
 					});
-
-		case ONE_TOTE:
+		case ONE_TOTE_ONE_CONTAINER:
 			return new Sequencer(
 					new SequencedItem[] {
 							new SequencedMultipleItem(new CloseClapper(),
@@ -79,35 +78,44 @@ public class SequencerFactory {
 							new DriveStraight(60) // TODO: fix this
 					});
 
-		case TWO_TOTE:
-			return new Sequencer(new SequencedItem[] { 
-					new DriveStraight(60), // TODO:
-//					new SetClawPID(Claw.kP_LESS_POWER_ALLOWS_MORE_ERROR, Robot.claw.getI(), Robot.claw.getD()),															// fix
-																				// this
+		case TWO_TOTE_ONE_CONTAINER:
+			return new Sequencer(
+					new SequencedItem[] {
+							new InnerSequencer(createContainerPickupRoutine()), 
+							new DriveStraight(15), // TODO: untested distance
+							new InnerSequencer(createToteIntakeForAutonomous()), 
+							new DriveStraight(33), // TODO: untested distance
+							new RotateToAngle(15), //push container out of the way
+							new RotateToAngle(0), 
+							new DriveStraight(5), // TODO: untested distance
+							new InnerSequencer(createToteIntakeForAutonomous()), 
+							new RotateToAngle(90), // TODO: untested distance
+							new DriveStraight(15, 0), // TODO: untested distance
+							new InnerSequencer(createDropToteStackRoutine(false))
 					});
 
-		case ONE_CONTAINER_THREE_TOTES: //assumes that teammates push the other containers out of our way
-			return new Sequencer(new SequencedItem[] {
-					new InnerSequencer(createContainerPickupRoutine()), 
-//					new CloseClapper(),
-//					new SetFingersPos(Fingers.CLOSED),
-//					new SetFingerRollers(SetFingerRollers.LEFT, 1, 1),
-					new SequencedMultipleItem(
-							new InnerSequencer(createTestPickupWithStrongbackTiltAndLowerClapper()),
-							new ClampOutputRangeDriveStraightPID(-.5, .5), // TODO: find values
-							new DriveStraight(50)), //unknown distance
-					new SequencedMultipleItem(
-							new InnerSequencer(createTestPickupWithStrongbackTiltAndLowerClapper()),
-							new DriveStraight(100)), //unknown distance
-					new InnerSequencer(createTestPickupWithStrongbackTilt()), 
-					new RotateToAngle(90), // find angle
-					new DriveAtSetSpeed(-.6, 2), //tune 
-					new SequencedMultipleItem(
-							new InnerSequencer(createDropToteStackRoutineKeepContainer(false)),
-							new DriveAtSetSpeed(-.4, 1)
-							), 
-					new DriveAtSetSpeed(0, .1)
-					});
+//		case ONE_CONTAINER_THREE_TOTES: //assumes that teammates push the other containers out of our way
+//			return new Sequencer(new SequencedItem[] {
+//					new InnerSequencer(createContainerPickupRoutine()), 
+////					new CloseClapper(),
+////					new SetFingersPos(Fingers.CLOSED),
+////					new SetFingerRollers(SetFingerRollers.LEFT, 1, 1),
+//					new SequencedMultipleItem(
+//							new InnerSequencer(createTestPickupWithStrongbackTiltAndLowerClapper()),
+//							new ClampOutputRangeDriveStraightPID(-.5, .5), // TODO: find values
+//							new DriveStraight(50)), //unknown distance
+//					new SequencedMultipleItem(
+//							new InnerSequencer(createTestPickupWithStrongbackTiltAndLowerClapper()),
+//							new DriveStraight(100)), //unknown distance
+//					new InnerSequencer(createTestPickupWithStrongbackTilt()), 
+//					new RotateToAngle(90), // find angle
+//					new DriveAtSetSpeed(-.6, 2), //tune 
+//					new SequencedMultipleItem(
+//							new InnerSequencer(createDropToteStackRoutineKeepContainer(false)),
+//							new DriveAtSetSpeed(-.4, 1)
+//							), 
+//					new DriveAtSetSpeed(0, .1)
+//					});
 
 		case THREE_TOTE_PUSH_CONTAINERS:
 			return new Sequencer(
