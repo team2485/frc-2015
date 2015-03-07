@@ -5,7 +5,7 @@ import org.usfirst.frc.team2485.robot.Robot;
 
 public class SetFingerRollers implements SequencedItem {
 
-	public static final int INTAKE = 0, REVERSE = 1, OFF = 2; 
+	public static final int INTAKE = 0, REVERSE = 1, OFF = 2, LEFT = 3, RIGHT = 4; 
 	private int type; 
 	private double timing, speed;
 	private boolean done;
@@ -13,7 +13,7 @@ public class SetFingerRollers implements SequencedItem {
 //	private static int numTotes = 0; 
 	
 	public SetFingerRollers(int type, double timing, double speed) {
-		if (type == INTAKE || type == REVERSE || type == OFF)
+		if (type == INTAKE || type == REVERSE || type == OFF || type == LEFT || type == RIGHT)
 			this.type = type;
 		else
 			throw new IllegalArgumentException("Must send rollers intake or reverse or off"); 
@@ -33,6 +33,10 @@ public class SetFingerRollers implements SequencedItem {
 			Robot.fingers.dualReverse(speed);
 		else if (type == OFF)
 			Robot.fingers.dualIntake(0); 
+		else if(type == LEFT)
+			Robot.fingers.rotateToteLeft(speed);
+		else if(type == RIGHT)
+			Robot.fingers.rotateToteRight(speed);
 		else
 			throw new IllegalStateException("Finger rollers can only go intake, reverse, or off");
 	}

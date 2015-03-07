@@ -1,5 +1,6 @@
 package org.usfirst.frc.team2485.subsystems;
 
+import org.usfirst.frc.team2485.auto.SequencedItems.SetClawPID;
 import org.usfirst.frc.team2485.robot.Robot;
 import org.usfirst.frc.team2485.util.CombinedVictorSP;
 import org.usfirst.frc.team2485.util.DummyOutput;
@@ -7,6 +8,8 @@ import org.usfirst.frc.team2485.util.ScaledPot;
 import org.usfirst.frc.team2485.util.ThresholdHandler;
 
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.VictorSP;
@@ -18,28 +21,32 @@ import edu.wpi.first.wpilibj.VictorSP;
 
 public class Claw {
 	
-	public final static double kP = 0.02, kI = 0.00, kD = 0; // TODO: check kP BADLY
-	public static final double AGGRESSIVE_KP = 0.035;
+	//To keep the claw and the clapper in sync, a low kP value lets the clapper push the claw when it needs to.
+	//kP Lock Position in Place is only used when going from manual mode to automatic mode and keep the
+	//claw in place.
+	public static final double kP_LESS_POWER_ALLOWS_MORE_ERROR = 0.0025, kI = 0.00, kD = 0; // TODO: check kP BADLY
+	public static final double kP_LOCK_POSITION_IN_PLACE = 0.035;
 	private CombinedVictorSP winchMotor;
-	private Solenoid actuator;
+	private DoubleSolenoid actuator;
 	private ScaledPot potScaled;
 	private DummyOutput dummyWinch;
 
-	private static final double LOWEST_POS = 91; 	// top: 850 bottom: 112
-	private static final double POS_RANGE = 740;
-	public static final double POT_TOLERANCE = 12;
-	private static final double INCH_RANGE  = 63.75; // 11.25 in from floor (corresponds to a pot value of LOWEST_POS) - 75 in
+	private static final double LOWEST_POS    = 73; 	
+	private static final double PICKUP_POS	  = LOWEST_POS + 45;// top: 850 bottom: 112
+	private static final double POS_RANGE     = 740;
+	public  static final double POT_TOLERANCE = 12;
+	private static final double INCH_RANGE    = 63.75; // 11.25 in from floor (corresponds to a pot value of LOWEST_POS) - 75 in
 	
-	private static final double LOADING_RESTING_OFFSET = 50; 
+	private static final double LOADING_RESTING_OFFSET = 50, FIRST_LOADING_RESTING_OFFSET = 200; 
 	
-	private static final double TOTE_HEIGHT = 136;
+	private static final double TOTE_HEIGHT = 140;
 	
 	public static final double 
-		CONTAINER_LOADING_POINT	= LOWEST_POS,
+		CONTAINER_LOADING_POINT	= LOWEST_POS + 2,
 		HIGHEST_POS				= LOWEST_POS + POS_RANGE - 5,
-		ONE_TOTE_RESTING		= LOWEST_POS + 370, // TODO: tune
-		ONE_TOTE_LOADING		= ONE_TOTE_RESTING + LOADING_RESTING_OFFSET, // 469
-		TWO_TOTE_RESTING		= ONE_TOTE_RESTING + TOTE_HEIGHT, // TODO: make independent of one tote resting, should depend on lowest pos
+		ONE_TOTE_RESTING		= LOWEST_POS + 286, // TODO: tune //366
+		ONE_TOTE_LOADING		= ONE_TOTE_RESTING + FIRST_LOADING_RESTING_OFFSET, // 469
+		TWO_TOTE_RESTING		= LOWEST_POS + 319, // TODO: make independent of one tote resting, should depend on lowest pos
 		TWO_TOTE_LOADING		= TWO_TOTE_RESTING + LOADING_RESTING_OFFSET,
 		THREE_TOTE_RESTING		= TWO_TOTE_RESTING + TOTE_HEIGHT,
 		THREE_TOTE_LOADING		= THREE_TOTE_RESTING + LOADING_RESTING_OFFSET,
@@ -69,34 +76,34 @@ public class Claw {
 	
 	private boolean automatic = true;
 
-	public Claw(VictorSP winchMotor, Solenoid actuator, AnalogPotentiometer pot) {
+	public Claw(VictorSP winchMotor, DoubleSolenoid actuator, AnalogPotentiometer pot) {
 		this.winchMotor = new CombinedVictorSP(winchMotor);
 		this.winchMotor.invertMotorDirection(true);
 		this.actuator 	= actuator;
 		this.potScaled	= new ScaledPot(pot);
 		this.dummyWinch = new DummyOutput();
 		
-		elevationPID = new PIDController(kP, kI, kD, potScaled, this.dummyWinch);
+		elevationPID = new PIDController(kP_LESS_POWER_ALLOWS_MORE_ERROR, kI, kD, potScaled, this.dummyWinch);
 		elevationPID.setAbsoluteTolerance(POT_TOLERANCE);
 		elevationPID.setOutputRange(-0.5,  0.5);
 		
 	}
 	
-	public Claw(int winchMotorPort, int actuatorPort, int potPort){
-		this(new VictorSP(winchMotorPort), new Solenoid(actuatorPort), new AnalogPotentiometer(potPort));
+	public Claw(int winchMotorPort, int actuatorPort1, int actuatorPort2, int potPort){
+		this(new VictorSP(winchMotorPort), new DoubleSolenoid(actuatorPort1, actuatorPort2), new AnalogPotentiometer(potPort));
 	}
 	
 	public void open() {
-		actuator.set(false);
+		actuator.set(DoubleSolenoid.Value.kForward);
 	}
 	
 	public void close() {
-		actuator.set(true);
+		actuator.set(DoubleSolenoid.Value.kReverse);
 	}
 	
 	public boolean isOpen() {
-		return !actuator.get();
-	}
+		return actuator.get().equals(DoubleSolenoid.Value.kForward);
+	} 
 	
 	/**
 	 * If in manual mode this method will manually control the winch and return true.
@@ -138,7 +145,7 @@ public class Claw {
 			double deltaHeight = Robot.clapper.getChangeInHeightInInches();
 
 			winchMotor.set(dummyInput + 0.2 * deltaHeight); //TODO: take data and then derive formula
-			System.out.println(" " + dummyInput + ", " + deltaHeight);
+	//		System.out.println(" " + dummyInput + ", " + deltaHeight);
 		}
 	}
 
@@ -206,6 +213,8 @@ public class Claw {
 	}
 
 	public double translateClapperSetpoint(double clapperSetpoint) {
+		
+		this.setPID(Claw.kP_LESS_POWER_ALLOWS_MORE_ERROR, Robot.claw.getI(), Robot.claw.getD());
 		
 		int toteCount = Robot.toteCounter.getCount();
 		

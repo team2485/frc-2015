@@ -289,8 +289,8 @@ public class DriveTrain {
 		leftPwm  *= Math.abs(leftPwm); 
 		rightPwm *= Math.abs(rightPwm); 
 		
-		leftPwm  *= Math.abs(leftPwm); 
-		rightPwm *= Math.abs(rightPwm); 
+//		leftPwm  *= Math.abs(leftPwm); 
+//		rightPwm *= Math.abs(rightPwm); 
 
 		if (leftPwm > 1.0) {
 			rightPwm -= overPower * (leftPwm - 1.0);
@@ -306,6 +306,11 @@ public class DriveTrain {
 			rightPwm = -1.0;
 		}
 
+		
+//		if(isQuickTurn) {
+//			leftPwm /= 1.4;
+//			rightPwm /= 1.4;
+//		}
 
 		//		System.out.println("leftPWM/rightPWM after: " + leftPwm + " and " + rightPwm);
 		setLeftRight(leftPwm, rightPwm);
@@ -615,6 +620,10 @@ public class DriveTrain {
 	
 	public void setForcedNoStrafeMode(boolean b) {
 		forcedNoStrafeMode = b; 
+	}
+
+	public void setOutputRange(double min, double max) {
+		driveStraightPID.setOutputRange(min, max);
 	}
 }
 

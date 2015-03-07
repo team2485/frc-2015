@@ -22,6 +22,8 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Relay;
+import edu.wpi.first.wpilibj.Relay.Direction;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.VictorSP;
@@ -57,10 +59,12 @@ public class Robot extends IterativeRobot {
 	
 	private Solenoid centerWheelSuspension, longFingerActuators, shortFingerActuators, latchActuator;
 	private Compressor compressor;
-	private DoubleSolenoid clapperActuator;
+	private Relay compressorSpike;	
+	private DigitalInput pressureSwitch;
+	private DoubleSolenoid clapperActuator, clawSolenoid;
 	private IMUAdvanced imu;
 	private SerialPort ser;
-	private CameraServer camServer; 
+//	private CameraServer camServer; 
 	
 	private Sequencer autoSequence;
 	private AnalogPotentiometer clapperPot;
@@ -72,11 +76,11 @@ public class Robot extends IterativeRobot {
 	private double lastPos;
 	private double lastVelocity;
 	private static double currVelocity;
-	public static ContainerLiberator containerLiberator;
+	public static ContainerCommandeerer containerCommandeerer;
+	private static Solenoid commandeererSolenoidR, commandeererSolenoidL;
 	
 	private boolean toteCounterButtonIsReset = true; 
     private boolean done = false;
-	private Solenoid clawSolenoid;
 	private VictorSP clawMotor;
 	private AnalogPotentiometer clawPot;
 	private DigitalInput clapperSafetyLimitSwitch; 
@@ -102,14 +106,17 @@ public class Robot extends IterativeRobot {
     	shortFingerActuators 	= new Solenoid(6);
     	latchActuator 			= new Solenoid(2);
     	centerWheelSuspension	= new Solenoid(3); 
-    	clawSolenoid			= new Solenoid(4);
-    	clapperActuator 		= new DoubleSolenoid(7, 1);
+    	clawSolenoid			= new DoubleSolenoid(0,4); 
+    	clapperActuator 		= new DoubleSolenoid(1,7);
     	
     	clawPot		    		= new AnalogPotentiometer(0);
     	clapperPot		   		= new AnalogPotentiometer(1);  
     	
-    	clapperSafetyLimitSwitch = new DigitalInput(9); 
-    	toteDetectorLimitSwitch  = new DigitalInput(8);
+    	clapperSafetyLimitSwitch = new DigitalInput(16); 
+    	toteDetectorLimitSwitch  = new DigitalInput(17);
+    	
+    	commandeererSolenoidL = new Solenoid(1, 2);
+    	commandeererSolenoidR = new Solenoid(1, 0);
     	
     	leftEnc = new Encoder(0, 1);
     	rightEnc = new Encoder(4, 5);
@@ -120,7 +127,10 @@ public class Robot extends IterativeRobot {
     	
     	toteCounter = new ToteCount(); 
 
-    	compressor = new Compressor();
+//    	compressor = new Compressor();
+    	compressorSpike = new Relay(0);
+    	pressureSwitch = new DigitalInput(10); //TODO: find port
+    	
     	try{
     		ser = new SerialPort(57600, SerialPort.Port.kUSB);
     		byte update_rate_hz = 50;
@@ -129,6 +139,7 @@ public class Robot extends IterativeRobot {
     	} catch(Exception ex) {
     		ex.printStackTrace();
     	}
+    	
     	
     	if(imu != null) {
     		LiveWindow.addSensor("IMU", "Gyro", imu);
@@ -140,6 +151,7 @@ public class Robot extends IterativeRobot {
     	fingers = new Fingers(leftFingerBelt,rightFingerBelt,longFingerActuators,shortFingerActuators);
     	ratchet = new RatchetSystem(latchActuator);    	
     	strongback = new Strongback(strongbackMotor, imu); 
+    	containerCommandeerer = new ContainerCommandeerer(commandeererSolenoidL, commandeererSolenoidR);
     	
     	
 //    	camServer = CameraServer.getInstance();
@@ -153,15 +165,16 @@ public class Robot extends IterativeRobot {
     }
 
     public void autonomousInit() {
-//    	imu.zeroYaw();
+    	imu.zeroYaw();
+//    	strongback.enablePid();
 //    	leftEnc.reset();
 //    	rightEnc.reset();
 //    	dualEncoder.reset();
 //    	strongback.disablePid(); 
 //    	
-//    	autoSequence = SequencerFactory.createAuto(Se	quencerFactory.THREE_TOTE_STRAIGHT);
-//    	autoSequence.reset();
-//    	autoSequence = null;
+//        int autonomousType = (int) SmartDashboard.getNumber("autoMode", SequencerFactory.DRIVE_TO_AUTO_ZONE);
+//        autoSequence = SequencerFactory.createAuto(autonomousType);
+        autoSequence = SequencerFactory.createAuto(SequencerFactory.DRIVE_TO_AUTO_ZONE);
     	
     }
   
@@ -171,25 +184,29 @@ public class Robot extends IterativeRobot {
 //    	
 ////    	drive.setLeftRight(-.7, -.7);
 ////    	 autoSequence.run();
-//    	 
-//    	 if (autoSequence != null) {
-////    		System.out.println("running teleop sequence");
-//    		if (autoSequence.run()) {
-//    			autoSequence = null;
-////    			clapper.setManual(); 
-//    		}
-//    	}
-//    	 
+////    	 
+    	 if (autoSequence != null) {
+//    		System.out.println("running teleop sequence");
+    		if (autoSequence.run()) {
+    			autoSequence = null;
+//    			clapper.setManual(); 
+    		}
+    	}
+    	 
     }
     
     public void teleopInit() {
     	System.out.println("teleop init");
+    	containerCommandeerer.resetSol();
 //    	imu.zeroYaw();
     	
     	drive.setMaintainHeading(false);
     	drive.dropCenterWheel(false);
     	
     	drive.disableDriveStraightPID();
+    	
+    	
+    	
     	drive.disableIMUPID();
 //    	drive.disableStrafePID(); 	//keep this commented out as long as there is no center encoder
     	
@@ -203,7 +220,9 @@ public class Robot extends IterativeRobot {
 		
 		teleopSequence = null; 
     	strongback.setSetpoint(0);
+    	strongback.disablePid();
     	claw.liftManually(0);
+  
     	fingers.dualIntake(0);
     	clapper.liftManually(0);
     	
@@ -294,7 +313,7 @@ public class Robot extends IterativeRobot {
     		clapper.liftManually((Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_Y,(float) 0.1))); //back is up
     	}
     	else if (clapper.isManual()){
-    		System.out.println("enabling clapper PID after manual operation");
+    		//System.out.println("enabling clapper PID after manual operation");
     		clapper.setSetpoint(clapper.getPotValue());//set the setpoint to where ever it left off
     	}
 //    	else if (clapper.isBelowLowestSetPoint()) {
@@ -315,23 +334,27 @@ public class Robot extends IterativeRobot {
        	if(Controllers.getJoystickButton(4))
        		clapper.closeClapper();
        	
+
 		/////////////////////////////////////////////
 		//////////		FINGERS, RATCHET, AND ONE CLAPPER SETPOINT 
        	//////////		(ONLY ENABLING A SINGLE CLAPPER SETPOINT)
 		/////////////////////////////////////////////
 
-       	
-       	
        	//FINGERS, RATCHET, AND ONE CLAPPER SETPOINT (ONLY ENABLING A CLAPPER SETPOINT)
-       	if(Controllers.getJoystickButton(5))
+       	if(Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_Z) > .7){
+       		fingers.rotateToteRight(.7);
+       	} else if(Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_Z) < -.7){
+       		fingers.rotateToteLeft(.7);
+       	} else if(Controllers.getJoystickButton(5)){
        		fingers.dualIntake(1);
-       	else if(Controllers.getJoystickButton(6))
+    	} else if(Controllers.getJoystickButton(6)){
        		fingers.dualReverse(.75);
-       	else
+    	} else {
        		fingers.dualIntake(0); 
+    	}
        	
        	if (Controllers.getJoystickButton(7)) {
-       		System.out.println("fingers should close now");
+       		//System.out.println("fingers should close now");
        		fingers.setFingerPosition(Fingers.CLOSED);
        	}
        	if (Controllers.getJoystickButton(8)) {
@@ -339,20 +362,20 @@ public class Robot extends IterativeRobot {
        		clapper.setSetpoint(Clapper.COOP_THREE_TOTES_SETPOINT);
        	}
        	if (Controllers.getJoystickButton(9)) {
-       		System.out.println("fingers should go parallel");
+//       		System.out.println("fingers should go parallel");
 //       		fingers.setFingerPosition(Fingers.PARALLEL);
        		fingers.setFingerPosition(Fingers.PARALLEL);
        	}
        	if (Controllers.getJoystickButton(10)) {
-       		System.out.println("hook should go back to normal");
+//       		System.out.println("hook should go back to normal");
        		ratchet.extendRatchet();
        	}
        	if (Controllers.getJoystickButton(11)) {
-       		System.out.println("fingers should open");
+//       		System.out.println("fingers should open");
        		fingers.setFingerPosition(Fingers.OPEN);
        	}
        	if (Controllers.getJoystickButton(12)) {
-       		System.out.println("hook should release");
+//       		System.out.println("hook should release");
        		ratchet.retractRatchet();
        	}
 
@@ -369,6 +392,7 @@ public class Robot extends IterativeRobot {
        	if (Controllers.getSecondaryJoystickAxis(Controllers.JOYSTICK_AXIS_Y, .1f) != 0) {
        		claw.liftManually(Controllers.getSecondaryJoystickAxis(Controllers.JOYSTICK_AXIS_Y));
        	} else if (claw.isManual()) {
+       		claw.setPID(Claw.kP_LOCK_POSITION_IN_PLACE, 0, 0);
     		claw.setSetpoint(claw.getPotValue());
        	}
        	
@@ -391,7 +415,8 @@ public class Robot extends IterativeRobot {
        	}
        	
        	if(Controllers.getSecondaryJoystickButton(7)) {
-       		claw.setSetpoint(Claw.PLACE_ON_EXISTING_STACK_FIVE_TOTES);
+       		claw.setPID(Claw.kP_LESS_POWER_ALLOWS_MORE_ERROR, Claw.kI, Claw.kD);
+       		claw.setSetpoint(Claw.PLACE_ON_EXISTING_STACK_SIX_TOTES);
        	}
        	
        	//////////////////////////////////////////////
@@ -405,7 +430,8 @@ public class Robot extends IterativeRobot {
 		//////////////////////////////////////////////
        	
        	if(Controllers.getSecondaryJoystickButton(9)) {
-       		claw.setSetpoint(Claw.PLACE_ON_EXISTING_STACK_FOUR_TOTES);
+       		claw.setPID(Claw.kP_LESS_POWER_ALLOWS_MORE_ERROR, Claw.kI, Claw.kD);
+       		claw.setSetpoint(Claw.PLACE_ON_EXISTING_STACK_FIVE_TOTES);
        	}
        	
        	if(Controllers.getSecondaryJoystickButton(10) && teleopSequence == null) {
@@ -413,7 +439,8 @@ public class Robot extends IterativeRobot {
        	}
        	
        	if(Controllers.getSecondaryJoystickButton(11)) {
-       		claw.setSetpoint(Claw.PLACE_ON_EXISTING_STACK_THREE_TOTES);
+       		claw.setPID(Claw.kP_LESS_POWER_ALLOWS_MORE_ERROR, Claw.kI, Claw.kD);
+       		claw.setSetpoint(Claw.PLACE_ON_EXISTING_STACK_FOUR_TOTES);
 //      		claw.setSetpoint(Claw.ONE_TOTE_RESTING);
        	}
        	
@@ -433,7 +460,7 @@ public class Robot extends IterativeRobot {
    	
        	
        	if (teleopSequence != null) {
-       		System.out.println("running sequence here in teleopPeriodic");
+//       		System.out.println("running sequence here in teleopPeriodic");
        		if (teleopSequence.run()) {
        			teleopSequence = null;
        		}
@@ -443,7 +470,7 @@ public class Robot extends IterativeRobot {
     	clapper.updateLastHeight(); 
 
     	
-    	System.out.println("Strongback: isEnabled " + strongback.leadScrewImuPID.isEnable() + "\t\tSetpoint" + strongback.leadScrewImuPID.getSetpoint());
+//    	System.out.println("Strongback: isEnabled " + strongback.leadScrewImuPID.isEnable() + "\t\tSetpoint" + strongback.leadScrewImuPID.getSetpoint());
     }
     
     public static double getCurrVelocity() {
@@ -491,11 +518,24 @@ public class Robot extends IterativeRobot {
     }
         
     public void testPeriodic() {
-
-    	if(toteDetectorLimitSwitch.get())
-    		System.out.println("get returned true");
+    	
+    	if (!pressureSwitch.get()) {
+    		compressorSpike.set(Relay.Value.kForward);
+    	}
     	else
-    		System.out.println("get returned false");
+    	{
+    		compressorSpike.set(Relay.Value.kOff);
+    	}
+//    	compressor.start();
+    	
+    	
+    	
+    	
+    	
+//    	if(toteDetectorLimitSwitch.get())
+//    		System.out.println("get returned true");
+//    	else
+//    		System.out.println("get returned false");
     	
     	//    	
 //    	clapper.setSetpoint(Clapper.ON_RATCHET_SETPOINT);
@@ -509,7 +549,7 @@ public class Robot extends IterativeRobot {
     	
 //clawMotor.set(.2);
 
-//    	compressor.start();
+    	
 
 //    	drive.setLeftRight(.2, -.2);
 //    	drive.driveTo(60);

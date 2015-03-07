@@ -22,7 +22,7 @@ public class MoveClawRelativeToClapper implements SequencedItem {
 
 	@Override
 	public double duration() {
-		return Robot.claw.isPidOnTarget() ? 0 : 2; 
+		return Robot.claw.isPidOnTarget() ? 0 : 0.5; 
 	}
 
 }

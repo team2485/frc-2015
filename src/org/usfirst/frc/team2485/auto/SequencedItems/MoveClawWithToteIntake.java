@@ -42,7 +42,7 @@ public class MoveClawWithToteIntake implements SequencedItem {
 
 	@Override
 	public double duration() {
-		return finished ? 0 : 1.5; //2 untested 
+		return finished ? 0 : 0.5; //2 untested 
 	}
 	
 }

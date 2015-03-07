@@ -3,14 +3,12 @@ package org.usfirst.frc.team2485.auto.SequencedItems;
 import org.usfirst.frc.team2485.auto.SequencedItem;
 import org.usfirst.frc.team2485.robot.Robot;
 
-public class LiberateContainer implements SequencedItem{
-	
-	
+public class CommandeerContainerSequence implements SequencedItem{
 	
 	private int	direction;
 	public static final int LEFT = 0, RIGHT = 1, BOTH = 2;
 
-	public LiberateContainer(int direction) {
+	public CommandeerContainerSequence(int direction) {
 		this.direction = direction;
 	}
 
@@ -18,30 +16,30 @@ public class LiberateContainer implements SequencedItem{
 	public void run() {
 		switch (direction) {
 			case LEFT:
-				Robot.containerLiberator.liberateLeft();
+				Robot.containerCommandeerer.liberateLeft();				
 				break;
 				
 			case RIGHT:
-				Robot.containerLiberator.liberateRight();
+				Robot.containerCommandeerer.liberateRight();
 				break;
 				
 			case BOTH:
-				Robot.containerLiberator.liberateLeft ();
-				Robot.containerLiberator.liberateRight();
+				Robot.containerCommandeerer.liberateLeft ();
+				Robot.containerCommandeerer.liberateRight();
 				break;
 
 			default:
-				Robot.containerLiberator.liberateLeft ();
-				Robot.containerLiberator.liberateRight();
+				Robot.containerCommandeerer.liberateLeft ();
+				Robot.containerCommandeerer.liberateRight();
 				break;
 		}
-		Robot.containerLiberator.liberateLeft();
+		
 		
 	}
 
 	@Override
 	public double duration() {
-		return 1.5;//TODO find actual value
+		return 0.1;//TODO find actual value
 	}
 
 }

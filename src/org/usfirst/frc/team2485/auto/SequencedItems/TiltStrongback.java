@@ -21,7 +21,7 @@ public class TiltStrongback implements SequencedItem {
 
 	@Override
 	public double duration() {
-		return .5;
+		return .05;
 	}
 
 }

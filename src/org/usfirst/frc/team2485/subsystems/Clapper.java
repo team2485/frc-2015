@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PIDController;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.VictorSP;
 
 /**
@@ -38,7 +39,7 @@ public class Clapper {
 		kP_3_TOTES_UP = 0.06,
 		kP_4_TOTES_UP = 0.065,
 		kP_5_TOTES_UP = 0.07,
-		kP_6_TOTES_UP = 0.75;
+		kP_6_TOTES_UP = 0.075;
 	public static final double //these are not tested at all whatsoever
 		kP_1_TOTES_DOWN = 0.05,
 		kP_2_TOTES_DOWN = 0.05,
@@ -47,8 +48,8 @@ public class Clapper {
 		kP_5_TOTES_DOWN = 0.03,
 		kP_6_TOTES_DOWN = 0.02;
 										
-	public static final double LOWEST_POS = 84; 	
-	private static final double POS_RANGE = 375;
+	public static final double LOWEST_POS = 153; 	// 163
+	private static final double POS_RANGE = 391; // 554 top
 	public static final double POT_TOLERANCE = 18;
 	private static final double INCH_RANGE  = 44.375; // 6 and 1/8 in from floor (corresponds to a pot value of 84) - 50.5 in
 	 
@@ -90,7 +91,7 @@ public class Clapper {
 		this.clapperPID.setOutputRange(pidOutputMin, pidOutputMax); // positive is up
 		
 		this.automatic				= false;
-		this.open					= false;
+		this.open					= true;
 		
 		this.toteDetectorLimitSwitch = toteDetectorLimitSwitch;
 		this.bottomSafetyLimitSwitch = bottomSafetyLimitSwitch;
@@ -103,7 +104,7 @@ public class Clapper {
 			int clapperActuatorPort1, int clapperActuatorPort2, int potPort, int detectorswitchport, int safetyswitchport) {
 
 		this(new VictorSP(clapperLifter1Port), new VictorSP(clapperLifter2Port),
-				new DoubleSolenoid(clapperActuatorPort1, clapperActuatorPort2),
+				new DoubleSolenoid(clapperActuatorPort1,clapperActuatorPort2),
 				new AnalogPotentiometer(potPort), new DigitalInput(detectorswitchport), new DigitalInput(safetyswitchport));
 	} 
 	
@@ -119,38 +120,39 @@ public class Clapper {
 	}
 	
 	public void setPID(double kP, double kI, double kD) {
-		this.kP = kP;
-		this.kI = kI;
-		this.kD = kD;
+//		this.kP = kP;
+//		this.kI = kI;
+//		this.kD = kD;
 		
 		clapperPID.setPID(kP, kI, kD);
 	}
 	
 	public double getkP() {
-		return kP;	
+		return clapperPID.getP();	
 	}
 
 	public void setkP(double kP) {
-		this.kP = kP;
-		clapperPID.setPID(kP, kI, kD);
+		//this.kP = kP;
+		clapperPID.setPID(kP, clapperPID.getI(), clapperPID.getD());
 	}
 
 	public double getkI() {
-		return kI;
+		return clapperPID.getI();
 	}
 
 	public void setkI(double kI) {
-		this.kI = kI;
-		clapperPID.setPID(kP, kI, kD);
+		//this.kI = kI;
+		clapperPID.setPID(clapperPID.getP(), kI, clapperPID.getD());
+
 	}
 
 	public double getkD() {
-		return kD;
+		return clapperPID.getD();
 	}
 
 	public void setkD(double kD) {
-		this.kD = kD;
-		clapperPID.setPID(kP, kI, kD);
+		//this.kD = kD;
+		clapperPID.setPID(clapperPID.getP(), clapperPID.getI(), kD);
 	}
 
 	public void setSetpoint(double setpoint) {
@@ -167,12 +169,12 @@ public class Clapper {
 	}
 	
 	public void openClapper() {
-		clapperActuator.set(DoubleSolenoid.Value.kForward);
+		clapperActuator.set(DoubleSolenoid.Value.kReverse);
 		open = true;
 	}
 
 	public void closeClapper() {
-		clapperActuator.set(DoubleSolenoid.Value.kReverse);
+		clapperActuator.set(DoubleSolenoid.Value.kForward);
 		open = false;
 	}
 
@@ -263,10 +265,10 @@ public class Clapper {
 	}
 	
 	public boolean toteDetected() {
-		if(toteDetectorLimitSwitch.get())
-			System.out.println("tote not detected");
-		else
+		if(!toteDetectorLimitSwitch.get())
 			System.out.println("tote detected");
+//		else
+//			System.out.println("tote detected");
 		return !(toteDetectorLimitSwitch.get()); 
 	}
 	

@@ -2,19 +2,19 @@ package org.usfirst.frc.team2485.subsystems;
 
 import edu.wpi.first.wpilibj.Solenoid;
 
-public class ContainerLiberator {
+public class ContainerCommandeerer {
 
 	private Solenoid	solRight, solLeft;
 	private boolean		rightLiberated = false, leftLiberated = false;
 
-	public ContainerLiberator(Solenoid solRight, Solenoid solLeft) {
+	public ContainerCommandeerer(Solenoid solRight, Solenoid solLeft) {
 		this.solRight = solRight;
 		this.solLeft  = solLeft;
 	}
 
 	public void liberateRight() {
 		solRight.set(true);
-		rightLiberated = false;
+		rightLiberated = true;
 	}
 
 	public boolean isRightLiberated() {

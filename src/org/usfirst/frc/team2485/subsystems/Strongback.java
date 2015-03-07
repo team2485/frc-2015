@@ -21,7 +21,7 @@ public class Strongback {
 	private VictorSP leadScrew; 
 	private IMUAdvanced imu; 
 	public PIDController leadScrewImuPID;
-	private double rollSetpoint = 0.0;
+	private double rollSetpoint = 1.0; // THIS IS CHANGED
 	private double absToleranceLeadScrew = 0.25; //degrees 
 	
 	private IMURollPIDSource rollPIDSource; 
@@ -69,7 +69,7 @@ public class Strongback {
 	}
 	
 	public void checkSafety() {
-		if(Math.abs(leadScrewImuPID.getError()) > 10) {
+		if(Math.abs(leadScrewImuPID.getError()) > 12) {
 			System.out.println("ERROR in check safety");
 			leadScrewImuPID.disable();
 		}

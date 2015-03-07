@@ -20,7 +20,7 @@ public class RotateToAngle implements SequencedItem {
 
 	@Override
 	public double duration() {
-		return finished ? 0 : 2; 
+		return finished ? 0 : 3; 
 	}
 	
 	

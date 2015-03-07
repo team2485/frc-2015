@@ -24,7 +24,7 @@ public class DriveStraight implements SequencedItem {
 
 	@Override
 	public double duration() {
-		return finished ? 0 : 3; //3 untested
+		return finished ? 0 : 4; //3 untested
 	}
 
 }
