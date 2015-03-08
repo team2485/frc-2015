@@ -9,7 +9,6 @@ import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.VictorSP;
 
 /**
- * 
  * @author Patrick Wamsley
  */
 public class Strongback {

@@ -4,8 +4,9 @@ import edu.wpi.first.wpilibj.Solenoid;
 
 public class ContainerCommandeerer {
 
-	private Solenoid	solRight, solLeft;
-	private boolean		rightLiberated = false, leftLiberated = false;
+	private Solenoid solRight, solLeft;
+	
+	private boolean	rightLiberated = false, leftLiberated = false;
 
 	public ContainerCommandeerer(Solenoid solRight, Solenoid solLeft) {
 		this.solRight = solRight;

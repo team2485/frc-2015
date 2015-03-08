@@ -12,9 +12,7 @@ public class ThresholdHandler {
 	 * @return
 	 */
 	public static double handleThreshold(double val, double threshold) {
-			
-		double returnValue = (Math.abs(val) > Math.abs(threshold)) ? (val/Math.abs(val)*(Math.abs(val)-threshold)/(1-threshold)) : 0.0;
-		return returnValue;
+		return (Math.abs(val) > Math.abs(threshold)) ? (val/Math.abs(val)*(Math.abs(val)-threshold)/(1-threshold)) : 0.0;
 	}
 	
 	public static double handleThresholdNonLinear(double val, double threshold) {

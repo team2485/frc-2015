@@ -51,12 +51,11 @@ public class Robot extends IterativeRobot {
 //	private CameraServer camServer; 
 	
 	//Speed Controllers
-	private VictorSP left, left2, right, right2;
+	private CombinedVictorSP leftDrive, rightDrive, centerDrive;
+	private CombinedVictorSP clapperLifter;
 	private VictorSP strongbackMotor;  
 	private VictorSP leftFingerBelt, rightFingerBelt;
-	private VictorSP clapperLifter1, clapperLifter2;
 	private VictorSP clawMotor;
-	private CombinedVictorSP centerDrive;
 	
 	//Solenoids
 	private Solenoid centerWheelSuspension;
@@ -97,32 +96,30 @@ public class Robot extends IterativeRobot {
 	
     public void robotInit() {
     	
-    	left     				= new VictorSP(14); 
-    	left2 	    			= new VictorSP(15);
-    	right       			= new VictorSP(0); 
-    	right2  				= new VictorSP(1);
-    	leftFingerBelt    		= new VictorSP(9); 
-    	rightFingerBelt   		= new VictorSP(6); 
-    	clawMotor				= new VictorSP(12);
-    	clapperLifter1 			= new VictorSP(13); 
-    	clapperLifter2 			= new VictorSP(3); 
-    	strongbackMotor 		= new VictorSP(2); 
-    	centerDrive		 		= new CombinedVictorSP(new VictorSP(11), new VictorSP(7)); 
+    	leftDrive     				= new CombinedVictorSP(new VictorSP(14), new VictorSP(15)); 
+    	rightDrive       			= new CombinedVictorSP(new VictorSP(0), new VictorSP(1)); 
+    	centerDrive		 			= new CombinedVictorSP(new VictorSP(11), new VictorSP(7));
+    	clapperLifter 				= new CombinedVictorSP(new VictorSP(13), new VictorSP(3)); 
+    	strongbackMotor 			= new VictorSP(2); 
+    	leftFingerBelt   	 		= new VictorSP(9); 
+    	rightFingerBelt  	 		= new VictorSP(6); 
+    	clawMotor					= new VictorSP(12);   	
     	
-    	longFingerActuators  		= new Solenoid(5);
-    	shortFingerActuators 		= new Solenoid(6);
+    	centerWheelSuspension		= new Solenoid(3);
     	ratchetLatchActuator 		= new Solenoid(2);
-    	centerWheelSuspension		= new Solenoid(3); 
+    	shortFingerActuators 		= new Solenoid(6);
+    	longFingerActuators  		= new Solenoid(5);
     	commandeererSolenoidLeft	= new Solenoid(1, 2);
     	commandeererSolenoidRight	= new Solenoid(1, 0);
-    	clawSolenoid				= new DoubleSolenoid(0,4); 
     	clapperActuator 			= new DoubleSolenoid(1,7);
+    	clawSolenoid				= new DoubleSolenoid(0,4); 
     	
     	leftEnc = new Encoder(0, 1);
     	rightEnc = new Encoder(4, 5);
+
     	dualEncoderVelCalc = new DualEncoder(leftEnc, rightEnc);
     	
-    	leftEnc .setDistancePerPulse(.0414221608);
+    	leftEnc.setDistancePerPulse(.0414221608);
     	rightEnc.setDistancePerPulse(.0414221608); 
     	
     	try {
@@ -153,10 +150,10 @@ public class Robot extends IterativeRobot {
 //        camServer.startAutomaticCapture("cam1");
     	
     	toteCounter = new ToteCount(); 
-    	drive = new DriveTrain(left, left2, right, right2, centerDrive, centerWheelSuspension, imu, leftEnc, rightEnc, centerEnc);
-       	clapper = new Clapper(clapperLifter1, clapperLifter2, clapperActuator, clapperPot, toteDetectorLimitSwitch, clapperSafetyLimitSwitch);
+    	drive = new DriveTrain(leftDrive, rightDrive, centerDrive, centerWheelSuspension, imu, leftEnc, rightEnc, centerEnc);
+       	clapper = new Clapper(clapperLifter, clapperActuator, clapperPot, toteDetectorLimitSwitch, clapperSafetyLimitSwitch);
     	claw    = new Claw(clawMotor, clawSolenoid, clawPot);
-    	fingers = new Fingers(leftFingerBelt,rightFingerBelt,longFingerActuators,shortFingerActuators);
+    	fingers = new Fingers(leftFingerBelt, rightFingerBelt, longFingerActuators, shortFingerActuators);
     	ratchet = new RatchetSystem(ratchetLatchActuator);    	
     	strongback = new Strongback(strongbackMotor, imu); 
     	containerCommandeerer = new ContainerCommandeerer(commandeererSolenoidLeft, commandeererSolenoidRight);

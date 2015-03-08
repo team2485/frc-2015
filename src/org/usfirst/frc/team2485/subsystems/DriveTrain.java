@@ -21,54 +21,43 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * @author Ben Clark
  */
 public class DriveTrain {
-	private static final double SLOW_STRAFE_SCALAR = 0.6; //need to tune
-	private VictorSP leftDrive, leftDrive2, rightDrive, rightDrive2, test1, test2, test3, test4;
-	private CombinedVictorSP centerDrive; 
+
+	private CombinedVictorSP leftDrive, rightDrive, centerDrive; 
 	private Solenoid suspension;
-	private Encoder centerEnc, leftEnc, rightEnc;
+	private DualEncoder dualEncoder;
+	private Encoder centerEnc;
+	public IMU imu;
 
+	//Drive Controlls 
 	private final double 
-	NORMAL_SPEED_RATING = 0.75,
-	FAST_SPEED_RATING = 1.0,
-	SLOW_SPEED_RATING = 0.5;
-
+		NORMAL_SPEED_RATING = 0.75,
+		FAST_SPEED_RATING = 1.0,
+		SLOW_SPEED_RATING = 0.5;
+	
 	private double driveSpeed = SLOW_SPEED_RATING; //asked by drivers to have this setting
-
-	private double oldWheel = 0.0;
-	private double quickStopAccumulator = 0.0;
+	
 	private final double TRANSLATE_Y_DEADBAND = 0.2;
 	private final double TRANSLATE_X_DEADBAND = 0.25;
 	private final double ROTATION_DEADBAND = 0.2;
-
-
-
-	////////////////////////////////////////////////////////////
-	private final double STRAFE_TUNING_PARAMETER = 1;
-	////////////////////////////////////////////////////////////
-
-
-	private final double SENSITIVITY_HIGH = 0.85;
-	private final double SENSITIVITY_LOW = 0.55;
-	private final double MUCH_TOO_HIGH_SENSITIVITY = 1.7;
+	
+	private boolean slowStrafeOnlyMode = false, forcedNoStrafeMode = false; 
 	private boolean isQuickTurn = false;
+	
+	private final double  SENSITIVITY_LOW = 0.55, SENSITIVITY_HIGH = 0.85;
+	private double quickStopAccumulator = 0.0;
+	private double oldWheel = 0.0;
 
-
+	private static final double SLOW_STRAFE_SCALAR = 0.6; //need to tune
+	private static final double STRAFE_TUNING_PARAMETER = 1;
+	
 	//PID 
-	public double desiredHeading = 0.0; 
-	public boolean maintainingHeading = false; //use for auto and while !rotating  
-
-	public IMU imu;
-
-	private double translateX = 0, translateY = 0, outputTX = 0, outputTY = 0;
-
-	private boolean buttonClicked = false;
-
-	private DualEncoder dualEncoder;
-
 	public PIDController driveStraightPID;
-	private PIDController strafePID;
 	public PIDController imuPID;
-
+	private PIDController strafePID; 
+	  
+	public double desiredHeading = 0.0; 
+	public boolean maintainingHeading = false; //use for auto and while !rotating
+	
 	private DummyOutput dummyEncoderOutput;
 	private DummyOutput dummyImuOutput;
 
@@ -76,61 +65,53 @@ public class DriveTrain {
 	private int imuOnTargetCounter = 0;
 	private final int MINIMUM_IMU_ON_TARGET_ITERATIONS = 6;
 
-	private boolean slowStrafeOnlyMode = false, forcedNoStrafeMode = false; 
-
 	private final double
-	absTolerance_Imu_TurnTo = 1.0,
-	absTolerance_Imu_DriveStraight = 2.0,
-	absTolerance_Enc_DriveStraight = 3.0, // needs tuning
-	absTolerance_Enc_Strafe = 3.0;
+		absTolerance_Imu_TurnTo = 1.0,
+		absTolerance_Imu_DriveStraight = 2.0,
+		absTolerance_Enc_DriveStraight = 3.0, // needs tuning
+		absTolerance_Enc_Strafe = 3.0;
+	
+	public static double 
+		driveStraightEncoder_Kp = 0.0275,
+		driveStraightEncoder_Ki = 0.0, 
+		driveStraightEncoder_Kd = 0.0;
 
+	public static double 
+		strafeEncoder_Kp = 0.005,
+		strafeEncoder_Ki = 0.0,
+		strafeEncoder_Kd = 0.0;
+
+	public static double
+		driveStraightImu_Kp = 0.025, // old data?? seems stale - 0.05 - for floor work, 0.07 for bump (tentatively)
+		driveStraightImu_Ki = 0.0,
+		driveStraightImu_Kd = 0.01; 
+
+	public static double
+		rotateImu_kP = 0.0125,
+		rotateImu_kI = 0.00,
+		rotateImu_kD = 0.01;
+	
+	//Anti-tipping 
 	private double oldXInput, oldYInput; 
-	private static double MAX_DELTA_X_LEFT = 0.02; //before changing acc code, .015 worked well for left
-	private static double MAX_DELTA_X_RIGHT = 0.04; 
-
+	
+	private static double MAX_DELTA_X = 0.02; 
 	private static double MAX_DELTA_Y_NORMAL = 0.05, MAX_DELTA_Y_DANGER = 0.025; 
-	public static double 
-	driveStraightEncoder_Kp = 0.0275, 
 
-	driveStraightEncoder_Ki = 0.0, 
-	driveStraightEncoder_Kd = 0.0;
+	public DriveTrain(CombinedVictorSP leftDrive, CombinedVictorSP rightDrive, CombinedVictorSP center, Solenoid suspension, 
+			IMU imu, Encoder leftEnc, Encoder rightEnc, Encoder centerEnc) {
 
-	public static double 
-	strafeEncoder_Kp = 0.005,
-	strafeEncoder_Ki = 0.0,
-	strafeEncoder_Kd = 0.0;
-
-	public static double
-	driveStraightImu_Kp = 0.025, // old data?? seems stale - 0.05 - for floor work, 0.07 for bump (tentatively)
-	driveStraightImu_Ki = 0.0,
-	driveStraightImu_Kd = 0.01; 
-
-	public static double
-	rotateImu_kP = 0.0125,
-	rotateImu_kI = 0.00,
-	rotateImu_kD = 0.01;
-
-	public DriveTrain(VictorSP leftDrive, VictorSP leftDrive2, VictorSP rightDrive, 
-			VictorSP rightDrive2, CombinedVictorSP center, Solenoid suspension, IMU imu, Encoder leftEnc, 
-			Encoder rightEnc, Encoder centerEnc) {
-
-		this.leftDrive      = leftDrive;
-		this.leftDrive2		= leftDrive2; 
-		this.rightDrive     = rightDrive;
-		this.rightDrive2	= rightDrive2; 
+		this.leftDrive 		= leftDrive; 
+		this.rightDrive     = rightDrive; 
 		this.centerDrive	= center;
 		this.suspension 	= suspension;
 		this.imu            = imu;
 		this.centerEnc		= centerEnc;
-		this.leftEnc		= leftEnc;
-		this.rightEnc		= rightEnc;
+		this.dualEncoder	= new DualEncoder(leftEnc, rightEnc); 
 
-		if (this.imu != null) {
+		if (this.imu != null) 
 			setImu(this.imu);
-		}
-
+		
 		dummyEncoderOutput = new DummyOutput();
-		dualEncoder = new DualEncoder(leftEnc, rightEnc);
 		driveStraightPID = new PIDController(driveStraightEncoder_Kp, driveStraightEncoder_Ki, driveStraightEncoder_Kd, dualEncoder, dummyEncoderOutput);
 		driveStraightPID.setAbsoluteTolerance(absTolerance_Enc_DriveStraight);
 
@@ -151,7 +132,6 @@ public class DriveTrain {
 			translateX *= SLOW_STRAFE_SCALAR; 
 			rotation = 0; //no rotation if we only want to strafe
 		} else if (forcedNoStrafeMode) {
-			
 			translateX = 0; 
 			translateY = translateY; //drivers prefur to have it this way rather than a 1.25X boost. 
 			rotation = 0; //no rotatino if we only want to move forward
@@ -165,12 +145,12 @@ public class DriveTrain {
 		
 		double dXInput = Math.abs(translateX - oldXInput), dYInput = Math.abs(translateY - oldYInput); 
 
-		if (dXInput > MAX_DELTA_X_LEFT) {
+		if (dXInput > MAX_DELTA_X) {
 
 			if (translateX > oldXInput)
-				translateX = oldXInput + MAX_DELTA_X_LEFT; 
+				translateX = oldXInput + MAX_DELTA_X; 
 			else
-				translateX = oldXInput - MAX_DELTA_X_LEFT; 
+				translateX = oldXInput - MAX_DELTA_X; 
 
 			if(translateX > 1)
 				translateX = 1;
@@ -238,7 +218,6 @@ public class DriveTrain {
 		rotation = Math.sin(Math.PI / 2.0 * wheelNonLinearity * rotation) /
 				Math.sin(Math.PI / 2.0 * wheelNonLinearity);
 
-		double sensitivity = MUCH_TOO_HIGH_SENSITIVITY;
 		double leftPwm, rightPwm, overPower;
 
 		double angularPower;
@@ -249,7 +228,7 @@ public class DriveTrain {
 		double negInertiaScalar;
 
 		negInertiaScalar = 5.0;
-		sensitivity = SENSITIVITY_LOW;
+		double sensitivity = SENSITIVITY_LOW;
 
 		double negInertiaPower = negInertia * negInertiaScalar;
 		negInertiaAccumulator += negInertiaPower;
@@ -338,9 +317,6 @@ public class DriveTrain {
 		
 		double pidOut = dummyImuOutput.get(); 
 
-		this.translateX = xInput; 
-		this.translateY = yInput; 
-
 		/* Code for strafe driving at any angle
 		 * 
 		 * Scales y input by tuning parameter to account for the varying speeds of for/rev and strafe wheels
@@ -356,8 +332,6 @@ public class DriveTrain {
 		xOutput = xInput / Math.max(Math.abs(xInput), Math.abs(scaledYOutput)) *
 				Math.sqrt(Math.pow(xInput, 2) + Math.pow(yInput, 2)); 
 
-		this.outputTX = xOutput; 
-		this.outputTY = yOutput; 
 		//		System.out.println("IMU PID enabled" + imuPID.isEnable());
 		//
 		//		System.out.println("xOut, yOut, pidOut \t" + xOutput + ", " + yOutput + ", " + pidOut);
@@ -371,8 +345,6 @@ public class DriveTrain {
 		setLeftRight(left, right);
 		setCenterWheel(center);
 	}
-
-	// <editor-fold defaultstate="collapsed" desc="General Methods">
 
 	public void setImu(IMU imu) {
 		this.imu = imu;
@@ -393,9 +365,7 @@ public class DriveTrain {
 	 */
 	public void setLeftRight(double leftOutput, double rightOutput) {
 		leftDrive.set(leftOutput * driveSpeed);
-		leftDrive2.set(leftOutput * driveSpeed);
 		rightDrive.set(-rightOutput * driveSpeed);
-		rightDrive2.set(-rightOutput * driveSpeed);
 	}
 
 	private void setCenterWheel(double val){
@@ -477,22 +447,6 @@ public class DriveTrain {
 
 		//		System.out.println("Imu yaw: " + imu.getYaw());
 		//    	System.out.println("Imu pitch: " + imu.getPitch());
-	}
-
-	// tune strafe param 
-	public void tuneDriveKp(double d) {
-		if (buttonClicked) {
-			driveStraightEncoder_Kd += d; 
-			//			STRAFE_TUNING_PARAMETER += Math.abs(d)/d; 
-			buttonClicked = false; 
-			System.out.println("new kP: " + driveStraightEncoder_Kd);
-			SmartDashboard.putNumber("Driving Straight Encoder kP", driveStraightEncoder_Kp);
-		}
-	}
-
-	// tune strafe param
-	public void resetButtonClicked() {
-		buttonClicked = true; 
 	}
 
 	/**
