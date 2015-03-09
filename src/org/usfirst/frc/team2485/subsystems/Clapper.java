@@ -23,10 +23,21 @@ public class Clapper {
 	private DoubleSolenoid clapperActuator;
 	public PIDController clapperPID;
 	private ScaledPot potScaled;
-	 
+	private DigitalInput toteDetectorLimitSwitch, bottomSafetyLimitSwitch;
+
 	private boolean open;
 	private boolean automatic;
+	private double lastHeight;
 
+	public static final double LOWEST_POS = 153; 	// 163
+	private static final double POS_RANGE = 391; // 554 top
+	public static final double POT_TOLERANCE = 18;
+	private static final double INCH_RANGE  = 44.375; // 6 and 1/8 in from floor (corresponds to a pot value of 84) - 50.5 in
+	
+	private static final double LIFT_DEADBAND = 0.5;
+	
+	private double pidOutputMin, pidOutputMinNormal = -0.2, pidOutputMax, pidOutputMaxNormal = 0.5;
+	
 	private double
 		kP	= 0.05,
 		kI	= 0.00,
@@ -47,15 +58,6 @@ public class Clapper {
 		kP_4_TOTES_DOWN = 0.04,
 		kP_5_TOTES_DOWN = 0.03,
 		kP_6_TOTES_DOWN = 0.02;
-										
-	public static final double LOWEST_POS = 153; 	// 163
-	private static final double POS_RANGE = 391; // 554 top
-	public static final double POT_TOLERANCE = 18;
-	private static final double INCH_RANGE  = 44.375; // 6 and 1/8 in from floor (corresponds to a pot value of 84) - 50.5 in
-	 
-	private DigitalInput toteDetectorLimitSwitch, bottomSafetyLimitSwitch;
-	
-	private double lastHeight;
 	
 	public static final double 
 		ABOVE_RATCHET_SETPOINT									= LOWEST_POS + 170,
@@ -71,10 +73,6 @@ public class Clapper {
 		LIFT_BOTTOM_TOTE_TO_RAISE_STACK_OFF_RATCHET_SETPOINT	= LOWEST_POS + 50,
 		FIX_CONTAINER_IN_CLAW_POS								= LOWEST_POS + 125;
 	
-	private static final double LIFT_DEADBAND = 0.5;
-	
-	private double pidOutputMin, pidOutputMinNormal = -0.2, pidOutputMax, pidOutputMaxNormal = 0.5;
-
 	public Clapper(CombinedVictorSP clapperLifter, DoubleSolenoid clapperActuator, AnalogPotentiometer pot, 
 			DigitalInput toteDetectorLimitSwitch, DigitalInput bottomSafetyLimitSwitch) {
 
