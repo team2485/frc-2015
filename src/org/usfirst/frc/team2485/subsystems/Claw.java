@@ -105,24 +105,24 @@ public class Claw {
 	} 
 	
 	/**
-	 * If in manual mode this method will manually control the winch and return true.
-	 * If in automatic mode this method will do nothing, and return false.
+	 * If in manual mode this method will manually control the winch
+	 * If in automatic mode this method will do nothing.
 	 * @param speed
 	 */
 	public void liftManually(double speed) {
 		setManual();
 		double adjustedSpeed = ThresholdHandler.handleThreshold(speed, 0.1);
 		//System.out.println(speed + " | " + adjustedSpeed);
-		if (adjustedSpeed > 1){
+		if (adjustedSpeed > 1)
 			adjustedSpeed = 1;
-		} else if (adjustedSpeed < -1){
+		else if (adjustedSpeed < -1)
 			adjustedSpeed = -1;
-		}
-		if (isClawAboutToCollideWithRachet(adjustedSpeed)){
+
+		if (isClawAboutToCollideWithRachet(adjustedSpeed))
 			winchMotor.set(0);
-		} else {
+		 else 
 			winchMotor.set(adjustedSpeed);
-		}
+		
 	}
 	
 	public void setPID(double kP, double kI, double kD) {

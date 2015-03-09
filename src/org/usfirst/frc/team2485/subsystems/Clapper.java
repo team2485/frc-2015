@@ -27,7 +27,7 @@ public class Clapper {
 	private boolean open;
 	private boolean automatic;
 
-	public double
+	private double
 		kP	= 0.05,
 		kI	= 0.00,
 		kD	= 0.00;
@@ -58,18 +58,18 @@ public class Clapper {
 	private double lastHeight;
 	
 	public static final double 
-		ABOVE_RATCHET_SETPOINT		= LOWEST_POS + 170,
-		DROP_OFF_POS_ON_ONE_TOTE	= ABOVE_RATCHET_SETPOINT,
-		ON_RATCHET_SETPOINT			= LOWEST_POS + 125, 
-		HOLDING_TOTE_SETPOINT		= LOWEST_POS + 100, //TODO: find value
-		LOADING_SETPOINT			= LOWEST_POS + 2,
-		COOP_ZERO_TOTE_SETPOINT		= LOWEST_POS + 77, 
-		COOP_ONE_TOTE_SETPOINT		= LOWEST_POS + 175, 
-		COOP_TWO_TOTES_SETPOINT		= LOWEST_POS + 275,
-		COOP_THREE_TOTES_SETPOINT	= LOWEST_POS + 370, 
-		SCORING_PLATFORM_HEIGHT		= LOWEST_POS + 25,
+		ABOVE_RATCHET_SETPOINT									= LOWEST_POS + 170,
+		DROP_OFF_POS_ON_ONE_TOTE								= ABOVE_RATCHET_SETPOINT,
+		ON_RATCHET_SETPOINT										= LOWEST_POS + 125, 
+		HOLDING_TOTE_SETPOINT									= LOWEST_POS + 100, //TODO: find value
+		LOADING_SETPOINT										= LOWEST_POS + 2,
+		COOP_ZERO_TOTE_SETPOINT									= LOWEST_POS + 77, 
+		COOP_ONE_TOTE_SETPOINT									= LOWEST_POS + 175, 
+		COOP_TWO_TOTES_SETPOINT									= LOWEST_POS + 275,
+		COOP_THREE_TOTES_SETPOINT								= LOWEST_POS + 370, 
+		SCORING_PLATFORM_HEIGHT									= LOWEST_POS + 25,
 		LIFT_BOTTOM_TOTE_TO_RAISE_STACK_OFF_RATCHET_SETPOINT	= LOWEST_POS + 50,
-		FIX_CONTAINER_IN_CLAW_POS	= LOWEST_POS + 125;
+		FIX_CONTAINER_IN_CLAW_POS								= LOWEST_POS + 125;
 	
 	private static final double LIFT_DEADBAND = 0.5;
 	
@@ -85,8 +85,10 @@ public class Clapper {
 		
 		this.clapperPID = new PIDController(kP, kI, kD, potScaled, clapperLifter);
 		this.clapperPID.setAbsoluteTolerance(POT_TOLERANCE);
+		
 		pidOutputMin = pidOutputMinNormal;
 		pidOutputMax = pidOutputMaxNormal;
+		
 		this.clapperPID.setOutputRange(pidOutputMin, pidOutputMax); // positive is up
 		
 		this.automatic				= false;
@@ -108,7 +110,7 @@ public class Clapper {
 	} 
 	
 	public double getChangeInHeightInInches() {
-		return ((potScaled.pidGet() - lastHeight) / (POS_RANGE))*INCH_RANGE; 
+		return ((potScaled.pidGet() - lastHeight) / (POS_RANGE)) * INCH_RANGE; 
 	}
 	
 	public void updateLastHeight() {
@@ -222,11 +224,11 @@ public class Clapper {
 //			return; 
 		
 		//double adjustedSpeed = ThresholdHandler.handleThreshold(speed, LIFT_DEADBAND)/2;
-		if (speed > 1){
+		if (speed > 1)
 			speed = 1;
-		} else if (speed < -1){
+		else if (speed < -1)
 			speed = -1;
-		}
+		
 		
 		//System.out.println("in lift manually, adjustSpeed is " + adjustedSpeed);
 		clapperLifter.set(speed);

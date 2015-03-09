@@ -19,7 +19,6 @@ public class MoveClapperManually implements SequencedItem {
 
 	@Override
 	public double duration() {
-		// TODO Auto-generated method stub
 		return time;
 	}
 

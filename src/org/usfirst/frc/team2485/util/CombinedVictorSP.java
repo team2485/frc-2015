@@ -4,8 +4,8 @@ import edu.wpi.first.wpilibj.SpeedController;
 import edu.wpi.first.wpilibj.VictorSP;
 
 /**
- * @author Patrick Wamsley 
  * @author Ben Clark
+ * @author Patrick Wamsley
  */
 public class CombinedVictorSP implements SpeedController {
 
@@ -26,7 +26,7 @@ public class CombinedVictorSP implements SpeedController {
 		
 		double sum = 0;
 		
-		for(SpeedController s : speedControllerList) 
+		for (SpeedController s : speedControllerList) 
 			sum += s.get(); 
 		
 		return sum / speedControllerList.length;
@@ -45,10 +45,7 @@ public class CombinedVictorSP implements SpeedController {
 	}
 	
 	public void invertMotorDirection(boolean isInverted) {
-		if (isInverted) 
-			direction = -1;
-		else 
-			direction = 1;
+		direction = isInverted ? -1 : 1; 
 	}
 
 	public void disable() {}

@@ -8,7 +8,7 @@ import org.usfirst.frc.team2485.subsystems.*;
 import org.usfirst.frc.team2485.util.CombinedVictorSP;
 import org.usfirst.frc.team2485.util.Controllers;
 import org.usfirst.frc.team2485.util.DualEncoder;
-import org.usfirst.frc.team2485.util.ToteCount;
+import org.usfirst.frc.team2485.util.ToteCounter;
 
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.Compressor;
@@ -46,7 +46,7 @@ public class Robot extends IterativeRobot {
 	public static RatchetSystem ratchet;
 	public static Claw claw;
 	public static ContainerCommandeerer containerCommandeerer;
-	public static ToteCount toteCounter;
+	public static ToteCounter toteCounter;
 	private Compressor compressor; 
 //	private CameraServer camServer; 
 	
@@ -149,7 +149,7 @@ public class Robot extends IterativeRobot {
         //the camera name (ex "cam0") can be found through the roborio web interface
 //        camServer.startAutomaticCapture("cam1");
     	
-    	toteCounter = new ToteCount(); 
+    	toteCounter = new ToteCounter(); 
     	drive = new DriveTrain(leftDrive, rightDrive, centerDrive, centerWheelSuspension, imu, leftEnc, rightEnc, centerEnc);
        	clapper = new Clapper(clapperLifter, clapperActuator, clapperPot, toteDetectorLimitSwitch, clapperSafetyLimitSwitch);
     	claw    = new Claw(clawMotor, clawSolenoid, clawPot);
@@ -319,7 +319,7 @@ public class Robot extends IterativeRobot {
        	clapper.updateToteCount(toteCounter.getCount());
        	
        	if (Controllers.getJoystickButton(1) && currTeleopSequence == null) {
-       		currTeleopSequence = SequencerFactory.createTestPickupWithStrongbackTilt();
+       		currTeleopSequence = SequencerFactory.createToteIntakeRoutine();
        	}
        	if (Controllers.getJoystickButton(2) && currTeleopSequence == null) {
     		currTeleopSequence = SequencerFactory.createToteIntakeNoHang();

@@ -3,6 +3,10 @@ package org.usfirst.frc.team2485.auto.SequencedItems;
 import org.usfirst.frc.team2485.auto.SequencedItem;
 import org.usfirst.frc.team2485.robot.Robot;
 
+/**
+ * @author Patrick Wamsley
+ */
+
 public class MoveClapperVertically implements SequencedItem {
 
 	private final double setpoint; 
@@ -18,9 +22,6 @@ public class MoveClapperVertically implements SequencedItem {
 	@Override
 	public void run() {
 		Robot.clapper.setSetpoint(setpoint); 
-//		System.out.println("here in Move Clapper, PID finished is " + Robot.clapper.isPIDOnTarget() +
-//				" error: " + Robot.clapper.getError());
-//		System.out.println("actual clapper output is " + Robot.clapper.getMotorOutput());
 	}
 
 	@Override

@@ -3,6 +3,10 @@ package org.usfirst.frc.team2485.auto.SequencedItems;
 import org.usfirst.frc.team2485.auto.SequencedItem;
 import org.usfirst.frc.team2485.robot.Robot;
 
+/**
+ * @author Patrick Wamsley
+ */
+
 public class DriveStraight implements SequencedItem {
 
 	private final double distance; //inches
@@ -13,10 +17,6 @@ public class DriveStraight implements SequencedItem {
 		finished = false; 
 	}
 	
-	public DriveStraight(double feet, double inches) {
-		this(feet * 12 + inches); 
-	}
-	
 	@Override
 	public void run() {
 		finished = Robot.drive.driveTo(distance); 
@@ -24,7 +24,7 @@ public class DriveStraight implements SequencedItem {
 
 	@Override
 	public double duration() {
-		return finished ? 0 : 4; //3 untested
+		return finished ? 0 : 4; //4 untested
 	}
 
 }

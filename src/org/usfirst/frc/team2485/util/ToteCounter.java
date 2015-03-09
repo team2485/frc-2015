@@ -2,16 +2,17 @@ package org.usfirst.frc.team2485.util;
  
 /**
   * @author Ben Clark
+  * @author Patrick Wamsley
   */
-public class ToteCount {
+public class ToteCounter {
 	
 	private int numTotes;
 	
-	public ToteCount(int totes) {
+	public ToteCounter(int totes) {
 		numTotes = totes;
 	}
 	
-	public ToteCount() {
+	public ToteCounter() {
 		numTotes = 0;
 	}
 	

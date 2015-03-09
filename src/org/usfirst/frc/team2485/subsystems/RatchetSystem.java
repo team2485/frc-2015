@@ -3,7 +3,6 @@ package org.usfirst.frc.team2485.subsystems;
 import edu.wpi.first.wpilibj.Solenoid;
 
 /**
- * 
  * @author Ben Clark
  */
 public class RatchetSystem {

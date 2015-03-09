@@ -6,6 +6,11 @@ import org.usfirst.frc.team2485.robot.Robot;
 
 import edu.wpi.first.wpilibj.PIDSource;
 
+/**
+ * @author Patrick Wamsley
+ * @author Aidan Fay
+ */
+
 public class IMURollPIDSource implements PIDSource {
 	
 	private IMUAdvanced imu;
