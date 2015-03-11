@@ -520,6 +520,7 @@ public class DriveTrain {
 			//			System.out.println("On target with count: " + imuOnTargetCounter);
 		} else {
 			imuOnTargetCounter = 0;
+			
 		}
 
 		if (imuOnTargetCounter >= MINIMUM_IMU_ON_TARGET_ITERATIONS){
