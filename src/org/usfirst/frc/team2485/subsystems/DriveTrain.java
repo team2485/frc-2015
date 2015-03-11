@@ -19,6 +19,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * @author Anoushka Bose
  * @author Patrick Wamsley
  * @author Ben Clark
+ * @author Aidan Fay
+ * @author Camille Considine
  */
 public class DriveTrain {
 
@@ -115,17 +117,18 @@ public class DriveTrain {
 		driveStraightPID = new PIDController(driveStraightEncoder_Kp, driveStraightEncoder_Ki, driveStraightEncoder_Kd, dualEncoder, dummyEncoderOutput);
 		driveStraightPID.setAbsoluteTolerance(absTolerance_Enc_DriveStraight);
 
-		if(centerEnc != null) {
+		if (centerEnc != null) {
 			strafePID = new PIDController(strafeEncoder_Kp, strafeEncoder_Ki, strafeEncoder_Kd, centerEnc, center);
 			strafePID.setAbsoluteTolerance(absTolerance_Enc_Strafe);
 		}
 	}
 
 	public void warlordDrive(double translateX, double translateY, double rotation) {
-
-		translateX = ThresholdHandler.handleThreshold(translateX, TRANSLATE_X_DEADBAND);
-		translateY = -ThresholdHandler.handleThreshold(translateY, TRANSLATE_Y_DEADBAND);
-		rotation   =  ThresholdHandler.handleThresholdNonLinear(rotation, ROTATION_DEADBAND );
+		
+		translateX = ThresholdHandler.deadbandAndScale(translateX, TRANSLATE_X_DEADBAND, 0, 1); //TODO:  min prob wont be zero. 
+		translateY = -ThresholdHandler.deadbandAndScale(translateY, TRANSLATE_Y_DEADBAND, 0, 1);
+		rotation   =  ThresholdHandler.deadbandAndScale(rotation, ROTATION_DEADBAND, 0, 1);
+		
 		
 		if (slowStrafeOnlyMode) {
 			translateY = 0; 
@@ -133,8 +136,8 @@ public class DriveTrain {
 			rotation = 0; //no rotation if we only want to strafe
 		} else if (forcedNoStrafeMode) {
 			translateX = 0; 
-			translateY = translateY; //drivers prefur to have it this way rather than a 1.25X boost. 
-			rotation = 0; //no rotatino if we only want to move forward
+			translateY *= 1; //drivers prefer to have it this way rather than a 1.25X boost. 
+			rotation = 0; //no rotation if we only want to move forward
 		}
 		
 		//clamp
@@ -143,6 +146,7 @@ public class DriveTrain {
 		else if (translateY < -1)
 			translateY = -1; 
 		
+		//prevents tipping from too much acc
 		double dXInput = Math.abs(translateX - oldXInput), dYInput = Math.abs(translateY - oldYInput); 
 
 		if (dXInput > MAX_DELTA_X) {
@@ -152,7 +156,7 @@ public class DriveTrain {
 			else
 				translateX = oldXInput - MAX_DELTA_X; 
 
-			if(translateX > 1)
+			if (translateX > 1)
 				translateX = 1;
 			else if (translateX < -1)
 				translateX = -1;
@@ -176,16 +180,13 @@ public class DriveTrain {
 		oldXInput = translateX;
 		oldYInput = translateY;
 
-		if(Math.abs(rotation) > 0.1) {
+		if (Math.abs(rotation) > 0.1) {
 			if (maintainingHeading) {
 				maintainingHeading = false; 
 				imuPID.disable(); 
 			}
-//			System.out.println("In warlordDrive, about to call rotational: " + translateY + ", " + rotation + "\t\tROTATION");
 			rotationalDrive(translateY, rotation);
-		}
-		
-		else {
+		} else {
 			if (!maintainingHeading) {
 				maintainingHeading = true; 
 				desiredHeading = imu.getYaw(); 
@@ -194,105 +195,34 @@ public class DriveTrain {
 				imuPID.setSetpoint(desiredHeading);
 				imuPID.enable();
 			}
-//			System.out.println("In warlordDrive, about to call strafe: " + translateX + ", " + translateY + "\t\tSTRAFE");
 			strafeDrive(translateX, translateY);
 		}
 	}
 
-	public void rotationalDrive(double power, double rotation) {
+	public void rotationalDrive(double translateY, double rotation) {
 
 		dropCenterWheel(false);
 		setCenterWheel(0);
 		oldXInput = 0; 
 
-		double negInertia = rotation - oldWheel;
-		oldWheel = rotation;
-
-		double wheelNonLinearity = 0.5;
-
-		//this was the low gear code, since we only have one gear
-		rotation = Math.sin(Math.PI / 2.0 * wheelNonLinearity * rotation) /
-				Math.sin(Math.PI / 2.0 * wheelNonLinearity);
-		rotation = Math.sin(Math.PI / 2.0 * wheelNonLinearity * rotation) /
-				Math.sin(Math.PI / 2.0 * wheelNonLinearity);
-		rotation = Math.sin(Math.PI / 2.0 * wheelNonLinearity * rotation) /
-				Math.sin(Math.PI / 2.0 * wheelNonLinearity);
-
-		double leftPwm, rightPwm, overPower;
-
-		double angularPower;
-		double linearPower;
-
-		//		// Negative inertia!
-		double negInertiaAccumulator = 0.0;
-		double negInertiaScalar;
-
-		negInertiaScalar = 5.0;
-		double sensitivity = SENSITIVITY_LOW;
-
-		double negInertiaPower = negInertia * negInertiaScalar;
-		negInertiaAccumulator += negInertiaPower;
-
-		rotation = rotation + negInertiaAccumulator;
-		linearPower = power;
-
-		if (isQuickTurn) {
-			if (Math.abs(linearPower) < 0.2) {
-				double alpha = 0.1;
-				rotation = rotation > 1 ? 1.0 : rotation;
-				quickStopAccumulator = (1 - alpha) * quickStopAccumulator + alpha *
-						rotation * 0.5;
-			}
-			overPower = 1.0;            
-			angularPower = rotation;
-		} else {
-			overPower = 0.0;
-			angularPower = Math.abs(power) * rotation * sensitivity - quickStopAccumulator;
-			if (quickStopAccumulator > 1) {
-				quickStopAccumulator -= 1;
-			} else if (quickStopAccumulator < -1) {
-				quickStopAccumulator += 1;
-			} else {
-				quickStopAccumulator = 0.0;
-			}
-		}
-
-		rightPwm = leftPwm = linearPower;
-
-		leftPwm  += angularPower;
-		rightPwm -= angularPower;
-
-		leftPwm  *= Math.abs(leftPwm); 
-		rightPwm *= Math.abs(rightPwm); 
+		double rightDriveOutput, leftDriveOutput;
 		
-		leftPwm  *= Math.abs(leftPwm); 
-		rightPwm *= Math.abs(rightPwm); 
+		rightDriveOutput = translateY - rotation; 
+		leftDriveOutput = translateY + rotation; //check signs
 		
-//		leftPwm  *= Math.abs(leftPwm); 
-//		rightPwm *= Math.abs(rightPwm); 
-
-		if (leftPwm > 1.0) {
-			rightPwm -= overPower * (leftPwm - 1.0);
-			leftPwm = 1.0;
-		} else if (rightPwm > 1.0) {
-			leftPwm -= overPower * (rightPwm - 1.0);
-			rightPwm = 1.0;
-		} else if (leftPwm < -1.0) {
-			rightPwm += overPower * (-1.0 - leftPwm);
-			leftPwm = -1.0;
-		} else if (rightPwm < -1.0) {
-			leftPwm += overPower * (-1.0 - rightPwm);
-			rightPwm = -1.0;
-		}
-
+		//tune values a bit. maybe muliply rotation by translateY (when translateY != 0) 
 		
-//		if(isQuickTurn) {
-//			leftPwm /= 1.4;
-//			rightPwm /= 1.4;
-//		}
-
-		//		System.out.println("leftPWM/rightPWM after: " + leftPwm + " and " + rightPwm);
-		setLeftRight(leftPwm, rightPwm);
+		//clamp
+		if (rightDriveOutput > 1)
+			rightDriveOutput = 1; 
+		if (rightDriveOutput < -1)
+			rightDriveOutput = -1; 
+		if (leftDriveOutput > 1)
+			leftDriveOutput = 1;
+		if (leftDriveOutput < -1)
+			leftDriveOutput = -1; 
+		
+		setLeftRight(leftDriveOutput, rightDriveOutput);
 	}
 
 	public void setImuForDrivingStraight() {

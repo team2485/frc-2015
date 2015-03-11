@@ -47,8 +47,8 @@ public class Fingers {
 	 */
 	public void handleTote(float controllerY, float controllerZ) {
 
-		controllerY = (float) ThresholdHandler.handleThreshold(controllerY, AXIS_DEADBAND);
-		controllerZ = (float) ThresholdHandler.handleThreshold(controllerZ, AXIS_DEADBAND);
+		controllerY = (float) ThresholdHandler.deadbandAndScale(controllerY, AXIS_DEADBAND, 0, 1); //TODO: 0 and 1 are wrong probs
+		controllerZ = (float) ThresholdHandler.deadbandAndScale(controllerZ, AXIS_DEADBAND, 0, 1); //TODO: 0 and 1 are wrong probs
 
 		//		System.out.println("controllerY: " + controllerY + "controllerZ: " + controllerZ);
 

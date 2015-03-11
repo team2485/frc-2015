@@ -111,7 +111,7 @@ public class Claw {
 	 */
 	public void liftManually(double speed) {
 		setManual();
-		double adjustedSpeed = ThresholdHandler.handleThreshold(speed, 0.1);
+		double adjustedSpeed = ThresholdHandler.deadbandAndScale(speed, ThresholdHandler.STANDARD_THRESHOLD, 0 , 1); //TODO: instead of 0 and 1, find wanted values
 		//System.out.println(speed + " | " + adjustedSpeed);
 		if (adjustedSpeed > 1)
 			adjustedSpeed = 1;
