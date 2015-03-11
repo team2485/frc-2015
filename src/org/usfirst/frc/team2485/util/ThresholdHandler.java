@@ -29,17 +29,16 @@ public class ThresholdHandler {
 	}
 	
 	/**
-	 * Thresholds and scales values linearly: <code>(max - min) / (1 - t) * v + min;</code> where <code>(max - min) / (1 - t)</cdoe> is the slope.
-	 * Derived from fact that an input value of the threshold should return min : ( <code>f(threashold) = min</code> )
+	 * Thresholds and scales values linearly: <code>((max - min) / (1 - t)) * (v - t) + min;</code> where <code>(max - min) / (1 - t)</code> is the slope.
+	 * Derived from fact that an input value of the threshold should return min : ( <code>f(threshold) = min</code> )
 	 * and an input value of 1 should return max : ( <code> f(1) = max </code> ) 
 	 *  
 	 * @param val = value from input
-	 * @param threshold = deadband threashold 
+	 * @param threshold = deadband threshold 
 	 * @param absoluteMin = absolute value of min range
 	 * @param absoluteMax = absolute value of max range 
 	 * 
-	 * 
-	 * @return Corrected input from joystick. If input is below threashold, 0 is returned. 
+	 * @return Corrected input from joystick. If input is below threshold, 0 is returned. 
 	 * 		   If not, input is scaled between [min, max]. 
 	 * 
 	 */
@@ -48,7 +47,7 @@ public class ThresholdHandler {
 		if (Math.abs(val) <= threshold)
 			return 0; 
 		
-		double returnVal = ((absoluteMax - absoluteMin) / (1 - threshold) * Math.abs(val)) + absoluteMin; 
+		double returnVal = ((absoluteMax - absoluteMin) / (1 - threshold)) * (Math.abs(val) - threshold) + absoluteMin; 
 		
 		return val > 0 ? returnVal : -returnVal; 
 	}

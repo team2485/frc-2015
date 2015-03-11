@@ -28,7 +28,7 @@ public class DriveTrain {
 	private Encoder centerEnc;
 	public IMU imu;
 
-	//Drive Controlls 
+	//Drive Controls 
 	private final double 
 		NORMAL_SPEED_RATING = 0.75,
 		FAST_SPEED_RATING = 1.0,
