@@ -165,25 +165,21 @@ public class Robot extends IterativeRobot {
 
     public void autonomousInit() {
     	imu.zeroYaw();
-//    	strongback.enablePid();
-//    	leftEnc.reset();
-//    	rightEnc.reset();
+
+    	leftEnc.reset();
+    	rightEnc.reset();
 //    	dualEncoder.reset();
-//    	strongback.disablePid(); 
-//    	
-//        int autonomousType = (int) SmartDashboard.getNumber("autoMode", SequencerFactory.DRIVE_TO_AUTO_ZONE);
+
+    	resetAndDisableSystems();
+    	
+    	//        int autonomousType = (int) SmartDashboard.getNumber("autoMode", SequencerFactory.DRIVE_TO_AUTO_ZONE);
 //        autoSequence = SequencerFactory.createAuto(autonomousType);
         autoSequence = SequencerFactory.createAuto(SequencerFactory.DRIVE_TO_AUTO_ZONE);
     	
     }
   
     public void autonomousPeriodic() {
-////    	System.out.println("left/right " + leftEnc.getDistance() + "\t\t" + rightEnc.getDistance());
-////    	System.out.println("dualEnc " + dualEncoder.getDistance());
-//    	
-////    	drive.setLeftRight(-.7, -.7);
-////    	 autoSequence.run();
-////    	 
+  	 
     	 if (autoSequence != null) {
     		if (autoSequence.run()) {
     			autoSequence = null;
@@ -193,38 +189,34 @@ public class Robot extends IterativeRobot {
     }
     
     public void teleopInit() {
-    	System.out.println("teleop init");
-    	containerCommandeerer.resetSol();
-//    	imu.zeroYaw();
+		resetAndDisableSystems();
+    }	
+    
+    private void resetAndDisableSystems() {
+    	
+    	currTeleopSequence = null;
     	
     	drive.setMaintainHeading(false);
     	drive.dropCenterWheel(false);
-    	
     	drive.disableDriveStraightPID();
-    	
-    	
-    	
     	drive.disableIMUPID();
 //    	drive.disableStrafePID(); 	//keep this commented out as long as there is no center encoder
-    	
-    	leftEnc.reset();
-    	rightEnc.reset();
+    	drive.setMotors(0.0, 0.0, 0.0);
     	
     	clapper.setManual();
+    	clapper.liftManually(0.0);
     	
-//		strongback.enablePid();
-		claw.setManual();
-		
-		currTeleopSequence = null; 
-    	strongback.setSetpoint(0);
+    	fingers.stopBelts();
+    	
+    	claw.setManual();
+    	claw.liftManually(0.0);
+    	
+    	strongback.setSetpoint(0.0);
     	strongback.disablePid();
-    	claw.liftManually(0);
-  
-    	fingers.dualIntake(0);
-    	clapper.liftManually(0);
     	
-//		System.out.println(clapper.getPotValue());
-    }	
+    	containerCommandeerer.resetSol();
+    	
+    }
 
     public void teleopPeriodic() {
     	
@@ -474,12 +466,7 @@ public class Robot extends IterativeRobot {
 	}
 
     public void disabledInit() {
-    	if(currTeleopSequence != null) {
-    		System.out.println("teleopSequence not null here in disabledInit");
-    		currTeleopSequence = null;
-    	}
-    	
-    	
+    	resetAndDisableSystems();
     }
     
 	public void disabledPeriodic() {
@@ -504,12 +491,7 @@ public class Robot extends IterativeRobot {
     }
     
     public void testInit() {
-    	clapper.setManual();
-    	leftEnc.reset();
-    	rightEnc.reset();
-    	drive.disableDriveStraightPID();
-    	drive.disableIMUPID();
-    	
+    	resetAndDisableSystems();
     	finishedRotating = false;
     }
         
