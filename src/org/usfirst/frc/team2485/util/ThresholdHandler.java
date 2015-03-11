@@ -17,6 +17,7 @@ public class ThresholdHandler {
 	
 	public static final double STANDARD_THRESHOLD = 0.1; 
 	
+	@Deprecated
 	public static double handleThreshold(double val, double threshold) {
 		return (Math.abs(val) > Math.abs(threshold)) ? (val / Math.abs(val) * (Math.abs(val) - threshold) / (1 - threshold)) : 0.0;
 	}

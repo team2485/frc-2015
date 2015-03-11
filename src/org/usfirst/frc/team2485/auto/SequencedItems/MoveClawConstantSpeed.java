@@ -3,31 +3,23 @@ package org.usfirst.frc.team2485.auto.SequencedItems;
 import org.usfirst.frc.team2485.auto.SequencedItem;
 import org.usfirst.frc.team2485.robot.Robot;
 
+/**
+ * Sets the Claw to move at a set speed. Does not time out or stop the claw unless <code>speed = 0</code>. 
+ * 
+ * @author Patrick Wamsley
+ */
 public class MoveClawConstantSpeed implements SequencedItem {
 	
-	private int time, speed; 
-	private boolean killed; 
-	
-	public MoveClawConstantSpeed(int time, int speed) {
-		this.time = time; 
-		this.speed = speed; 
-		
-		killed = false; 
-	}
-
-	@Override
-	public void run() {
+	public MoveClawConstantSpeed(int speed) {
 		Robot.claw.liftManually(speed);
 	}
 
 	@Override
-	public double duration() {
-		return killed ? 0 : time;
-	}
-	
-	public void kill() {
-		killed = true; 
-	}
+	public void run() {}
 
+	@Override
+	public double duration() {
+		return .05; 
+	}
 	
 }
