@@ -4,8 +4,9 @@ import edu.wpi.first.wpilibj.Solenoid;
 
 public class ContainerCommandeerer {
 
-	private Solenoid	solRight, solLeft;
-	private boolean		rightLiberated = false, leftLiberated = false;
+	private Solenoid solRight, solLeft;
+	
+//	private boolean	rightLiberated = false, leftLiberated = false;	//redundant...can query the solenoids for this data
 
 	public ContainerCommandeerer(Solenoid solRight, Solenoid solLeft) {
 		this.solRight = solRight;
@@ -14,20 +15,18 @@ public class ContainerCommandeerer {
 
 	public void liberateRight() {
 		solRight.set(true);
-		rightLiberated = true;
 	}
 
 	public boolean isRightLiberated() {
-		return rightLiberated;
+		return solRight.get();
 	}
 
 	public void liberateLeft() {
 		solLeft.set(true);
-		leftLiberated = true;
 	}
 
 	public boolean isLeftLiberated() {
-		return leftLiberated;
+		return solLeft.get();
 	}
 
 	public void resetSol() {

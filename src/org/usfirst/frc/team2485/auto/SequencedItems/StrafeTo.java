@@ -2,6 +2,11 @@ package org.usfirst.frc.team2485.auto.SequencedItems;
 
 import org.usfirst.frc.team2485.auto.SequencedItem;
 
+/**
+ * @author Patrick Wamsley
+ */
+
+//Need a center encoder to do this. 
 public class StrafeTo implements SequencedItem {
 
 	private final double distance; 

@@ -9,7 +9,6 @@ import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.VictorSP;
 
 /**
- * 
  * @author Patrick Wamsley
  */
 public class Strongback {
@@ -54,10 +53,12 @@ public class Strongback {
 		leadScrewImuPID.enable();
 	}
 	
+	/**
+	 * Sets PID setpoint but does not enable the PID. 
+	 */
 	public void setSetpoint(double newSetpoint) {
 		rollSetpoint = newSetpoint;
 		leadScrewImuPID.setSetpoint(rollSetpoint);
-//		leadScrewImuPID.enable();
 	}
 	
 	public double getError() {
@@ -69,12 +70,9 @@ public class Strongback {
 	}
 	
 	public void checkSafety() {
-		if(Math.abs(leadScrewImuPID.getError()) > 12) {
+		if (Math.abs(leadScrewImuPID.getError()) > 12) {
 			System.out.println("ERROR in check safety");
 			leadScrewImuPID.disable();
 		}
-//		else {
-//			leadScrewImuPID.enable();
-//		}
 	}
 }

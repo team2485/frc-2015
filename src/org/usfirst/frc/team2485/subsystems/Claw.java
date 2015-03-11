@@ -24,6 +24,7 @@ public class Claw {
 	//To keep the claw and the clapper in sync, a low kP value lets the clapper push the claw when it needs to.
 	//kP Lock Position in Place is only used when going from manual mode to automatic mode and keep the
 	//claw in place.
+	
 	public static final double kP_LESS_POWER_ALLOWS_MORE_ERROR = 0.0025, kI = 0.00, kD = 0; // TODO: check kP BADLY
 	public static final double kP_LOCK_POSITION_IN_PLACE = 0.035;
 	private CombinedVictorSP winchMotor;
@@ -57,8 +58,6 @@ public class Claw {
 		RATCHET_COLLISION		= LOWEST_POS + 160,
 		FIX_CONTAINER_POSITION_IN_CLAW	= LOWEST_POS + 185,
 		FIRST_TOTE_POSITION_BELOW_RATCHET	= LOWEST_POS + 65;
-	
-	
 	
 	public static final double 	PLACE_ON_EXISTING_STACK_THREE_TOTES = LOWEST_POS + 455,
 								PLACE_ON_EXISTING_STACK_FOUR_TOTES = LOWEST_POS + 600,
@@ -106,24 +105,24 @@ public class Claw {
 	} 
 	
 	/**
-	 * If in manual mode this method will manually control the winch and return true.
-	 * If in automatic mode this method will do nothing, and return false.
+	 * If in manual mode this method will manually control the winch
+	 * If in automatic mode this method will do nothing.
 	 * @param speed
 	 */
 	public void liftManually(double speed) {
 		setManual();
-		double adjustedSpeed = ThresholdHandler.handleThreshold(speed, 0.1);
+		double adjustedSpeed = ThresholdHandler.deadbandAndScale(speed, ThresholdHandler.STANDARD_THRESHOLD, 0 , 1); //TODO: instead of 0 and 1, find wanted values
 		//System.out.println(speed + " | " + adjustedSpeed);
-		if (adjustedSpeed > 1){
+		if (adjustedSpeed > 1)
 			adjustedSpeed = 1;
-		} else if (adjustedSpeed < -1){
+		else if (adjustedSpeed < -1)
 			adjustedSpeed = -1;
-		}
-		if (isClawAboutToCollideWithRachet(adjustedSpeed)){
+
+		if (isClawAboutToCollideWithRachet(adjustedSpeed))
 			winchMotor.set(0);
-		} else {
+		 else 
 			winchMotor.set(adjustedSpeed);
-		}
+		
 	}
 	
 	public void setPID(double kP, double kI, double kD) {
@@ -218,39 +217,39 @@ public class Claw {
 		
 		int toteCount = Robot.toteCounter.getCount();
 		
-		if(clapperSetpoint == Clapper.ABOVE_RATCHET_SETPOINT || 
+		if (clapperSetpoint == Clapper.ABOVE_RATCHET_SETPOINT || 
 				clapperSetpoint == Clapper.LIFT_BOTTOM_TOTE_TO_RAISE_STACK_OFF_RATCHET_SETPOINT) {
-			if(toteCount == 1)
+			if (toteCount == 1)
 				return ONE_TOTE_LOADING;
-			if(toteCount == 2)
+			if (toteCount == 2)
 				return TWO_TOTE_LOADING;
-			if(toteCount == 3)
+			if (toteCount == 3)
 				return THREE_TOTE_LOADING;
-			if(toteCount == 4)
+			if (toteCount == 4)
 				return FOUR_TOTE_LOADING;
-			if(toteCount == 5)
+			if (toteCount == 5)
 				return FIVE_TOTE_LOADING;
 		}
 		
-		if(clapperSetpoint == Clapper.ON_RATCHET_SETPOINT || clapperSetpoint == Clapper.HOLDING_TOTE_SETPOINT || 
+		if (clapperSetpoint == Clapper.ON_RATCHET_SETPOINT || clapperSetpoint == Clapper.HOLDING_TOTE_SETPOINT || 
 				clapperSetpoint == Clapper.LOADING_SETPOINT) {
-			if(toteCount == 1)
+			if (toteCount == 1)
 				return ONE_TOTE_RESTING;
-			if(toteCount == 2)
+			if (toteCount == 2)
 				return TWO_TOTE_RESTING;
-			if(toteCount == 3)
+			if (toteCount == 3)
 				return THREE_TOTE_RESTING;
-			if(toteCount == 4)
+			if (toteCount == 4)
 				return FOUR_TOTE_RESTING;
-			if(toteCount == 5)
+			if (toteCount == 5)
 				return FIVE_TOTE_RESTING;
 		}
-		
 		throw new IllegalArgumentException("Clapper setpoint " + clapperSetpoint + " invalid.");
 	}
 	
 	public boolean isClawAboutToCollideWithRachet(double speedInput){
-		return ((getPotValue() < RATCHET_COLLISION + 150) && (getPotValue() > RATCHET_COLLISION) && (speedInput < 0) && Robot.ratchet.isExtended());
+		return ((getPotValue() < RATCHET_COLLISION + 150) && (getPotValue() > RATCHET_COLLISION) && 
+				(speedInput < 0) && Robot.ratchet.isExtended());
 	}
 }
 

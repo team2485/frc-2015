@@ -4,6 +4,10 @@ import org.usfirst.frc.team2485.auto.SequencedItem;
 import org.usfirst.frc.team2485.robot.Robot;
 import org.usfirst.frc.team2485.subsystems.Claw;
 
+/**
+ * @author Anoushka Bose
+ */
+
 public class MoveClawWithToteIntake implements SequencedItem {
 	
 	private boolean finished = false; 
@@ -27,7 +31,7 @@ public class MoveClawWithToteIntake implements SequencedItem {
 				setpoint = Claw.HIGHEST_POS;
 				break;
 			default: 
-				throw new IllegalStateException("We must have 1 - 6 totes.");
+				throw new IllegalStateException("We must have 1 - 5 totes.");
 		}
 		
 		Robot.claw.setSetpoint(setpoint);
@@ -36,7 +40,6 @@ public class MoveClawWithToteIntake implements SequencedItem {
 	@Override
 	public void run() {
 		Robot.claw.setSetpoint(setpoint);
-
 		finished = Robot.claw.isPidOnTarget(); // TODO: fix duration and finishing condition 
 	}
 

@@ -8,7 +8,7 @@ import org.usfirst.frc.team2485.subsystems.*;
 import org.usfirst.frc.team2485.util.CombinedVictorSP;
 import org.usfirst.frc.team2485.util.Controllers;
 import org.usfirst.frc.team2485.util.DualEncoder;
-import org.usfirst.frc.team2485.util.ToteCount;
+import org.usfirst.frc.team2485.util.ToteCounter;
 
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.Compressor;
@@ -38,126 +38,125 @@ import edu.wpi.first.wpilibj.VictorSP;
  */ 
 public class Robot extends IterativeRobot {
 	
-	//subsystems 
+	//Subsystems 
 	public static DriveTrain drive;
 	public static Strongback strongback; 
 	public static Clapper clapper;
 	public static Fingers fingers;
 	public static RatchetSystem ratchet;
 	public static Claw claw;
-	public static ToteCount toteCounter;
-
+	public static ContainerCommandeerer containerCommandeerer;
+	public static ToteCounter toteCounter;
+	private Compressor compressor; 
+//	private CameraServer camServer; 
 	
+	//Speed Controllers
+	private CombinedVictorSP leftDrive, rightDrive, centerDrive;
+	private CombinedVictorSP clapperLifter;
+	private VictorSP strongbackMotor;  
+	private VictorSP leftFingerBelt, rightFingerBelt;
+	private VictorSP clawMotor;
+	
+	//Solenoids
+	private Solenoid centerWheelSuspension;
+	private Solenoid ratchetLatchActuator;
+	private Solenoid shortFingerActuators, longFingerActuators; 
+	private Solenoid commandeererSolenoidRight, commandeererSolenoidLeft;
+	private DoubleSolenoid clapperActuator, clawSolenoid;
+	
+	//Sensors
+	private Encoder leftEnc, rightEnc, centerEnc; 
+	private DualEncoder dualEncoderVelCalc;
+	
+	private IMUAdvanced imu;
+
+	private DigitalInput clapperSafetyLimitSwitch; 
+	private DigitalInput toteDetectorLimitSwitch; 
+	private DigitalInput pressureSwitch;
+
+	private AnalogPotentiometer clapperPot;
+	private AnalogPotentiometer clawPot;
+	
+	//Tote Count
 	private long timeLastToteCountProcessed;
 	private long TOTE_COUNT_MIN_DELAY = 500;
 	
-	private VictorSP left, left2, right, right2, strongbackMotor, leftFingerBelt, rightFingerBelt, clapperLifter1, clapperLifter2;
-	private CombinedVictorSP center; 
-	 
-	private Encoder leftEnc, rightEnc, centerEnc;
-	private DualEncoder dualEncoder;
+	//Sequences	&& Auto
+	private Sequencer autoSequence, currTeleopSequence;
+	private boolean finishedRotating = false;
+	private int degrees;
 	
-	private Solenoid centerWheelSuspension, longFingerActuators, shortFingerActuators, latchActuator;
-	private Compressor compressor;
-	private Relay compressorSpike;	
-	private DigitalInput pressureSwitch;
-	private DoubleSolenoid clapperActuator, clawSolenoid;
-	private IMUAdvanced imu;
-	private SerialPort ser;
-//	private CameraServer camServer; 
-	
-	private Sequencer autoSequence;
-	private AnalogPotentiometer clapperPot;
-	private CombinedVictorSP combinedVictorSP;
-	private Sequencer teleopSequence;
-	
-	int degrees;
-	private double curPos;
-	private double lastPos;
-	private double lastVelocity;
+	//Data
+	private double curPos, lastPos;
 	private static double currVelocity;
-	public static ContainerCommandeerer containerCommandeerer;
-	private static Solenoid commandeererSolenoidR, commandeererSolenoidL;
+	private double lastVelocity; 
 	
-	private boolean toteCounterButtonIsReset = true; 
-    private boolean done = false;
-	private VictorSP clawMotor;
-	private AnalogPotentiometer clawPot;
-	private DigitalInput clapperSafetyLimitSwitch; 
-	private DigitalInput toteDetectorLimitSwitch; 
-	
-//	boolean fingersOn = true;
+	//Other needed variables 
+	private Relay compressorSpike;
 	
     public void robotInit() {
     	
-    	left     				= new VictorSP(14); //left: 14,15
-    	left2 	    			= new VictorSP(15);
-    	right       			= new VictorSP(0); //right: 0, 1
-    	right2  				= new VictorSP(1);
-    	leftFingerBelt    		= new VictorSP(9); // could be 6
-    	rightFingerBelt   		= new VictorSP(6); //could be 9
-    	clawMotor				= new VictorSP(12);
-    	clapperLifter1 			= new VictorSP(13); 
-    	clapperLifter2 			= new VictorSP(3); 
-    	strongbackMotor 		= new VictorSP(2); 
-    	center		 			= new CombinedVictorSP(new VictorSP(11), new VictorSP(7)); 
+    	leftDrive     				= new CombinedVictorSP(new VictorSP(14), new VictorSP(15)); 
+    	rightDrive       			= new CombinedVictorSP(new VictorSP(0), new VictorSP(1)); 
+    	centerDrive		 			= new CombinedVictorSP(new VictorSP(11), new VictorSP(7));
+    	clapperLifter 				= new CombinedVictorSP(new VictorSP(13), new VictorSP(3)); 
+    	strongbackMotor 			= new VictorSP(2); 
+    	leftFingerBelt   	 		= new VictorSP(9); 
+    	rightFingerBelt  	 		= new VictorSP(6); 
+    	clawMotor					= new VictorSP(12);   	
     	
-    	longFingerActuators  	= new Solenoid(5);
-    	shortFingerActuators 	= new Solenoid(6);
-    	latchActuator 			= new Solenoid(2);
-    	centerWheelSuspension	= new Solenoid(3); 
-    	clawSolenoid			= new DoubleSolenoid(0,4); 
-    	clapperActuator 		= new DoubleSolenoid(1,7);
-    	
-    	clawPot		    		= new AnalogPotentiometer(0);
-    	clapperPot		   		= new AnalogPotentiometer(1);  
-    	
-    	clapperSafetyLimitSwitch = new DigitalInput(16); 
-    	toteDetectorLimitSwitch  = new DigitalInput(17);
-    	
-    	commandeererSolenoidL = new Solenoid(1, 2);
-    	commandeererSolenoidR = new Solenoid(1, 0);
+    	centerWheelSuspension		= new Solenoid(3);
+    	ratchetLatchActuator 		= new Solenoid(2);
+    	shortFingerActuators 		= new Solenoid(6);
+    	longFingerActuators  		= new Solenoid(5);
+    	commandeererSolenoidLeft	= new Solenoid(1, 2);
+    	commandeererSolenoidRight	= new Solenoid(1, 0);
+    	clapperActuator 			= new DoubleSolenoid(1,7);
+    	clawSolenoid				= new DoubleSolenoid(0,4); 
     	
     	leftEnc = new Encoder(0, 1);
     	rightEnc = new Encoder(4, 5);
-    	dualEncoder = new DualEncoder(leftEnc, rightEnc);
+
+    	dualEncoderVelCalc = new DualEncoder(leftEnc, rightEnc);
     	
-    	leftEnc .setDistancePerPulse(.0414221608);
+    	leftEnc.setDistancePerPulse(.0414221608);
     	rightEnc.setDistancePerPulse(.0414221608); 
     	
-    	toteCounter = new ToteCount(); 
-
-//    	compressor = new Compressor();
-    	compressorSpike = new Relay(0);
-    	pressureSwitch = new DigitalInput(10); //TODO: find port
-    	
-    	try{
-    		ser = new SerialPort(57600, SerialPort.Port.kUSB);
+    	try {
     		byte update_rate_hz = 50;
-    		imu = new IMUAdvanced(ser, update_rate_hz);
-    	
-    	} catch(Exception ex) {
+    		imu = new IMUAdvanced(new SerialPort(57600, SerialPort.Port.kUSB), update_rate_hz);
+    	} catch (Exception ex) {
+    		System.out.println("imu failed to init");
     		ex.printStackTrace();
     	}
     	
-    	
-    	if(imu != null) {
+    	if (imu != null) 
     		LiveWindow.addSensor("IMU", "Gyro", imu);
-    	}
     	
-    	drive = new DriveTrain(left, left2, right, right2, center, centerWheelSuspension, imu, leftEnc, rightEnc, centerEnc);
-       	clapper = new Clapper(clapperLifter1, clapperLifter2, clapperActuator, clapperPot, toteDetectorLimitSwitch, clapperSafetyLimitSwitch);
-    	claw    = new Claw(clawMotor, clawSolenoid, clawPot);
-    	fingers = new Fingers(leftFingerBelt,rightFingerBelt,longFingerActuators,shortFingerActuators);
-    	ratchet = new RatchetSystem(latchActuator);    	
-    	strongback = new Strongback(strongbackMotor, imu); 
-    	containerCommandeerer = new ContainerCommandeerer(commandeererSolenoidL, commandeererSolenoidR);
+    	clapperSafetyLimitSwitch = new DigitalInput(16); 
+    	toteDetectorLimitSwitch  = new DigitalInput(17);
+    	pressureSwitch			 = new DigitalInput(10); //TODO: find port
+    	
+    	clawPot		    		= new AnalogPotentiometer(0);
+    	clapperPot		   		= new AnalogPotentiometer(1);  
+
+//    	compressor = new Compressor();
+    	compressorSpike = new Relay(0);
     	
     	
 //    	camServer = CameraServer.getInstance();
         //camServer.setQuality(50);
         //the camera name (ex "cam0") can be found through the roborio web interface
 //        camServer.startAutomaticCapture("cam1");
+    	
+    	toteCounter = new ToteCounter(); 
+    	drive = new DriveTrain(leftDrive, rightDrive, centerDrive, centerWheelSuspension, imu, leftEnc, rightEnc, centerEnc);
+       	clapper = new Clapper(clapperLifter, clapperActuator, clapperPot, toteDetectorLimitSwitch, clapperSafetyLimitSwitch);
+    	claw    = new Claw(clawMotor, clawSolenoid, clawPot);
+    	fingers = new Fingers(leftFingerBelt, rightFingerBelt, longFingerActuators, shortFingerActuators);
+    	ratchet = new RatchetSystem(ratchetLatchActuator);    	
+    	strongback = new Strongback(strongbackMotor, imu); 
+    	containerCommandeerer = new ContainerCommandeerer(commandeererSolenoidLeft, commandeererSolenoidRight);
     	
         Controllers.set(new Joystick(0), new Joystick(1), new Joystick(2));
     	
@@ -166,68 +165,58 @@ public class Robot extends IterativeRobot {
 
     public void autonomousInit() {
     	imu.zeroYaw();
-//    	strongback.enablePid();
-//    	leftEnc.reset();
-//    	rightEnc.reset();
+
+    	leftEnc.reset();
+    	rightEnc.reset();
 //    	dualEncoder.reset();
-//    	strongback.disablePid(); 
-//    	
-//        int autonomousType = (int) SmartDashboard.getNumber("autoMode", SequencerFactory.DRIVE_TO_AUTO_ZONE);
+
+    	resetAndDisableSystems();
+    	
+    	//        int autonomousType = (int) SmartDashboard.getNumber("autoMode", SequencerFactory.DRIVE_TO_AUTO_ZONE);
 //        autoSequence = SequencerFactory.createAuto(autonomousType);
         autoSequence = SequencerFactory.createAuto(SequencerFactory.DRIVE_TO_AUTO_ZONE);
     	
     }
   
     public void autonomousPeriodic() {
-////    	System.out.println("left/right " + leftEnc.getDistance() + "\t\t" + rightEnc.getDistance());
-////    	System.out.println("dualEnc " + dualEncoder.getDistance());
-//    	
-////    	drive.setLeftRight(-.7, -.7);
-////    	 autoSequence.run();
-////    	 
+  	 
     	 if (autoSequence != null) {
-//    		System.out.println("running teleop sequence");
     		if (autoSequence.run()) {
     			autoSequence = null;
-//    			clapper.setManual(); 
     		}
     	}
     	 
     }
     
     public void teleopInit() {
-    	System.out.println("teleop init");
-    	containerCommandeerer.resetSol();
-//    	imu.zeroYaw();
+		resetAndDisableSystems();
+    }	
+    
+    private void resetAndDisableSystems() {
+    	
+    	currTeleopSequence = null;
     	
     	drive.setMaintainHeading(false);
     	drive.dropCenterWheel(false);
-    	
     	drive.disableDriveStraightPID();
-    	
-    	
-    	
     	drive.disableIMUPID();
 //    	drive.disableStrafePID(); 	//keep this commented out as long as there is no center encoder
-    	
-    	leftEnc.reset();
-    	rightEnc.reset();
+    	drive.setMotors(0.0, 0.0, 0.0);
     	
     	clapper.setManual();
+    	clapper.liftManually(0.0);
     	
-//		strongback.enablePid();
-		claw.setManual();
-		
-		teleopSequence = null; 
-    	strongback.setSetpoint(0);
+    	fingers.stopBelts();
+    	
+    	claw.setManual();
+    	claw.liftManually(0.0);
+    	
+    	strongback.setSetpoint(0.0);
     	strongback.disablePid();
-    	claw.liftManually(0);
-  
-    	fingers.dualIntake(0);
-    	clapper.liftManually(0);
     	
-//		System.out.println(clapper.getPotValue());
-    }	
+    	containerCommandeerer.resetSol();
+    	
+    }
 
     public void teleopPeriodic() {
     	
@@ -277,7 +266,6 @@ public class Robot extends IterativeRobot {
 		/////////////////////////////////////////////
 		//////////		TOTE COUNTER
 		/////////////////////////////////////////////
-
         
         long currTime = System.currentTimeMillis();
         if (Controllers.getButton(Controllers.XBOX_BTN_Y) && currTime - timeLastToteCountProcessed > TOTE_COUNT_MIN_DELAY) {
@@ -293,7 +281,7 @@ public class Robot extends IterativeRobot {
 		//////////		PSEUDO-VELOCITY CALCULATIONS
 		/////////////////////////////////////////////
 
-       	double curPos = dualEncoder.getDistance();
+       	double curPos = dualEncoderVelCalc.getDistance();
        	currVelocity = curPos-lastPos;
 //       	System.out.println(imu.getWorldLinearAccelX() +"," + imu.getWorldLinearAccelY() + "," + imu.getWorldLinearAccelZ() + "," + imu.getPitch() + "," + imu.getRoll() + "," + imu.getYaw() + "," + curPos + "," + curVelocity + "," + (curVelocity - lastVelocity));
        
@@ -322,11 +310,11 @@ public class Robot extends IterativeRobot {
 //       	
        	clapper.updateToteCount(toteCounter.getCount());
        	
-       	if (Controllers.getJoystickButton(1) && teleopSequence == null) {
-       		teleopSequence = SequencerFactory.createTestPickupWithStrongbackTilt();
+       	if (Controllers.getJoystickButton(1) && currTeleopSequence == null) {
+       		currTeleopSequence = SequencerFactory.createToteIntakeRoutine();
        	}
-       	if (Controllers.getJoystickButton(2) && teleopSequence == null) {
-    		teleopSequence = SequencerFactory.createToteIntakeNoHang();
+       	if (Controllers.getJoystickButton(2) && currTeleopSequence == null) {
+    		currTeleopSequence = SequencerFactory.createToteIntakeNoHang();
     	}
        	
        	if(Controllers.getJoystickButton(3))
@@ -396,18 +384,18 @@ public class Robot extends IterativeRobot {
     		claw.setSetpoint(claw.getPotValue());
        	}
        	
-       	if(Controllers.getSecondaryJoystickButton(1) && teleopSequence == null)
-       		teleopSequence = SequencerFactory.createContainerPickupRoutine();
-       	if(Controllers.getSecondaryJoystickButton(2) && teleopSequence == null)
-       		teleopSequence = SequencerFactory.createPrepareForContainerLiftRoutine();
+       	if(Controllers.getSecondaryJoystickButton(1) && currTeleopSequence == null)
+       		currTeleopSequence = SequencerFactory.createContainerPickupRoutine();
+       	if(Controllers.getSecondaryJoystickButton(2) && currTeleopSequence == null)
+       		currTeleopSequence = SequencerFactory.createPrepareForContainerLiftRoutine();
        	
     	if(Controllers.getSecondaryJoystickButton(3))
        		claw.open();
        	if(Controllers.getSecondaryJoystickButton(4))
        		claw.close();
        	
-       	if (Controllers.getSecondaryJoystickButton(5) && teleopSequence == null) {
-       		teleopSequence = SequencerFactory.createContainerRightingRoutine();
+       	if (Controllers.getSecondaryJoystickButton(5) && currTeleopSequence == null) {
+       		currTeleopSequence = SequencerFactory.createContainerRightingRoutine();
        	}
        	
        	if (Controllers.getSecondaryJoystickButton(6)) {
@@ -422,7 +410,7 @@ public class Robot extends IterativeRobot {
        	//////////////////////////////////////////////
 		//////////////////////////////////////////////
 		//////////////////////////////////////////////
-       	if(Controllers.getSecondaryJoystickButton(8) && teleopSequence == null) {
+       	if(Controllers.getSecondaryJoystickButton(8) && currTeleopSequence == null) {
 //       		teleopSequence = SequencerFactory.createTestPickupWithStrongbackTilt();
        	}
        	//////////////////////////////////////////////
@@ -434,8 +422,8 @@ public class Robot extends IterativeRobot {
        		claw.setSetpoint(Claw.PLACE_ON_EXISTING_STACK_FIVE_TOTES);
        	}
        	
-       	if(Controllers.getSecondaryJoystickButton(10) && teleopSequence == null) {
-       		teleopSequence = SequencerFactory.createDropToteStackRoutine(true);//totes on the ratchet and one underneath
+       	if(Controllers.getSecondaryJoystickButton(10) && currTeleopSequence == null) {
+       		currTeleopSequence = SequencerFactory.createDropToteStackRoutine(true);//totes on the ratchet and one underneath
        	}
        	
        	if(Controllers.getSecondaryJoystickButton(11)) {
@@ -444,25 +432,25 @@ public class Robot extends IterativeRobot {
 //      		claw.setSetpoint(Claw.ONE_TOTE_RESTING);
        	}
        	
-       	if(Controllers.getSecondaryJoystickButton(12) && teleopSequence == null) {
-       		teleopSequence = SequencerFactory.createDropToteStackRoutine(false);//only totes on the ratchet
+       	if(Controllers.getSecondaryJoystickButton(12) && currTeleopSequence == null) {
+       		currTeleopSequence = SequencerFactory.createDropToteStackRoutine(false);//only totes on the ratchet
        	}
        		
    		if ((Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_THROTTLE) > 0) ||
    				Controllers.getSecondaryJoystickAxis(Controllers.JOYSTICK_AXIS_THROTTLE) > 0) {
    			//kill ALL THE THINGS@!#@#!!@@
-   			if(teleopSequence != null) {
-   				teleopSequence.clear();
-   				teleopSequence = null;
+   			if(currTeleopSequence != null) {
+   				currTeleopSequence.clear();
+   				currTeleopSequence = null;
    			}
    			System.out.println("Killing all the things");
    		}
    	
        	
-       	if (teleopSequence != null) {
+       	if (currTeleopSequence != null) {
 //       		System.out.println("running sequence here in teleopPeriodic");
-       		if (teleopSequence.run()) {
-       			teleopSequence = null;
+       		if (currTeleopSequence.run()) {
+       			currTeleopSequence = null;
        		}
        	}
        	
@@ -478,12 +466,7 @@ public class Robot extends IterativeRobot {
 	}
 
     public void disabledInit() {
-    	if(teleopSequence != null) {
-    		System.out.println("teleopSequence not null here in disabledInit");
-    		teleopSequence = null;
-    	}
-    	
-    	
+    	resetAndDisableSystems();
     }
     
 	public void disabledPeriodic() {
@@ -499,99 +482,44 @@ public class Robot extends IterativeRobot {
 ////    		System.out.println("degrees is now " + degrees);
 //    		counter = 0;
 //    	}
-		if(teleopSequence != null) {
+		if(currTeleopSequence != null) {
 			System.out.println("teleopSequence not null in disabledPeriodic");
-			teleopSequence.clear();
-			teleopSequence = null;
+			currTeleopSequence.clear();
+			currTeleopSequence = null;
 		}
     	updateDashboard();
     }
     
     public void testInit() {
-    	clapper.setManual();
-    	leftEnc.reset();
-    	rightEnc.reset();
-    	drive.disableDriveStraightPID();
-    	drive.disableIMUPID();
-    	
-    	done = false;
+    	resetAndDisableSystems();
+    	finishedRotating = false;
     }
         
     public void testPeriodic() {
     	
-    	if (!pressureSwitch.get()) {
+    	if (!pressureSwitch.get()) 
     		compressorSpike.set(Relay.Value.kForward);
-    	}
     	else
-    	{
     		compressorSpike.set(Relay.Value.kOff);
-    	}
+    	
 //    	compressor.start();
-    	
-    	
-    	
-    	
-    	
-//    	if(toteDetectorLimitSwitch.get())
-//    		System.out.println("get returned true");
-//    	else
-//    		System.out.println("get returned false");
-    	
-    	//    	
+  	
 //    	clapper.setSetpoint(Clapper.ON_RATCHET_SETPOINT);
 //    	claw.close(); 
 //    	claw.setSetpoint(Claw.ONE_TOTE_LOADING);
 //    	claw.setSetpoint(Claw.ONE_TOTE_RESTING);
     	
- //   	clapper.liftManually(.4);
-    	
-//    	leftFingerBelt.set(.2);
-    	
-//clawMotor.set(.2);
-
-    	
-
-//    	drive.setLeftRight(.2, -.2);
-//    	drive.driveTo(60);
-    	
-//    	degrees = 30;
-    	
 //    	drive.dropCenterWheel(false);
-//    	if(!done && drive.rotateTo(30)) {
-//    		done = true;
+    	
+//    	if(!finishedRotating && drive.rotateTo(30)) {
+//    		finishedRotating = true;
 //    		System.out.println("just finished rotateTo inside of testPeriodic");
 //    	}
-    	
-//    	System.out.println(imu.getYaw());
-    	
-//    	
-//    	  if (Controllers.getButton(Controllers.XBOX_BTN_START))
-//          	drive.tuneDriveKp(.005);
-//          if (Controllers.getButton(Controllers.XBOX_BTN_BACK))
-//          	drive.tuneDriveKp(-.005);
-//          if (Controllers.getButton(Controllers.XBOX_BTN_Y)) 
-//          	drive.resetButtonClicked(); 
-          
-          
+       
 //    	System.out.println("Imu yaw: " + imu.getYaw());
 //    	System.out.println("Imu pitch: " + imu.getPitch());
-//    	
-//    	left.set(-.5);
-//    	left2.set(-.5); 
-//    	right.set(.5);
-//    	right2.set(.5);
-    	
-//    	leadScrewMotor.set(-.05);
-//    	System.out.println(strongback.leadScrewImuPID.isEnable());
 
 //    	strongback.enablePid(); 
-//		System.out.println(strongback.getError() + " output " + .leadScrewImuPID.get());
-    	
-//    	SmartDashboard.putString("Clapper and Container", clapper.getPercentHeight() +"," + 0 + "," + imu.getRoll());
-       	
-//       	SmartDashboard.putInt("IPS",    (int) drive.getAbsoluteRate());
-       	
-
     }
     
     public void updateDashboard() {

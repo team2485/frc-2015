@@ -7,7 +7,6 @@ public class ScaledPot implements PIDSource {
 	
 	private AnalogPotentiometer pot;
 	
-	
 	public ScaledPot(AnalogPotentiometer pot) {
 		this.pot = pot;
 	}

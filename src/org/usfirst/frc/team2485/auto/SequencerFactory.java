@@ -1,6 +1,5 @@
 package org.usfirst.frc.team2485.auto;
 
-import org.usfirst.frc.team2485.auto.SequencedItems.AutoTestPrint;
 import org.usfirst.frc.team2485.auto.SequencedItems.ClampOutputRangeDriveStraightPID;
 import org.usfirst.frc.team2485.auto.SequencedItems.CloseClapper;
 import org.usfirst.frc.team2485.auto.SequencedItems.CloseClaw;
@@ -50,8 +49,7 @@ public class SequencerFactory {
 	public static Sequencer createAuto(int autoType) {
 
 		switch (autoType) {
-		case SEQ_TEST:
-			return new Sequencer(new SequencedItem[] { new AutoTestPrint(), });
+		
 		case DRIVE_TO_AUTO_ZONE:
 			return new Sequencer(new SequencedItem[] {
 					new DriveStraight(70), // TODO:
@@ -83,14 +81,14 @@ public class SequencerFactory {
 					new SequencedItem[] {
 							new InnerSequencer(createContainerPickupRoutine()), 
 							new DriveStraight(15), // TODO: untested distance
-							new InnerSequencer(createToteIntakeForAutonomous()), 
+							new InnerSequencer(createToteIntakeRoutine()), 
 							new DriveStraight(33), // TODO: untested distance
 							new RotateToAngle(15), //push container out of the way
 							new RotateToAngle(0), 
 							new DriveStraight(5), // TODO: untested distance
-							new InnerSequencer(createToteIntakeForAutonomous()), 
+							new InnerSequencer(createToteIntakeRoutine()), 
 							new RotateToAngle(90), // TODO: untested distance
-							new DriveStraight(15, 0), // TODO: untested distance
+							new DriveStraight(180), // TODO: untested distance
 							new InnerSequencer(createDropToteStackRoutine(false))
 					});
 
@@ -134,7 +132,7 @@ public class SequencerFactory {
 							new InnerSequencer(createContainerPickupRoutine()),
 							new OpenClapper(),
 							new DriveStraight(10),
-							new InnerSequencer(createTestPickupWithStrongbackTilt()),
+							new InnerSequencer(createToteIntakeRoutine()),
 							new RotateToAngle(90),
 							new DriveStraight(60), 
 
@@ -230,6 +228,9 @@ public class SequencerFactory {
 //				new SetClapperPIDByToteCount() });
 //	}
 
+	/**
+	 * @return sequencer that drops a tote stack and a container 
+	 */
 	public static Sequencer createDropToteStackRoutine(boolean withToteBelowRatchet) { 
 		// tune kp down a bit? add a seq
 		
@@ -341,7 +342,10 @@ public class SequencerFactory {
 				new OpenClaw() });
 	}
 
-	public static Sequencer createTestPickupWithStrongbackTilt() {
+	/**
+	 * @return Sequence that intakes a toke using the strongback tilt method
+	 */
+	public static Sequencer createToteIntakeRoutine() {
 
 		return new Sequencer(
 				new SequencedItem[] {
@@ -385,28 +389,6 @@ public class SequencerFactory {
 						new SequencedPause(0.5), //TODO: check pause duration to see if strongback rights itself
 						new SetFingersPos(Fingers.OPEN),
 						new DisableStrongbackPID() });
-	}
-	
-	/*
-	 * Returns a Sequencer that drives forward and intakes one tote
-	 */
-	private static Sequencer createToteIntakeForAutonomous() {
-		return new Sequencer (
-				new SequencedItem[] {
-						new SequencedMultipleItem(
-//								new SetClawPID(Claw.kP_LESS_POWER_ALLOWS_MORE_ERROR, Robot.claw.getI(), Robot.claw.getD()),
-								new DriveStraight(81),
-								new MoveClapperVertically(Clapper.LOADING_SETPOINT)), 
-						new SetFingerRollers(SetFingerRollers.LEFT, 1, 1),
-						new DriveStraight(12),
-						new SequencedMultipleItem(
-								new SetFingersPos(Fingers.PARALLEL),
-								new SetFingerRollers(SetFingerRollers.INTAKE, 1, 1)),
-		// we should now have one tote on the ratchet and another up against the strongback but still on the floor
-						new SequencedPause(.2),
-						new SetFingersPos(Fingers.PARALLEL),
-						new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
-						new SequencedPause(.2) });
 	}
 	
 	private static Sequencer createDropToteStackRoutineKeepContainer(boolean withToteBelowRatchet) { // tune kp down a bit? add a seq
@@ -455,9 +437,9 @@ public class SequencerFactory {
 		return returnSequence;
 		
 	}
-	private static Sequencer createTestPickupWithStrongbackTiltAndLowerClapper() {
+	private static Sequencer createTotePickupAndLowerClapperRoutine() {
 		return new Sequencer(new SequencedItem[] {
-				new InnerSequencer(createTestPickupWithStrongbackTilt()), 
+				new InnerSequencer(createToteIntakeRoutine()), 
 				new MoveClapperVertically(Clapper.LOADING_SETPOINT)
 		}); 
 	}

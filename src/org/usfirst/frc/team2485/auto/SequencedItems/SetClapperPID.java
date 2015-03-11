@@ -3,6 +3,10 @@ package org.usfirst.frc.team2485.auto.SequencedItems;
 import org.usfirst.frc.team2485.auto.SequencedItem;
 import org.usfirst.frc.team2485.robot.Robot;
 
+/**
+ * @author Aidan Fay
+ */
+
 public class SetClapperPID implements SequencedItem {
 	
 	private double kP;
@@ -22,7 +26,7 @@ public class SetClapperPID implements SequencedItem {
 
 	@Override
 	public double duration() {
-		return 0;
+		return 0.05;
 	}
 
 }

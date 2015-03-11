@@ -22,13 +22,23 @@ public class Clapper {
 	private CombinedVictorSP clapperLifter;
 	private DoubleSolenoid clapperActuator;
 	public PIDController clapperPID;
-//	private AnalogPotentiometer pot;
 	private ScaledPot potScaled;
-	 
+	private DigitalInput toteDetectorLimitSwitch, bottomSafetyLimitSwitch;
+
 	private boolean open;
 	private boolean automatic;
+	private double lastHeight;
 
-	public double
+	public static final double LOWEST_POS = 153; 	// 163
+	private static final double POS_RANGE = 391; // 554 top
+	public static final double POT_TOLERANCE = 18;
+	private static final double INCH_RANGE  = 44.375; // 6 and 1/8 in from floor (corresponds to a pot value of 84) - 50.5 in
+	
+	private static final double LIFT_DEADBAND = 0.5;
+	
+	private double pidOutputMin, pidOutputMinNormal = -0.2, pidOutputMax, pidOutputMaxNormal = 0.5;
+	
+	private double
 		kP	= 0.05,
 		kI	= 0.00,
 		kD	= 0.00;
@@ -40,6 +50,7 @@ public class Clapper {
 		kP_4_TOTES_UP = 0.065,
 		kP_5_TOTES_UP = 0.07,
 		kP_6_TOTES_UP = 0.075;
+	
 	public static final double //these are not tested at all whatsoever
 		kP_1_TOTES_DOWN = 0.05,
 		kP_2_TOTES_DOWN = 0.05,
@@ -47,47 +58,35 @@ public class Clapper {
 		kP_4_TOTES_DOWN = 0.04,
 		kP_5_TOTES_DOWN = 0.03,
 		kP_6_TOTES_DOWN = 0.02;
-										
-	public static final double LOWEST_POS = 153; 	// 163
-	private static final double POS_RANGE = 391; // 554 top
-	public static final double POT_TOLERANCE = 18;
-	private static final double INCH_RANGE  = 44.375; // 6 and 1/8 in from floor (corresponds to a pot value of 84) - 50.5 in
-	 
-	private DigitalInput toteDetectorLimitSwitch, bottomSafetyLimitSwitch;
-	
-	private double lastHeight;
 	
 	public static final double 
-		ABOVE_RATCHET_SETPOINT		= LOWEST_POS + 170,
-		DROP_OFF_POS_ON_ONE_TOTE	= ABOVE_RATCHET_SETPOINT,
-		ON_RATCHET_SETPOINT			= LOWEST_POS + 125, 
-		HOLDING_TOTE_SETPOINT		= LOWEST_POS + 100, //TODO: find value
-		LOADING_SETPOINT			= LOWEST_POS + 2,
-		COOP_ZERO_TOTE_SETPOINT		= LOWEST_POS + 77, 
-		COOP_ONE_TOTE_SETPOINT		= LOWEST_POS + 175, 
-		COOP_TWO_TOTES_SETPOINT		= LOWEST_POS + 275,
-		COOP_THREE_TOTES_SETPOINT	= LOWEST_POS + 370, 
-		SCORING_PLATFORM_HEIGHT		= LOWEST_POS + 25,
+		ABOVE_RATCHET_SETPOINT									= LOWEST_POS + 170,
+		DROP_OFF_POS_ON_ONE_TOTE								= ABOVE_RATCHET_SETPOINT,
+		ON_RATCHET_SETPOINT										= LOWEST_POS + 125, 
+		HOLDING_TOTE_SETPOINT									= LOWEST_POS + 100, //TODO: find value
+		LOADING_SETPOINT										= LOWEST_POS + 2,
+		COOP_ZERO_TOTE_SETPOINT									= LOWEST_POS + 77, 
+		COOP_ONE_TOTE_SETPOINT									= LOWEST_POS + 175, 
+		COOP_TWO_TOTES_SETPOINT									= LOWEST_POS + 275,
+		COOP_THREE_TOTES_SETPOINT								= LOWEST_POS + 370, 
+		SCORING_PLATFORM_HEIGHT									= LOWEST_POS + 25,
 		LIFT_BOTTOM_TOTE_TO_RAISE_STACK_OFF_RATCHET_SETPOINT	= LOWEST_POS + 50,
-		FIX_CONTAINER_IN_CLAW_POS	= LOWEST_POS + 125;
+		FIX_CONTAINER_IN_CLAW_POS								= LOWEST_POS + 125;
 	
-	private static final double LIFT_DEADBAND = 0.5;
-	private double pidOutputMin, pidOutputMinNormal = -0.2, pidOutputMax, pidOutputMaxNormal = 0.5;
-
-	public Clapper(VictorSP clapperLifter1, VictorSP clapperLifter2,
-			DoubleSolenoid clapperActuator, AnalogPotentiometer pot, 
+	public Clapper(CombinedVictorSP clapperLifter, DoubleSolenoid clapperActuator, AnalogPotentiometer pot, 
 			DigitalInput toteDetectorLimitSwitch, DigitalInput bottomSafetyLimitSwitch) {
 
-		this.clapperLifter			= new CombinedVictorSP(clapperLifter1, clapperLifter2);
+		this.clapperLifter			= clapperLifter; 
 		this.clapperActuator		= clapperActuator;
-//		this.pot					= pot;
 		
 		this.potScaled				= new ScaledPot(pot);
 		
 		this.clapperPID = new PIDController(kP, kI, kD, potScaled, clapperLifter);
 		this.clapperPID.setAbsoluteTolerance(POT_TOLERANCE);
+		
 		pidOutputMin = pidOutputMinNormal;
 		pidOutputMax = pidOutputMaxNormal;
+		
 		this.clapperPID.setOutputRange(pidOutputMin, pidOutputMax); // positive is up
 		
 		this.automatic				= false;
@@ -103,13 +102,13 @@ public class Clapper {
 	public Clapper(int clapperLifter1Port, int clapperLifter2Port, 
 			int clapperActuatorPort1, int clapperActuatorPort2, int potPort, int detectorswitchport, int safetyswitchport) {
 
-		this(new VictorSP(clapperLifter1Port), new VictorSP(clapperLifter2Port),
+		this(new CombinedVictorSP(new VictorSP(clapperLifter1Port), new VictorSP(clapperLifter2Port)),
 				new DoubleSolenoid(clapperActuatorPort1,clapperActuatorPort2),
 				new AnalogPotentiometer(potPort), new DigitalInput(detectorswitchport), new DigitalInput(safetyswitchport));
 	} 
 	
 	public double getChangeInHeightInInches() {
-		return ((potScaled.pidGet() - lastHeight)/(POS_RANGE))*INCH_RANGE; 
+		return ((potScaled.pidGet() - lastHeight) / (POS_RANGE)) * INCH_RANGE; 
 	}
 	
 	public void updateLastHeight() {
@@ -120,10 +119,6 @@ public class Clapper {
 	}
 	
 	public void setPID(double kP, double kI, double kD) {
-//		this.kP = kP;
-//		this.kI = kI;
-//		this.kD = kD;
-		
 		clapperPID.setPID(kP, kI, kD);
 	}
 	
@@ -132,7 +127,6 @@ public class Clapper {
 	}
 
 	public void setkP(double kP) {
-		//this.kP = kP;
 		clapperPID.setPID(kP, clapperPID.getI(), clapperPID.getD());
 	}
 
@@ -141,9 +135,7 @@ public class Clapper {
 	}
 
 	public void setkI(double kI) {
-		//this.kI = kI;
 		clapperPID.setPID(clapperPID.getP(), kI, clapperPID.getD());
-
 	}
 
 	public double getkD() {
@@ -151,7 +143,6 @@ public class Clapper {
 	}
 
 	public void setkD(double kD) {
-		//this.kD = kD;
 		clapperPID.setPID(clapperPID.getP(), clapperPID.getI(), kD);
 	}
 
@@ -181,7 +172,6 @@ public class Clapper {
 	public boolean isOpen() {
 		return open;
 	}
-
 	
 	public double getPercentHeight() {
 		return (potScaled.pidGet() - LOWEST_POS)/POS_RANGE;
@@ -189,7 +179,7 @@ public class Clapper {
 	
 	public double getInchHeight() {
 		// TODO: Test
-		return(potScaled.pidGet() - LOWEST_POS)/(POS_RANGE)*INCH_RANGE + 6.125;
+		return(potScaled.pidGet() - LOWEST_POS) / (POS_RANGE) * INCH_RANGE + 6.125;
 	}
 	/**
 	 * Sets the claw to automatic control, PID will control the winch, moveManually will not function
@@ -232,11 +222,11 @@ public class Clapper {
 //			return; 
 		
 		//double adjustedSpeed = ThresholdHandler.handleThreshold(speed, LIFT_DEADBAND)/2;
-		if (speed > 1){
+		if (speed > 1)
 			speed = 1;
-		} else if (speed < -1){
+		else if (speed < -1)
 			speed = -1;
-		}
+		
 		
 		//System.out.println("in lift manually, adjustSpeed is " + adjustedSpeed);
 		clapperLifter.set(speed);
@@ -274,19 +264,19 @@ public class Clapper {
 	
 	public void updateToteCount( int toteCount )
 	{
-		if(toteCount == 1)
+		if (toteCount == 1)
 			setPID(kP_1_TOTES_UP, kI, kD);
-		else if(toteCount == 2)
+		else if (toteCount == 2)
 			setPID(kP_2_TOTES_UP, kI, kD);
-		else if(toteCount == 3)
+		else if (toteCount == 3)
 			setPID(kP_3_TOTES_UP, kI, kD);
-		else if(toteCount == 4)
+		else if (toteCount == 4)
 			setPID(kP_4_TOTES_UP, kI, kD);
-		else if(toteCount == 5)
+		else if (toteCount == 5)
 			setPID(kP_5_TOTES_UP, kI, kD);
 		
-		pidOutputMin = pidOutputMinNormal + .02*toteCount;
-		pidOutputMax = pidOutputMaxNormal + .05*toteCount;
+		pidOutputMin = pidOutputMinNormal + .02 * toteCount;
+		pidOutputMax = pidOutputMaxNormal + .05 * toteCount;
 		this.clapperPID.setOutputRange(pidOutputMin, pidOutputMax);
 	}
 }

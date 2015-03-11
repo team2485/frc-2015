@@ -4,6 +4,9 @@ import org.usfirst.frc.team2485.auto.SequencedItem;
 import org.usfirst.frc.team2485.robot.Robot;
 import org.usfirst.frc.team2485.subsystems.Claw;
 
+/**
+ * @author Anoushka Bose
+ */
 public class MoveClawRelativeToClapper implements SequencedItem {
 
 	private double clawSetpoint;

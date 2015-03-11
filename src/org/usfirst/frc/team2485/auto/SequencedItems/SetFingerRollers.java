@@ -3,6 +3,10 @@ package org.usfirst.frc.team2485.auto.SequencedItems;
 import org.usfirst.frc.team2485.auto.SequencedItem;
 import org.usfirst.frc.team2485.robot.Robot;
 
+/**
+ * @author Patrick Wamsley
+ */
+
 public class SetFingerRollers implements SequencedItem {
 
 	public static final int INTAKE = 0, REVERSE = 1, OFF = 2, LEFT = 3, RIGHT = 4; 

@@ -3,6 +3,9 @@ package org.usfirst.frc.team2485.auto.SequencedItems;
 import org.usfirst.frc.team2485.auto.SequencedItem;
 import org.usfirst.frc.team2485.robot.Robot;
 
+/**
+ * @author Aidan Fay
+ */
 public class ResetCommandeerer implements SequencedItem{
 
 	@Override

@@ -3,6 +3,10 @@ package org.usfirst.frc.team2485.auto.SequencedItems;
 import org.usfirst.frc.team2485.auto.SequencedItem;
 import org.usfirst.frc.team2485.robot.Robot;
 
+/**
+ * @author Ben Clark
+ */
+
 public class SetFingersPos implements SequencedItem {
 
 	private boolean finished; 
@@ -16,7 +20,7 @@ public class SetFingersPos implements SequencedItem {
 	@Override
 	public void run() {
 		if (!finished) {
-			Robot.fingers.setFingerPosition(pos);
+			Robot.fingers.setFingerPosition(pos); //error checking done in setFingerPosition()
 			finished = true; 
 		}
 	}

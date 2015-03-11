@@ -1,9 +1,11 @@
 package org.usfirst.frc.team2485.auto.SequencedItems;
 
-import java.util.concurrent.SynchronousQueue;
-
 import org.usfirst.frc.team2485.auto.SequencedItem;
 import org.usfirst.frc.team2485.robot.Robot;
+
+/**
+ * @author Patrick Wamsley
+ */
 
 public class DriveStraightLowAcceleration implements SequencedItem {
 	

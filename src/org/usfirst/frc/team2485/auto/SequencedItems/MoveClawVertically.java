@@ -4,6 +4,10 @@ import org.usfirst.frc.team2485.auto.SequencedItem;
 import org.usfirst.frc.team2485.robot.Robot;
 import org.usfirst.frc.team2485.subsystems.Claw;
 
+/**
+ * @author Patrick Wamsley
+ */
+
 public class MoveClawVertically implements SequencedItem {
 	
 	private boolean finished = false; 
