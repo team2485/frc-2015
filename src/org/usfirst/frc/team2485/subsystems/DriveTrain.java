@@ -2,7 +2,6 @@
 package org.usfirst.frc.team2485.subsystems;
 
 import org.usfirst.frc.com.kauailabs.nav6.frc.IMU;
-import org.usfirst.frc.com.kauailabs.nav6.frc.IMUAdvanced;
 import org.usfirst.frc.team2485.util.CombinedVictorSP;
 import org.usfirst.frc.team2485.util.DualEncoder;
 import org.usfirst.frc.team2485.util.DummyOutput;
@@ -10,10 +9,9 @@ import org.usfirst.frc.team2485.util.ThresholdHandler;
 
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.PIDController;
-import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.VictorSP;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * @author Anoushka Bose
@@ -25,6 +23,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class DriveTrain {
 
 	private CombinedVictorSP leftDrive, rightDrive, centerDrive; 
+	private VictorSP leftDrive1, rightDrive1, centerDrive1;
+	private Talon leftDrive2, rightDrive2, centerDrive2;
 	private Solenoid suspension;
 	private DualEncoder dualEncoder;
 	private Encoder centerEnc;
@@ -123,12 +123,22 @@ public class DriveTrain {
 		}
 	}
 
+	public DriveTrain(VictorSP leftDrive1, Talon leftDrive2, VictorSP rightDrive1, Talon rightDrive2, 
+			VictorSP centerDrive1, Talon centerDrive2) {
+		
+		this.leftDrive1 		= leftDrive1; 
+		this.leftDrive2			= leftDrive2;
+		this.rightDrive1		= rightDrive1;
+		this.rightDrive2		= rightDrive2;
+		this.centerDrive1		= centerDrive1;
+		this.centerDrive2		= centerDrive2;
+	}
+	
 	public void warlordDrive(double translateX, double translateY, double rotation) {
 		
 		translateX = ThresholdHandler.deadbandAndScale(translateX, TRANSLATE_X_DEADBAND, 0, 1); //TODO:  min prob wont be zero. 
 		translateY = -ThresholdHandler.deadbandAndScale(translateY, TRANSLATE_Y_DEADBAND, 0, 1);
 		rotation   =  ThresholdHandler.deadbandAndScale(rotation, ROTATION_DEADBAND, 0, 1);
-		
 		
 		if (slowStrafeOnlyMode) {
 			translateY = 0; 
@@ -294,12 +304,15 @@ public class DriveTrain {
 	 * @param rightOutput
 	 */
 	public void setLeftRight(double leftOutput, double rightOutput) {
-		leftDrive.set(leftOutput * driveSpeed);
-		rightDrive.set(-rightOutput * driveSpeed);
+		leftDrive1.set(leftOutput * driveSpeed);
+		leftDrive2.set(leftOutput * driveSpeed);
+		rightDrive1.set(-rightOutput * driveSpeed);
+		rightDrive2.set(-rightOutput * driveSpeed);
 	}
 
 	private void setCenterWheel(double val){
-		centerDrive.set(val * driveSpeed);
+		centerDrive1.set(val * driveSpeed);
+		centerDrive2.set(val * driveSpeed);
 	}
 
 	/**

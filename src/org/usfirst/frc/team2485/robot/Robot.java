@@ -4,7 +4,13 @@ package org.usfirst.frc.team2485.robot;
 import org.usfirst.frc.com.kauailabs.nav6.frc.IMUAdvanced;
 import org.usfirst.frc.team2485.auto.Sequencer;
 import org.usfirst.frc.team2485.auto.SequencerFactory;
-import org.usfirst.frc.team2485.subsystems.*;
+import org.usfirst.frc.team2485.subsystems.Clapper;
+import org.usfirst.frc.team2485.subsystems.Claw;
+import org.usfirst.frc.team2485.subsystems.ContainerCommandeerer;
+import org.usfirst.frc.team2485.subsystems.DriveTrain;
+import org.usfirst.frc.team2485.subsystems.Fingers;
+import org.usfirst.frc.team2485.subsystems.RatchetSystem;
+import org.usfirst.frc.team2485.subsystems.Strongback;
 import org.usfirst.frc.team2485.util.CombinedVictorSP;
 import org.usfirst.frc.team2485.util.Controllers;
 import org.usfirst.frc.team2485.util.DualEncoder;
@@ -12,21 +18,17 @@ import org.usfirst.frc.team2485.util.ToteCounter;
 
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.livewindow.LiveWindow;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Relay;
-import edu.wpi.first.wpilibj.Relay.Direction;
-import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.VictorSP;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * @author Anoushka Bose
@@ -95,69 +97,70 @@ public class Robot extends IterativeRobot {
 	private Relay compressorSpike;
 	
     public void robotInit() {
+    	drive						= new DriveTrain(new VictorSP(11), new Talon(2), new VictorSP(3), new Talon(4), 
+    									new VictorSP(5), new Talon(6));
+//    	leftDrive     				= new CombinedVictorSP(new VictorSP(14), new VictorSP(15)); // talon and victorsp
+//    	rightDrive       			= new CombinedVictorSP(new VictorSP(0), new VictorSP(1)); // talon and victorsp
+//    	centerDrive		 			= new CombinedVictorSP(new VictorSP(11), new VictorSP(7)); // talon and victorsp
+//    	clapperLifter 				= new CombinedVictorSP(new VictorSP(13), new VictorSP(3)); 
+//    	strongbackMotor 			= new VictorSP(2); 
+//    	leftFingerBelt   	 		= new VictorSP(9); 
+//    	rightFingerBelt  	 		= new VictorSP(6); 
+//    	clawMotor					= new VictorSP(12);   	
     	
-    	leftDrive     				= new CombinedVictorSP(new VictorSP(14), new VictorSP(15)); 
-    	rightDrive       			= new CombinedVictorSP(new VictorSP(0), new VictorSP(1)); 
-    	centerDrive		 			= new CombinedVictorSP(new VictorSP(11), new VictorSP(7));
-    	clapperLifter 				= new CombinedVictorSP(new VictorSP(13), new VictorSP(3)); 
-    	strongbackMotor 			= new VictorSP(2); 
-    	leftFingerBelt   	 		= new VictorSP(9); 
-    	rightFingerBelt  	 		= new VictorSP(6); 
-    	clawMotor					= new VictorSP(12);   	
+//    	centerWheelSuspension		= new Solenoid(3);
+//    	ratchetLatchActuator 		= new Solenoid(2);
+//    	shortFingerActuators 		= new Solenoid(6);
+//    	longFingerActuators  		= new Solenoid(5);
+//    	commandeererSolenoidLeft	= new Solenoid(1, 2);
+//    	commandeererSolenoidRight	= new Solenoid(1, 0);
+//    	clapperActuator 			= new DoubleSolenoid(1,7);
+//    	clawSolenoid				= new DoubleSolenoid(0,4); 
     	
-    	centerWheelSuspension		= new Solenoid(3);
-    	ratchetLatchActuator 		= new Solenoid(2);
-    	shortFingerActuators 		= new Solenoid(6);
-    	longFingerActuators  		= new Solenoid(5);
-    	commandeererSolenoidLeft	= new Solenoid(1, 2);
-    	commandeererSolenoidRight	= new Solenoid(1, 0);
-    	clapperActuator 			= new DoubleSolenoid(1,7);
-    	clawSolenoid				= new DoubleSolenoid(0,4); 
-    	
-    	leftEnc = new Encoder(0, 1);
-    	rightEnc = new Encoder(4, 5);
+//    	leftEnc = new Encoder(0, 1);
+//    	rightEnc = new Encoder(4, 5);
 
-    	dualEncoderVelCalc = new DualEncoder(leftEnc, rightEnc);
+//    	dualEncoderVelCalc = new DualEncoder(leftEnc, rightEnc);
     	
-    	leftEnc.setDistancePerPulse(.0414221608);
-    	rightEnc.setDistancePerPulse(.0414221608); 
-    	
-    	try {
-    		byte update_rate_hz = 50;
-    		imu = new IMUAdvanced(new SerialPort(57600, SerialPort.Port.kUSB), update_rate_hz);
-    	} catch (Exception ex) {
-    		System.out.println("imu failed to init");
-    		ex.printStackTrace();
-    	}
-    	
-    	if (imu != null) 
-    		LiveWindow.addSensor("IMU", "Gyro", imu);
-    	
-    	clapperSafetyLimitSwitch = new DigitalInput(16); 
-    	toteDetectorLimitSwitch  = new DigitalInput(17);
-    	pressureSwitch			 = new DigitalInput(10); //TODO: find port
-    	
-    	clawPot		    		= new AnalogPotentiometer(0);
-    	clapperPot		   		= new AnalogPotentiometer(1);  
-
-//    	compressor = new Compressor();
-    	compressorSpike = new Relay(0);
-    	
-    	
-//    	camServer = CameraServer.getInstance();
-        //camServer.setQuality(50);
-        //the camera name (ex "cam0") can be found through the roborio web interface
-//        camServer.startAutomaticCapture("cam1");
-    	
+//    	leftEnc.setDistancePerPulse(.0414221608);
+//    	rightEnc.setDistancePerPulse(.0414221608); 
+//    	
+//    	try {
+//    		byte update_rate_hz = 50;
+//    		imu = new IMUAdvanced(new SerialPort(57600, SerialPort.Port.kUSB), update_rate_hz);
+//    	} catch (Exception ex) {
+//    		System.out.println("imu failed to init");
+//    		ex.printStackTrace();
+//    	}
+//    	
+//    	if (imu != null) 
+//    		LiveWindow.addSensor("IMU", "Gyro", imu);
+//    	
+//    	clapperSafetyLimitSwitch = new DigitalInput(16); 
+//    	toteDetectorLimitSwitch  = new DigitalInput(17);
+//    	pressureSwitch			 = new DigitalInput(10); //TODO: find port
+//    	
+//    	clawPot		    		= new AnalogPotentiometer(0);
+//    	clapperPot		   		= new AnalogPotentiometer(1);  
+//
+////    	compressor = new Compressor();
+//    	compressorSpike = new Relay(0);
+//    	
+//    	
+////    	camServer = CameraServer.getInstance();
+//        //camServer.setQuality(50);
+//        //the camera name (ex "cam0") can be found through the roborio web interface
+////        camServer.startAutomaticCapture("cam1");
+//    	
     	toteCounter = new ToteCounter(); 
     	drive = new DriveTrain(leftDrive, rightDrive, centerDrive, centerWheelSuspension, imu, leftEnc, rightEnc, centerEnc);
-       	clapper = new Clapper(clapperLifter, clapperActuator, clapperPot, toteDetectorLimitSwitch, clapperSafetyLimitSwitch);
-    	claw    = new Claw(clawMotor, clawSolenoid, clawPot);
-    	fingers = new Fingers(leftFingerBelt, rightFingerBelt, longFingerActuators, shortFingerActuators);
-    	ratchet = new RatchetSystem(ratchetLatchActuator);    	
-    	strongback = new Strongback(strongbackMotor, imu); 
-    	containerCommandeerer = new ContainerCommandeerer(commandeererSolenoidLeft, commandeererSolenoidRight);
-    	
+//       	clapper = new Clapper(clapperLifter, clapperActuator, clapperPot, toteDetectorLimitSwitch, clapperSafetyLimitSwitch);
+//    	claw    = new Claw(clawMotor, clawSolenoid, clawPot);
+//    	fingers = new Fingers(leftFingerBelt, rightFingerBelt, longFingerActuators, shortFingerActuators);
+//    	ratchet = new RatchetSystem(ratchetLatchActuator);    	
+//    	strongback = new Strongback(strongbackMotor, imu); 
+//    	containerCommandeerer = new ContainerCommandeerer(commandeererSolenoidLeft, commandeererSolenoidRight);
+//    	
         Controllers.set(new Joystick(0), new Joystick(1), new Joystick(2));
     	
     	System.out.println("initialized");
