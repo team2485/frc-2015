@@ -237,12 +237,12 @@ public class Robot extends IterativeRobot {
        	////////////////////////////////////////////
      
        	//controls changed 2/16/15 per driver request
-       	if (Controllers.getAxis(Controllers.XBOX_AXIS_RTRIGGER, .2f) > 0) 
+       	if (Controllers.getDriverControllerAxis(Controllers.XBOX_AXIS_RTRIGGER, .2f) > 0) 
        		drive.setForcedNoStrafeMode(true);
        	else 
        		drive.setForcedNoStrafeMode(false);
        	
-       	if (Controllers.getAxis(Controllers.XBOX_AXIS_LTRIGGER, .2f) > 0) 
+       	if (Controllers.getDriverControllerAxis(Controllers.XBOX_AXIS_LTRIGGER, .2f) > 0) 
        		drive.setSlowStrafeOnlyMode(true);
        	else 
        		drive.setSlowStrafeOnlyMode(false);
@@ -262,9 +262,9 @@ public class Robot extends IterativeRobot {
         if (Controllers.getButton(Controllers.XBOX_BTN_START))
         	drive.dropCenterWheel(true);
         
-        drive.warlordDrive(Controllers.getAxis(Controllers.XBOX_AXIS_LX, 0),
-				Controllers.getAxis(Controllers.XBOX_AXIS_LY, 0),
-    			Controllers.getAxis(Controllers.XBOX_AXIS_RX, 0));
+        drive.warlordDrive(Controllers.getDriverControllerAxis(Controllers.XBOX_AXIS_LX, 0),
+				Controllers.getDriverControllerAxis(Controllers.XBOX_AXIS_LY, 0),
+    			Controllers.getDriverControllerAxis(Controllers.XBOX_AXIS_RX, 0));
 
 		/////////////////////////////////////////////
 		//////////		TOTE COUNTER

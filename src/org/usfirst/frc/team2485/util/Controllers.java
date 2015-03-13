@@ -159,8 +159,8 @@ public final class Controllers {
 	 *
 	 * @see edu.wpi.first.wpilibj.Joystick
 	 */
-	public static float getAxis(int axis) {
-		return getAxis(axis, 0);
+	public static float getDriverControllerAxis(int axis) {
+		return getDriverControllerAxis(axis, 0);
 	}
 	
 	/**
@@ -180,7 +180,7 @@ public final class Controllers {
 	 *
 	 * @see edu.wpi.first.wpilibj.Joystick
 	 */
-	public static float getAxis(int axis, float inputThreshold) {
+	public static float getDriverControllerAxis(int axis, float inputThreshold) {
 		if (driverController == null)
 			throw new ControllerNullException("Driver controller is null");
 		if (axis < 0 || axis > 6)
