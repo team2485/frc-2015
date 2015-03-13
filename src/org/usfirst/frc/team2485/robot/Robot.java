@@ -223,9 +223,9 @@ public class Robot extends IterativeRobot {
 
     public void teleopPeriodic() {
     	
-    	if (Controllers.getButton(Controllers.XBOX_BTN_A)) 
+    	if (Controllers.getDriverControllerButton(Controllers.XBOX_BTN_A)) 
     		strongback.enablePid();
-    	else if (Controllers.getButton(Controllers.XBOX_BTN_B))
+    	else if (Controllers.getDriverControllerButton(Controllers.XBOX_BTN_B))
     		strongback.disablePid();
     	
     	strongback.checkSafety();
@@ -247,19 +247,19 @@ public class Robot extends IterativeRobot {
        	else 
        		drive.setSlowStrafeOnlyMode(false);
       
-       	if (Controllers.getButton(Controllers.XBOX_BTN_RBUMP)) 
+       	if (Controllers.getDriverControllerButton(Controllers.XBOX_BTN_RBUMP)) 
        		drive.setQuickTurn(true);
        	else
        		drive.setQuickTurn(false);		
        	
-        if (Controllers.getButton(Controllers.XBOX_BTN_LBUMP))
+        if (Controllers.getDriverControllerButton(Controllers.XBOX_BTN_LBUMP))
         	drive.setNormalSpeed(); 	
         else 
         	drive.setLowSpeed();
         
-        if (Controllers.getButton(Controllers.XBOX_BTN_BACK))
+        if (Controllers.getDriverControllerButton(Controllers.XBOX_BTN_BACK))
         	drive.dropCenterWheel(false); 
-        if (Controllers.getButton(Controllers.XBOX_BTN_START))
+        if (Controllers.getDriverControllerButton(Controllers.XBOX_BTN_START))
         	drive.dropCenterWheel(true);
         
         drive.warlordDrive(Controllers.getDriverControllerAxis(Controllers.XBOX_AXIS_LX, 0),
@@ -271,10 +271,10 @@ public class Robot extends IterativeRobot {
 		/////////////////////////////////////////////
         
         long currTime = System.currentTimeMillis();
-        if (Controllers.getButton(Controllers.XBOX_BTN_Y) && currTime - timeLastToteCountProcessed > TOTE_COUNT_MIN_DELAY) {
+        if (Controllers.getDriverControllerButton(Controllers.XBOX_BTN_Y) && currTime - timeLastToteCountProcessed > TOTE_COUNT_MIN_DELAY) {
         	toteCounter.addTote(); 
         	timeLastToteCountProcessed = currTime;
-        } else if (Controllers.getButton(Controllers.XBOX_BTN_X) && currTime - timeLastToteCountProcessed > TOTE_COUNT_MIN_DELAY) {
+        } else if (Controllers.getDriverControllerButton(Controllers.XBOX_BTN_X) && currTime - timeLastToteCountProcessed > TOTE_COUNT_MIN_DELAY) {
 //        	toteCounter.reset(); 
         	toteCounter.subtractTote(); //this is stupid
         	timeLastToteCountProcessed = currTime;

@@ -2,6 +2,7 @@ package org.usfirst.frc.team2485.util;
 
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
+
 import java.util.Hashtable;
 
 /**
@@ -210,7 +211,7 @@ public final class Controllers {
 	 *
 	 * @see edu.wpi.first.wpilibj.Joystick
 	 */
-	public static boolean getButton(int button) {
+	public static boolean getDriverControllerButton(int button) {
 		if (driverController == null)
 			throw new ControllerNullException("Primary controller is null");
 		if (button < 1 || button > 12)
@@ -286,7 +287,7 @@ public final class Controllers {
 	 * @see edu.wpi.first.wpilibj.Joystick
 	 */
 	public static float getDriverJoystickRightAxis(int axis) {
-		return getDriverJoystickLeftAxis(axis, 0);  
+		return getDriverJoystickRightAxis(axis, 0);  
 	}
 	
 	/**
@@ -485,7 +486,25 @@ public final class Controllers {
 		return operatorJoystick2.getRawButton(button);
 	}
 
+	public static boolean getDriverJoystickRightButton(int button) {
+		if (driverJoystickRight == null)
+			throw new ControllerNullException(); 
+		if (button < 1 || button > 22)
+			throw new IllegalArgumentException("Joystick button number ("
+					+ button + ") is invalid"); 
+		
+		return driverJoystickRight.getRawButton(button); 
+	}
 	
+	public static boolean getDriverJoysticLeftButton(int button) {
+		if (driverJoystickLeft == null)
+			throw new ControllerNullException(); 
+		if (button < 1 || button > 22)
+			throw new IllegalArgumentException("Joystick button number ("
+					+ button + ") is invalid"); 
+		
+		return driverJoystickLeft.getRawButton(button); 
+	}
 	/**
 	 * Returns a {@code ControllerDataDump} containing all input data from both
 	 * driver, primary operator, and secondary operator controllers.
