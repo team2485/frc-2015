@@ -300,8 +300,8 @@ public class Robot extends IterativeRobot {
 //    		if (clapper.isAutomatic())
 //    			clapper.setManual(); 
 //    	}
-       	if (Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_Y,(float) 0.1) != 0) {//if the joystick is moved
-    		clapper.liftManually((Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_Y,(float) 0.1))); //back is up
+       	if (Controllers.getOperatorJoystickOneAxis(Controllers.JOYSTICK_AXIS_Y,(float) 0.1) != 0) {//if the joystick is moved
+    		clapper.liftManually((Controllers.getOperatorJoystickOneAxis(Controllers.JOYSTICK_AXIS_Y,(float) 0.1))); //back is up
     	}
     	else if (clapper.isManual()){
     		//System.out.println("enabling clapper PID after manual operation");
@@ -313,16 +313,16 @@ public class Robot extends IterativeRobot {
 //       	
        	clapper.updateToteCount(toteCounter.getCount());
        	
-       	if (Controllers.getJoystickButton(1) && currTeleopSequence == null) {
+       	if (Controllers.getOperatorJoystickOneButton(1) && currTeleopSequence == null) {
        		currTeleopSequence = SequencerFactory.createToteIntakeRoutine();
        	}
-       	if (Controllers.getJoystickButton(2) && currTeleopSequence == null) {
+       	if (Controllers.getOperatorJoystickOneButton(2) && currTeleopSequence == null) {
     		currTeleopSequence = SequencerFactory.createToteIntakeNoHang();
     	}
        	
-       	if(Controllers.getJoystickButton(3))
+       	if(Controllers.getOperatorJoystickOneButton(3))
        		clapper.openClapper();
-       	if(Controllers.getJoystickButton(4))
+       	if(Controllers.getOperatorJoystickOneButton(4))
        		clapper.closeClapper();
        	
 
@@ -332,40 +332,40 @@ public class Robot extends IterativeRobot {
 		/////////////////////////////////////////////
 
        	//FINGERS, RATCHET, AND ONE CLAPPER SETPOINT (ONLY ENABLING A CLAPPER SETPOINT)
-       	if(Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_Z) > .7){
+       	if(Controllers.getOperatorJoystickOneAxis(Controllers.JOYSTICK_AXIS_Z) > .7){
        		fingers.rotateToteRight(.7);
-       	} else if(Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_Z) < -.7){
+       	} else if(Controllers.getOperatorJoystickOneAxis(Controllers.JOYSTICK_AXIS_Z) < -.7){
        		fingers.rotateToteLeft(.7);
-       	} else if(Controllers.getJoystickButton(5)){
+       	} else if(Controllers.getOperatorJoystickOneButton(5)){
        		fingers.dualIntake(1);
-    	} else if(Controllers.getJoystickButton(6)){
+    	} else if(Controllers.getOperatorJoystickOneButton(6)){
        		fingers.dualReverse(.75);
     	} else {
        		fingers.dualIntake(0); 
     	}
        	
-       	if (Controllers.getJoystickButton(7)) {
+       	if (Controllers.getOperatorJoystickOneButton(7)) {
        		//System.out.println("fingers should close now");
        		fingers.setFingerPosition(Fingers.CLOSED);
        	}
-       	if (Controllers.getJoystickButton(8)) {
+       	if (Controllers.getOperatorJoystickOneButton(8)) {
 //       		clapper.setSetpoint(Clapper.COOP_THREE_TOTES_SETPOINT); 
        		clapper.setSetpoint(Clapper.COOP_THREE_TOTES_SETPOINT);
        	}
-       	if (Controllers.getJoystickButton(9)) {
+       	if (Controllers.getOperatorJoystickOneButton(9)) {
 //       		System.out.println("fingers should go parallel");
 //       		fingers.setFingerPosition(Fingers.PARALLEL);
        		fingers.setFingerPosition(Fingers.PARALLEL);
        	}
-       	if (Controllers.getJoystickButton(10)) {
+       	if (Controllers.getOperatorJoystickOneButton(10)) {
 //       		System.out.println("hook should go back to normal");
        		ratchet.extendRatchet();
        	}
-       	if (Controllers.getJoystickButton(11)) {
+       	if (Controllers.getOperatorJoystickOneButton(11)) {
 //       		System.out.println("fingers should open");
        		fingers.setFingerPosition(Fingers.OPEN);
        	}
-       	if (Controllers.getJoystickButton(12)) {
+       	if (Controllers.getOperatorJoystickOneButton(12)) {
 //       		System.out.println("hook should release");
        		ratchet.retractRatchet();
        	}
@@ -380,32 +380,32 @@ public class Robot extends IterativeRobot {
        	///////////////////////////////////////////////////////////////////////
        	
        	
-       	if (Controllers.getSecondaryJoystickAxis(Controllers.JOYSTICK_AXIS_Y, .1f) != 0) {
-       		claw.liftManually(Controllers.getSecondaryJoystickAxis(Controllers.JOYSTICK_AXIS_Y));
+       	if (Controllers.getOperatorJoystickTwoAxis(Controllers.JOYSTICK_AXIS_Y, .1f) != 0) {
+       		claw.liftManually(Controllers.getOperatorJoystickTwoAxis(Controllers.JOYSTICK_AXIS_Y));
        	} else if (claw.isManual()) {
        		claw.setPID(Claw.kP_LOCK_POSITION_IN_PLACE, 0, 0);
     		claw.setSetpoint(claw.getPotValue());
        	}
        	
-       	if(Controllers.getSecondaryJoystickButton(1) && currTeleopSequence == null)
+       	if(Controllers.getOperatorJoystickTwoButton(1) && currTeleopSequence == null)
        		currTeleopSequence = SequencerFactory.createContainerPickupRoutine();
-       	if(Controllers.getSecondaryJoystickButton(2) && currTeleopSequence == null)
+       	if(Controllers.getOperatorJoystickTwoButton(2) && currTeleopSequence == null)
        		currTeleopSequence = SequencerFactory.createPrepareForContainerLiftRoutine();
        	
-    	if(Controllers.getSecondaryJoystickButton(3))
+    	if(Controllers.getOperatorJoystickTwoButton(3))
        		claw.open();
-       	if(Controllers.getSecondaryJoystickButton(4))
+       	if(Controllers.getOperatorJoystickTwoButton(4))
        		claw.close();
        	
-       	if (Controllers.getSecondaryJoystickButton(5) && currTeleopSequence == null) {
+       	if (Controllers.getOperatorJoystickTwoButton(5) && currTeleopSequence == null) {
        		currTeleopSequence = SequencerFactory.createContainerRightingRoutine();
        	}
        	
-       	if (Controllers.getSecondaryJoystickButton(6)) {
+       	if (Controllers.getOperatorJoystickTwoButton(6)) {
 //       		null so far
        	}
        	
-       	if(Controllers.getSecondaryJoystickButton(7)) {
+       	if(Controllers.getOperatorJoystickTwoButton(7)) {
        		claw.setPID(Claw.kP_LESS_POWER_ALLOWS_MORE_ERROR, Claw.kI, Claw.kD);
        		claw.setSetpoint(Claw.PLACE_ON_EXISTING_STACK_SIX_TOTES);
        	}
@@ -413,34 +413,34 @@ public class Robot extends IterativeRobot {
        	//////////////////////////////////////////////
 		//////////////////////////////////////////////
 		//////////////////////////////////////////////
-       	if(Controllers.getSecondaryJoystickButton(8) && currTeleopSequence == null) {
+       	if(Controllers.getOperatorJoystickTwoButton(8) && currTeleopSequence == null) {
 //       		teleopSequence = SequencerFactory.createTestPickupWithStrongbackTilt();
        	}
        	//////////////////////////////////////////////
 		//////////////////////////////////////////////
 		//////////////////////////////////////////////
        	
-       	if(Controllers.getSecondaryJoystickButton(9)) {
+       	if(Controllers.getOperatorJoystickTwoButton(9)) {
        		claw.setPID(Claw.kP_LESS_POWER_ALLOWS_MORE_ERROR, Claw.kI, Claw.kD);
        		claw.setSetpoint(Claw.PLACE_ON_EXISTING_STACK_FIVE_TOTES);
        	}
        	
-       	if(Controllers.getSecondaryJoystickButton(10) && currTeleopSequence == null) {
+       	if(Controllers.getOperatorJoystickTwoButton(10) && currTeleopSequence == null) {
        		currTeleopSequence = SequencerFactory.createDropToteStackRoutine(true);//totes on the ratchet and one underneath
        	}
        	
-       	if(Controllers.getSecondaryJoystickButton(11)) {
+       	if(Controllers.getOperatorJoystickTwoButton(11)) {
        		claw.setPID(Claw.kP_LESS_POWER_ALLOWS_MORE_ERROR, Claw.kI, Claw.kD);
        		claw.setSetpoint(Claw.PLACE_ON_EXISTING_STACK_FOUR_TOTES);
 //      		claw.setSetpoint(Claw.ONE_TOTE_RESTING);
        	}
        	
-       	if(Controllers.getSecondaryJoystickButton(12) && currTeleopSequence == null) {
+       	if(Controllers.getOperatorJoystickTwoButton(12) && currTeleopSequence == null) {
        		currTeleopSequence = SequencerFactory.createDropToteStackRoutine(false);//only totes on the ratchet
        	}
        		
-   		if ((Controllers.getJoystickAxis(Controllers.JOYSTICK_AXIS_THROTTLE) > 0) ||
-   				Controllers.getSecondaryJoystickAxis(Controllers.JOYSTICK_AXIS_THROTTLE) > 0) {
+   		if ((Controllers.getOperatorJoystickOneAxis(Controllers.JOYSTICK_AXIS_THROTTLE) > 0) ||
+   				Controllers.getOperatorJoystickTwoAxis(Controllers.JOYSTICK_AXIS_THROTTLE) > 0) {
    			//kill ALL THE THINGS@!#@#!!@@
    			if(currTeleopSequence != null) {
    				currTeleopSequence.clear();
