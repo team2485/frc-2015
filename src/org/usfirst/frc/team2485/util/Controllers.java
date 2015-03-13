@@ -6,9 +6,11 @@ import java.util.Hashtable;
 
 /**
  * This utility class assists in obtaining values accurately from operator
- * controls. Controller pointers must be configured before use using
- * {@code Controllers.set(driver, operator1, operator2)} or
- * {@code Controllers.set(driver, operator}.
+ * controls. Controller pointers must be configured before use using. 
+ * Any Controllers objects not being used should be set to null. <p>     
+ *  <code>Controllers.set(driver360, operator, null);</code> or <br>
+ *  <code>Controllers.set(driver360, operator1, operator2);</code>  or <br> 
+ *  <code>Controllers.set(driverRight, driverLeft, operator1, operator2);</code> </br> 
  *
  * @author Bryce Matsumori
  * @author Ben Clark
