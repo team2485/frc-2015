@@ -10,7 +10,7 @@ import java.util.Hashtable;
  * Any Controllers objects not being used should be set to null. <p>     
  *  <code>Controllers.set(driver360, operator, null);</code> or <br>
  *  <code>Controllers.set(driver360, operator1, operator2);</code>  or <br> 
- *  <code>Controllers.set(driverRight, driverLeft, operator1, operator2);</code> </br> 
+ *  <code>Controllers.set(driverRight, driverLeft, operator1, operator2);</code>  
  *
  * @author Bryce Matsumori
  * @author Ben Clark
