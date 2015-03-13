@@ -24,7 +24,7 @@ public class StrafeTo implements SequencedItem {
 
 	@Override
 	public double duration() {
-		return finished ? 0 : 4; //4 not tested 
+		return finished ? 0 : 2; //2 not tested 
 	}
 
 }

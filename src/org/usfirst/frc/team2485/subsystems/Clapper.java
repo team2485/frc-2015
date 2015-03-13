@@ -279,6 +279,10 @@ public class Clapper {
 		pidOutputMax = pidOutputMaxNormal + .05 * toteCount;
 		this.clapperPID.setOutputRange(pidOutputMin, pidOutputMax);
 	}
+
+	public boolean isMoving() {
+		return clapperLifter.isMoving(); 
+	}
 }
 
 	//  two belts for intake, pneumatic for finger, pneumatic for opens and closes whole intake, one pneumatic for open/closes 

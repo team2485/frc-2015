@@ -50,4 +50,8 @@ public class CombinedVictorSP implements SpeedController {
 
 	public void disable() {}
 
+	public boolean isMoving() {
+		return speedControllerList[0].get() > .05; 
+	}
+
 }

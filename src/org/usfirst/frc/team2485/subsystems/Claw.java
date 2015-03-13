@@ -25,12 +25,20 @@ public class Claw {
 	//kP Lock Position in Place is only used when going from manual mode to automatic mode and keep the
 	//claw in place.
 	
-	public static final double kP_LESS_POWER_ALLOWS_MORE_ERROR = 0.0025, kI = 0.00, kD = 0; // TODO: check kP BADLY
-	public static final double kP_LOCK_POSITION_IN_PLACE = 0.035;
 	private CombinedVictorSP winchMotor;
 	private DoubleSolenoid actuator;
 	private ScaledPot potScaled;
 	private DummyOutput dummyWinch;
+		
+	private PIDController elevationPID;
+	private boolean automatic = true;
+	
+	//for auto chasing the clapper  
+	public static final double kP_CHASE_CLAPPER = 0.05;
+	public static final int CHASE_TOLERANCE = 2;
+	
+	public static final double kP_LESS_POWER_ALLOWS_MORE_ERROR = 0.0025, kI = 0.00, kD = 0; // TODO: check kP BADLY
+	public static final double kP_LOCK_POSITION_IN_PLACE = 0.035;
 
 	private static final double LOWEST_POS    = 73; 	
 	private static final double PICKUP_POS	  = LOWEST_POS + 45;// top: 850 bottom: 112
@@ -70,10 +78,6 @@ public class Claw {
 	
 	// top of the claw: 870
 	// bottom of the claw: 118
-	
-	private PIDController elevationPID;
-	
-	private boolean automatic = true;
 
 	public Claw(VictorSP winchMotor, DoubleSolenoid actuator, AnalogPotentiometer pot) {
 		this.winchMotor = new CombinedVictorSP(winchMotor);
@@ -250,6 +254,10 @@ public class Claw {
 	public boolean isClawAboutToCollideWithRachet(double speedInput){
 		return ((getPotValue() < RATCHET_COLLISION + 150) && (getPotValue() > RATCHET_COLLISION) && 
 				(speedInput < 0) && Robot.ratchet.isExtended());
+	}
+	
+	public void setWinch(double input) {
+		winchMotor.set(input); 
 	}
 }
 
