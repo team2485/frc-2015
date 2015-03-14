@@ -326,7 +326,7 @@ public final class Controllers {
 	 */
 	public static float getOperatorJoystickOneAxis(int axis, float inputThreshold) {
 		if (operatorJoystick1 == null)
-			throw new ControllerNullException("Secondary controller is null");
+			throw new ControllerNullException("Primary operator controller is null");
 		if (axis < 0 || axis > 6)
 			throw new IllegalArgumentException("Joystick axis (" + axis
 					+ ") is invalid.");
