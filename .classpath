@@ -4,7 +4,7 @@
 	<classpathentry kind="var" path="wpilib" sourcepath="wpilib.sources"/>
 	<classpathentry kind="var" path="networktables" sourcepath="networktables.sources"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
-	<classpathentry kind="lib" path="C:/Users/2485/wpilib/java/current/lib/NetworkTables.jar"/>
 	<classpathentry kind="lib" path="build/jars/WPILib.jar"/>
+	<classpathentry kind="lib" path="build/jars/NetworkTables.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
