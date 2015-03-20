@@ -534,7 +534,7 @@ public class DriveTrain {
 	}
 
 	public void resetEncoders() {
-		dualEncoder.reset();
+		dualEncoder.reset(); 
 	}
 }
 
