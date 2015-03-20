@@ -11,12 +11,16 @@ import org.usfirst.frc.team2485.robot.Robot;
  */
 public class MoveClawConstantSpeed implements SequencedItem {
 	
+	private int speed;
+	
 	public MoveClawConstantSpeed(int speed) {
-		Robot.claw.liftManually(speed);
+		this.speed = speed;
 	}
 
 	@Override
-	public void run() {}
+	public void run() {
+		Robot.claw.liftManually(speed);
+	}
 
 	@Override
 	public double duration() {

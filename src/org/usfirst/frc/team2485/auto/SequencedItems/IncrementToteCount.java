@@ -17,11 +17,12 @@ public class IncrementToteCount implements SequencedItem {
 	}
 	
 	public IncrementToteCount() {
-		Robot.toteCounter.addTote(amount);
+		
 	}
 	
 	@Override
 	public void run() {
+		Robot.toteCounter.addTote(1);
 		done = true;
 	}
 

@@ -6,6 +6,7 @@ import org.usfirst.frc.team2485.robot.Robot;
 import org.usfirst.frc.team2485.util.IMURollPIDSource;
 
 import edu.wpi.first.wpilibj.PIDController;
+import edu.wpi.first.wpilibj.SpeedController;
 import edu.wpi.first.wpilibj.VictorSP;
 
 /**
@@ -17,7 +18,7 @@ public class Strongback {
 	//tilts back
 	
 	//serial port is the "tail" of the imu
-	private VictorSP leadScrew; 
+	private SpeedController leadScrew; 
 	private IMUAdvanced imu; 
 	public PIDController leadScrewImuPID;
 	private double rollSetpoint = 1.0; // THIS IS CHANGED
@@ -30,8 +31,8 @@ public class Strongback {
 		leadScrew_kI = 0.0, 
 		leadscrew_kD = 0.0; 
 		
-	public Strongback(VictorSP leadScrew, IMUAdvanced imu) { 
-		this.leadScrew = leadScrew; 
+	public Strongback(SpeedController strongbackMotor, IMUAdvanced imu) { 
+		this.leadScrew = strongbackMotor; 
 		this.imu = imu; 
 				
 		rollPIDSource = new IMURollPIDSource(this.imu,true); 

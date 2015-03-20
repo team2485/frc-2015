@@ -2,7 +2,8 @@
 package org.usfirst.frc.team2485.subsystems;
 
 import org.usfirst.frc.com.kauailabs.nav6.frc.IMU;
-import org.usfirst.frc.team2485.util.CombinedVictorSP;
+import org.usfirst.frc.team2485.robot.Robot;
+import org.usfirst.frc.team2485.util.CombinedSpeedController;
 import org.usfirst.frc.team2485.util.DualEncoder;
 import org.usfirst.frc.team2485.util.DummyOutput;
 import org.usfirst.frc.team2485.util.ThresholdHandler;
@@ -22,9 +23,7 @@ import edu.wpi.first.wpilibj.VictorSP;
  */
 public class DriveTrain {
 
-	private CombinedVictorSP leftDrive, rightDrive, centerDrive; 
-	private VictorSP leftDrive1, rightDrive1, centerDrive1;
-	private Talon leftDrive2, rightDrive2, centerDrive2;
+	private CombinedSpeedController leftDrive, rightDrive, centerDrive; 
 	private Solenoid suspension;
 	private DualEncoder dualEncoder;
 	private Encoder centerEnc;
@@ -42,7 +41,7 @@ public class DriveTrain {
 	private final double TRANSLATE_X_DEADBAND = 0.25;
 	private final double ROTATION_DEADBAND = 0.2;
 	
-	private boolean slowStrafeOnlyMode = false, forcedNoStrafeMode = false; 
+	private boolean strafeOnlyMode = false, slowStrafeOnlyMode = false, forcedNoStrafeMode = false; 
 	private boolean isQuickTurn = false;
 	
 	private final double  SENSITIVITY_LOW = 0.55, SENSITIVITY_HIGH = 0.85;
@@ -99,7 +98,7 @@ public class DriveTrain {
 	private static double MAX_DELTA_X = 0.02; 
 	private static double MAX_DELTA_Y_NORMAL = 0.05, MAX_DELTA_Y_DANGER = 0.025; 
 
-	public DriveTrain(CombinedVictorSP leftDrive, CombinedVictorSP rightDrive, CombinedVictorSP center, Solenoid suspension, 
+	public DriveTrain(CombinedSpeedController leftDrive, CombinedSpeedController rightDrive, CombinedSpeedController center, Solenoid suspension, 
 			IMU imu, Encoder leftEnc, Encoder rightEnc, Encoder centerEnc) {
 
 		this.leftDrive 		= leftDrive; 
@@ -122,25 +121,17 @@ public class DriveTrain {
 			strafePID.setAbsoluteTolerance(absTolerance_Enc_Strafe);
 		}
 	}
-
-	public DriveTrain(VictorSP leftDrive1, Talon leftDrive2, VictorSP rightDrive1, Talon rightDrive2, 
-			VictorSP centerDrive1, Talon centerDrive2) {
-		
-		this.leftDrive1 		= leftDrive1; 
-		this.leftDrive2			= leftDrive2;
-		this.rightDrive1		= rightDrive1;
-		this.rightDrive2		= rightDrive2;
-		this.centerDrive1		= centerDrive1;
-		this.centerDrive2		= centerDrive2;
-	}
 	
 	public void warlordDrive(double translateX, double translateY, double rotation) {
 		
-		translateX = ThresholdHandler.deadbandAndScale(translateX, TRANSLATE_X_DEADBAND, 0, 1); //TODO:  min prob wont be zero. 
-		translateY = -ThresholdHandler.deadbandAndScale(translateY, TRANSLATE_Y_DEADBAND, 0, 1);
-		rotation   =  ThresholdHandler.deadbandAndScale(rotation, ROTATION_DEADBAND, 0, 1);
+		translateX = ThresholdHandler.deadbandAndScale(translateX, TRANSLATE_X_DEADBAND, 0.1, 1); //TODO:  min prob wont be zero. 
+		translateY = -ThresholdHandler.deadbandAndScale(translateY, TRANSLATE_Y_DEADBAND, 0.1, 1);
+		rotation   =  ThresholdHandler.deadbandAndScale(rotation, ROTATION_DEADBAND, 0.1, 1);
 		
-		if (slowStrafeOnlyMode) {
+		if(strafeOnlyMode) {
+			translateY = 0;
+			rotation = 0;
+		} else if (slowStrafeOnlyMode) {
 			translateY = 0; 
 			translateX *= SLOW_STRAFE_SCALAR; 
 			rotation = 0; //no rotation if we only want to strafe
@@ -190,11 +181,11 @@ public class DriveTrain {
 		oldXInput = translateX;
 		oldYInput = translateY;
 
-		if (Math.abs(rotation) > 0.1) {
-			if (maintainingHeading) {
-				maintainingHeading = false; 
-				imuPID.disable(); 
-			}
+		if (Math.abs(rotation) >= 0.1) {
+//			if (maintainingHeading) {
+				maintainingHeading = false; 				 
+//			}
+			imuPID.disable();
 			rotationalDrive(translateY, rotation);
 		} else {
 			if (!maintainingHeading) {
@@ -211,9 +202,9 @@ public class DriveTrain {
 
 	public void rotationalDrive(double translateY, double rotation) {
 
-		dropCenterWheel(false);
+//		dropCenterWheel(false);
 		setCenterWheel(0);
-		oldXInput = 0; 
+		oldXInput = 0; //resets old strafing input (used in acc limiting) 
 
 		double rightDriveOutput, leftDriveOutput;
 		
@@ -249,11 +240,11 @@ public class DriveTrain {
 
 		double yOutput = 0, xOutput = 0; 
 
-		if (Math.abs(xInput) > 0)
-			dropCenterWheel(true);
-		else 
-			dropCenterWheel(false);
-		
+//		if (Math.abs(xInput) > 0)
+//			dropCenterWheel(true);
+//		else 
+//			dropCenterWheel(false);
+//		
 		
 		double pidOut = dummyImuOutput.get(); 
 
@@ -304,15 +295,22 @@ public class DriveTrain {
 	 * @param rightOutput
 	 */
 	public void setLeftRight(double leftOutput, double rightOutput) {
-		leftDrive1.set(leftOutput * driveSpeed);
-		leftDrive2.set(leftOutput * driveSpeed);
-		rightDrive1.set(-rightOutput * driveSpeed);
-		rightDrive2.set(-rightOutput * driveSpeed);
+		double scalar = driveSpeed + 0.05*Robot.toteCounter.getCount();
+		
+		if(scalar > 1)
+			scalar = 1;
+		
+		leftDrive.set(leftOutput * scalar);
+		rightDrive.set(-rightOutput * scalar);
 	}
 
 	private void setCenterWheel(double val){
-		centerDrive1.set(val * driveSpeed);
-		centerDrive2.set(val * driveSpeed);
+		double scalar = driveSpeed + 0.05*Robot.toteCounter.getCount();
+		
+		if(scalar > 1)
+			scalar = 1;
+		
+		centerDrive.set(val * scalar);
 	}
 
 	/**
@@ -378,6 +376,7 @@ public class DriveTrain {
 
 	public void dropCenterWheel(boolean solValue) {
 		suspension.set(solValue);
+//		System.out.println("Center wheel: " + solValue);
 	}
 
 	public void printLog() {
@@ -447,7 +446,7 @@ public class DriveTrain {
 	 */
 	public boolean driveTo(double inches) {
 
-		if(driveStraightPID == null)
+		if (driveStraightPID == null)
 			throw new IllegalStateException("Attempting to driveTo but no PID controller");
 
 		if (!driveStraightPID.isEnable()) {
@@ -457,7 +456,7 @@ public class DriveTrain {
 			driveStraightPID.setSetpoint(inches);
 		}
 
-		if(imuPID != null && !imuPID.isEnable()) {
+		if (imuPID != null && !imuPID.isEnable()) {
 			setImuForDrivingStraight();
 			imuPID.setSetpoint(imu.getYaw());
 			//			System.out.println("enabling IMU PID in driveTo");
@@ -469,7 +468,7 @@ public class DriveTrain {
 		double rightOutput = encoderOutput;
 
 		double imuOutput = 0.0;
-		if(imuPID != null)
+		if (imuPID != null)
 			imuOutput = dummyImuOutput.get();
 
 
@@ -512,16 +511,30 @@ public class DriveTrain {
 	//		return false;
 	//	}
 
+	public void setStrafeOnlyMode(boolean b) {
+		strafeOnlyMode = b; 
+	}
+	
 	public void setSlowStrafeOnlyMode(boolean b) {
 		slowStrafeOnlyMode = b; 
 	}
 	
 	public void setForcedNoStrafeMode(boolean b) {
 		forcedNoStrafeMode = b; 
+		dropCenterWheel(!b);
+		
+    	if(b) 
+    		Robot.strongback.enablePid();
+    	else
+    		Robot.strongback.disablePid();
 	}
 
 	public void setOutputRange(double min, double max) {
 		driveStraightPID.setOutputRange(min, max);
+	}
+
+	public void resetEncoders() {
+		dualEncoder.reset();
 	}
 }
 

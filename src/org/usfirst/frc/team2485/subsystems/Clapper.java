@@ -1,6 +1,6 @@
 package org.usfirst.frc.team2485.subsystems;
 
-import org.usfirst.frc.team2485.util.CombinedVictorSP;
+import org.usfirst.frc.team2485.util.CombinedSpeedController;
 import org.usfirst.frc.team2485.util.InvertedPot;
 import org.usfirst.frc.team2485.util.ScaledPot;
 
@@ -19,8 +19,8 @@ import edu.wpi.first.wpilibj.VictorSP;
 
 public class Clapper {
 
-	private CombinedVictorSP clapperLifter;
-	private DoubleSolenoid clapperActuator;
+	private CombinedSpeedController clapperLifter;
+	private Solenoid clapperActuator;
 	public PIDController clapperPID;
 	private ScaledPot potScaled;
 	private DigitalInput toteDetectorLimitSwitch, bottomSafetyLimitSwitch;
@@ -29,27 +29,30 @@ public class Clapper {
 	private boolean automatic;
 	private double lastHeight;
 
-	public static final double LOWEST_POS = 153; 	// 163
-	private static final double POS_RANGE = 391; // 554 top
+	public static final double LOWEST_POS = 125; 	// NEED TO CHECK ON VALKYRIE
+	public static final double HIGHEST_POS = 875;	// NEEDS TO CHECK ON VALKYRIE 
+	private static final double POT_RANGE = HIGHEST_POS - LOWEST_POS; 
 	public static final double POT_TOLERANCE = 18;
-	private static final double INCH_RANGE  = 44.375; // 6 and 1/8 in from floor (corresponds to a pot value of 84) - 50.5 in
+	private static final double INCH_RANGE  = 38.875; // 6 and 1/8 in from floor (corresponds to a pot value of 84) - 45 in
+	@SuppressWarnings("unused")
+	private static final double POTS_PER_INCH = POT_RANGE/INCH_RANGE;
 	
-	private static final double LIFT_DEADBAND = 0.5;
+//	private static final double LIFT_DEADBAND = 0.5;
 	
 	private double pidOutputMin, pidOutputMinNormal = -0.2, pidOutputMax, pidOutputMaxNormal = 0.5;
 	
-	private double
-		kP	= 0.05,
+	public static double
+		kP	= 0.0075, // SHOULD BE 0.05
 		kI	= 0.00,
 		kD	= 0.00;
 	
 	public static final double //these are not tested at all whatsoever
-		kP_1_TOTES_UP = 0.05,
-		kP_2_TOTES_UP = 0.055,
-		kP_3_TOTES_UP = 0.06,
-		kP_4_TOTES_UP = 0.065,
-		kP_5_TOTES_UP = 0.07,
-		kP_6_TOTES_UP = 0.075;
+		kP_1_TOTES_UP = 0.005,	//put an extra 0 in all of these...they were .05, .055, etc.
+		kP_2_TOTES_UP = 0.006,
+		kP_3_TOTES_UP = 0.007,
+		kP_4_TOTES_UP = 0.008,
+		kP_5_TOTES_UP = 0.009,
+		kP_6_TOTES_UP = 0.010;
 	
 	public static final double //these are not tested at all whatsoever
 		kP_1_TOTES_DOWN = 0.05,
@@ -60,11 +63,12 @@ public class Clapper {
 		kP_6_TOTES_DOWN = 0.02;
 	
 	public static final double 
-		ABOVE_RATCHET_SETPOINT									= LOWEST_POS + 170,
+		RIGHTING_CONTAINER_POS									= 395, 
+		ABOVE_RATCHET_SETPOINT									= LOWEST_POS + 335, // 430
 		DROP_OFF_POS_ON_ONE_TOTE								= ABOVE_RATCHET_SETPOINT,
 		ON_RATCHET_SETPOINT										= LOWEST_POS + 125, 
-		HOLDING_TOTE_SETPOINT									= LOWEST_POS + 100, //TODO: find value
-		LOADING_SETPOINT										= LOWEST_POS + 2,
+		HOLDING_TOTE_SETPOINT									= LOWEST_POS + 262, // 387
+		LOADING_SETPOINT										= LOWEST_POS + 5,
 		COOP_ZERO_TOTE_SETPOINT									= LOWEST_POS + 77, 
 		COOP_ONE_TOTE_SETPOINT									= LOWEST_POS + 175, 
 		COOP_TWO_TOTES_SETPOINT									= LOWEST_POS + 275,
@@ -73,11 +77,11 @@ public class Clapper {
 		LIFT_BOTTOM_TOTE_TO_RAISE_STACK_OFF_RATCHET_SETPOINT	= LOWEST_POS + 50,
 		FIX_CONTAINER_IN_CLAW_POS								= LOWEST_POS + 125;
 	
-	public Clapper(CombinedVictorSP clapperLifter, DoubleSolenoid clapperActuator, AnalogPotentiometer pot, 
+	public Clapper(CombinedSpeedController clapperLifter, Solenoid clapperActuator2, AnalogPotentiometer pot, 
 			DigitalInput toteDetectorLimitSwitch, DigitalInput bottomSafetyLimitSwitch) {
 
 		this.clapperLifter			= clapperLifter; 
-		this.clapperActuator		= clapperActuator;
+		this.clapperActuator		= clapperActuator2;
 		
 		this.potScaled				= new ScaledPot(pot);
 		
@@ -99,16 +103,32 @@ public class Clapper {
 		lastHeight = getPotValue(); 
 	}
 	
+	public Clapper(CombinedSpeedController clapperLifter, AnalogPotentiometer pot) {
+
+		this.clapperLifter			= clapperLifter; 		
+		this.potScaled				= new ScaledPot(pot);
+		
+		this.clapperPID = new PIDController(kP, kI, kD, potScaled, clapperLifter);
+		this.clapperPID.setAbsoluteTolerance(POT_TOLERANCE);
+		
+		pidOutputMin = pidOutputMinNormal;
+		pidOutputMax = pidOutputMaxNormal;
+		
+		this.clapperPID.setOutputRange(pidOutputMin, pidOutputMax); // positive is up
+		
+		lastHeight = getPotValue(); 
+	}
+	
 	public Clapper(int clapperLifter1Port, int clapperLifter2Port, 
 			int clapperActuatorPort1, int clapperActuatorPort2, int potPort, int detectorswitchport, int safetyswitchport) {
 
-		this(new CombinedVictorSP(new VictorSP(clapperLifter1Port), new VictorSP(clapperLifter2Port)),
-				new DoubleSolenoid(clapperActuatorPort1,clapperActuatorPort2),
+		this(new CombinedSpeedController(new VictorSP(clapperLifter1Port), new VictorSP(clapperLifter2Port)),
+				new Solenoid(clapperActuatorPort1,clapperActuatorPort2),
 				new AnalogPotentiometer(potPort), new DigitalInput(detectorswitchport), new DigitalInput(safetyswitchport));
 	} 
 	
 	public double getChangeInHeightInInches() {
-		return ((potScaled.pidGet() - lastHeight) / (POS_RANGE)) * INCH_RANGE; 
+		return ((potScaled.pidGet() - lastHeight) / (POT_RANGE)) * INCH_RANGE; 
 	}
 	
 	public void updateLastHeight() {
@@ -160,26 +180,28 @@ public class Clapper {
 	}
 	
 	public void openClapper() {
-		clapperActuator.set(DoubleSolenoid.Value.kReverse);
+		clapperActuator.set(true);
+//		clapperActuator.set(DoubleSolenoid.Value.kReverse);
 		open = true;
 	}
 
 	public void closeClapper() {
-		clapperActuator.set(DoubleSolenoid.Value.kForward);
+		clapperActuator.set(false);
+//		clapperActuator.set(DoubleSolenoid.Value.kForward);
 		open = false;
 	}
 
 	public boolean isOpen() {
-		return open;
+		return clapperActuator.get();
 	}
 	
 	public double getPercentHeight() {
-		return (potScaled.pidGet() - LOWEST_POS)/POS_RANGE;
+		return (potScaled.pidGet() - LOWEST_POS)/POT_RANGE;
 	}
 	
 	public double getInchHeight() {
 		// TODO: Test
-		return(potScaled.pidGet() - LOWEST_POS) / (POS_RANGE) * INCH_RANGE + 6.125;
+		return(potScaled.pidGet() - LOWEST_POS) / (POT_RANGE) * INCH_RANGE + 6.125;
 	}
 	/**
 	 * Sets the claw to automatic control, PID will control the winch, moveManually will not function
@@ -211,6 +233,9 @@ public class Clapper {
 		return !automatic;
 	}
 	
+	public boolean isMoving() {
+		return clapperLifter.isMoving(); 
+	}
 	/*
 	 * Assuming that a positive speed moves the clapper down
 	 */

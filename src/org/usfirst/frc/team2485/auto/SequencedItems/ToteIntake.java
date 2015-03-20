@@ -17,8 +17,8 @@ public class ToteIntake implements SequencedItem {
 	
 	@Override
 	public void run() {
-		Robot.fingers.dualIntake(1);
-		finished = Robot.clapper.toteDetected(); 
+		Robot.rollers.intakeTote(1);
+//		finished = Robot.clapper.toteDetected(); 
 	}
 
 	@Override

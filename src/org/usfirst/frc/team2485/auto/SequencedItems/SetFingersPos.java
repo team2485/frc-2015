@@ -20,7 +20,7 @@ public class SetFingersPos implements SequencedItem {
 	@Override
 	public void run() {
 		if (!finished) {
-			Robot.fingers.setFingerPosition(pos); //error checking done in setFingerPosition()
+//			Robot.fingers.setFingerPosition(pos); //error checking done in setFingerPosition()
 			finished = true; 
 		}
 	}

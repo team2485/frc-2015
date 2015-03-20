@@ -6,13 +6,14 @@ import edu.wpi.first.wpilibj.VictorSP;
 /**
  * @author Ben Clark
  * @author Patrick Wamsley
+ * @author Anoushka Bose
  */
-public class CombinedVictorSP implements SpeedController {
+public class CombinedSpeedController implements SpeedController {
 
-	private VictorSP[] speedControllerList;
+	private SpeedController[] speedControllerList;
 	private double direction = 1;
 	
-	public CombinedVictorSP(VictorSP... speedControllerList) {
+	public CombinedSpeedController(SpeedController... speedControllerList) {
 		this.speedControllerList = speedControllerList;
 	}
 	
@@ -48,6 +49,10 @@ public class CombinedVictorSP implements SpeedController {
 		direction = isInverted ? -1 : 1; 
 	}
 
+	public boolean isMoving() {
+		return speedControllerList[0].get() > .05; 
+	}
+		
 	public void disable() {}
 
 }

@@ -14,7 +14,7 @@ public class SpitTote implements SequencedItem {
 	}
 	@Override
 	public void run() {
-		Robot.fingers.dualReverse(.3 + .04*Robot.toteCounter.getCount()); 
+		Robot.rollers.reverseTote(.3 + .04*Robot.toteCounter.getCount()); 
 	}
 
 	@Override

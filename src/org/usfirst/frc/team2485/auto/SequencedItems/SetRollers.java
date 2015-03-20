@@ -7,7 +7,7 @@ import org.usfirst.frc.team2485.robot.Robot;
  * @author Patrick Wamsley
  */
 
-public class SetFingerRollers implements SequencedItem {
+public class SetRollers implements SequencedItem {
 
 	public static final int INTAKE = 0, REVERSE = 1, OFF = 2, LEFT = 3, RIGHT = 4; 
 	private int type; 
@@ -16,7 +16,7 @@ public class SetFingerRollers implements SequencedItem {
 	
 //	private static int numTotes = 0; 
 	
-	public SetFingerRollers(int type, double timing, double speed) {
+	public SetRollers(int type, double timing, double speed) {
 		if (type == INTAKE || type == REVERSE || type == OFF || type == LEFT || type == RIGHT)
 			this.type = type;
 		else
@@ -29,18 +29,18 @@ public class SetFingerRollers implements SequencedItem {
 	@Override
 	public void run() {
 		
-		done = Robot.clapper.toteDetected();
+//		done = Robot.clapper.toteDetected();
 		
 		if (type == INTAKE)
-			Robot.fingers.dualIntake(speed); 
+			Robot.rollers.intakeTote(speed); 
 		else if (type == REVERSE) 
-			Robot.fingers.dualReverse(speed);
+			Robot.rollers.reverseTote(speed);
 		else if (type == OFF)
-			Robot.fingers.dualIntake(0); 
+			Robot.rollers.intakeTote(0); 
 		else if(type == LEFT)
-			Robot.fingers.rotateToteLeft(speed);
+			Robot.rollers.rotateToteClockwise(speed);
 		else if(type == RIGHT)
-			Robot.fingers.rotateToteRight(speed);
+			Robot.rollers.rotateToteCounterclockwise(speed);
 		else
 			throw new IllegalStateException("Finger rollers can only go intake, reverse, or off");
 	}
