@@ -233,9 +233,6 @@ public class Clapper {
 		return !automatic;
 	}
 	
-	public boolean isMoving() {
-		return clapperLifter.isMoving(); 
-	}
 	/*
 	 * Assuming that a positive speed moves the clapper down
 	 */
@@ -303,6 +300,10 @@ public class Clapper {
 		pidOutputMin = pidOutputMinNormal + .02 * toteCount;
 		pidOutputMax = pidOutputMaxNormal + .05 * toteCount;
 		this.clapperPID.setOutputRange(pidOutputMin, pidOutputMax);
+	}
+
+	public boolean isMoving() {
+		return clapperLifter.isMoving(); 
 	}
 }
 
