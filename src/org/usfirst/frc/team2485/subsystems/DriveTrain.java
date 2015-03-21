@@ -35,7 +35,7 @@ public class DriveTrain {
 		FAST_SPEED_RATING = 1.0,
 		SLOW_SPEED_RATING = 0.5;
 	
-	private double driveSpeed = SLOW_SPEED_RATING; //asked by drivers to have this setting
+	private double driveSpeed = FAST_SPEED_RATING; //changed from slow to normal - AB 3/21
 	
 	private final double TRANSLATE_Y_DEADBAND = 0.2;
 	private final double TRANSLATE_X_DEADBAND = 0.25;
@@ -83,7 +83,7 @@ public class DriveTrain {
 		strafeEncoder_Kd = 0.0;
 
 	public static double
-		driveStraightImu_Kp = 0.025, // old data?? seems stale - 0.05 - for floor work, 0.07 for bump (tentatively)
+		driveStraightImu_Kp = 0.05, // new - 3/21
 		driveStraightImu_Ki = 0.0,
 		driveStraightImu_Kd = 0.01; 
 
@@ -238,14 +238,7 @@ public class DriveTrain {
 
 	public void strafeDrive(double xInput, double yInput) {
 
-		double yOutput = 0, xOutput = 0; 
-
-//		if (Math.abs(xInput) > 0)
-//			dropCenterWheel(true);
-//		else 
-//			dropCenterWheel(false);
-//		
-		
+		double yOutput = 0, xOutput = 0; 		
 		double pidOut = dummyImuOutput.get(); 
 
 		/* Code for strafe driving at any angle

@@ -1,5 +1,6 @@
 package org.usfirst.frc.team2485.auto;
 
+import org.omg.Messaging.SyncScopeHelper;
 import org.usfirst.frc.team2485.auto.SequencedItems.ClampOutputRangeDriveStraightPID;
 import org.usfirst.frc.team2485.auto.SequencedItems.CloseClapper;
 import org.usfirst.frc.team2485.auto.SequencedItems.CloseClaw;
@@ -436,25 +437,33 @@ public class SequencerFactory {
 				new SequencedItem[] {
 						new SetClawPID(Claw.kP_LESS_POWER_ALLOWS_MORE_ERROR, Robot.claw.getI(), Robot.claw.getD()),
 						new RetractRatchet(),
-						new MoveClapperVertically(Clapper.LOADING_SETPOINT),
-						new IncrementToteCount(),
-						new SetClapperPIDByToteCount(),						
+						new IncrementToteCount(1),
+						new SequencedMultipleItem(
+								new MoveClapperVertically(Clapper.LOADING_SETPOINT),
+								new SetClapperPIDByToteCount(),
+								new RunRollers(0.3)), //new
 						new SequencedPause(0.1),
 						new SequencedMultipleItem(
 								new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
-								new MoveClawWithClapper(MoveClawWithClapper.UP)),
+								new MoveClawWithClapper(MoveClawWithClapper.UP),
+								new RunRollers(0.3)), //new
 						new ExtendRatchet(),
 						new MoveClawConstantSpeed(0),
-						new RunRollers(0.4), 
+						new RunRollers(0.4), //also why?? 
 						new SequencedPause(0.2),
-						new RunRollers(0),
+						new RunRollers(0), //why??
 						new SetClapperPID(0.01, 0, 0),
 						new SequencedMultipleItem(
+								new RunRollers(0.4), //new
 								new MoveClapperVertically(Clapper.HOLDING_TOTE_SETPOINT),
 								new MoveClawWithClapper(MoveClawWithClapper.DOWN)),
+								new SequencedPause(0.4), //new
 						new MoveClawConstantSpeed(0),
-						new SetClapperPIDByToteCount(),
-						new MoveClapperVertically(Clapper.LOADING_SETPOINT),
+						new SequencedMultipleItem(
+								new SetClapperPIDByToteCount(),
+								new MoveClapperVertically(Clapper.LOADING_SETPOINT),
+								new RunRollers(0.4)),
+						
 //						new SequencedPause(0.1) 
 					}
 				);

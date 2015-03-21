@@ -231,10 +231,10 @@ public class Robot extends IterativeRobot {
        	if (Controllers.getDriverRightJoystickButton(2)) 
        		rollers.reverseTote(.6);
        	else if (Controllers.getDriverRightJoystickButton(1)) 
-       		rollers.intakeTote(.6);
-       	else if (Controllers.getDriverRightJoystickButton(5))
+       		rollers.intakeTote(.75); //changed from 0.6 on 20 march
+       	else if (Controllers.getDriverRightJoystickButton(3))
        		rollers.rotateToteCounterclockwise(.6);
-       	else if (Controllers.getDriverRightJoystickButton(6))
+       	else if (Controllers.getDriverRightJoystickButton(4))
        		rollers.rotateToteClockwise(.6);
        	else
        		rollers.intakeTote(0);
@@ -271,9 +271,9 @@ public class Robot extends IterativeRobot {
        	if (Controllers.getOperatorRightJoystickButton(2) && currTeleopSequence == null) {
     	}
        	
-       	if (Controllers.getOperatorLeftJoystickButton(3))
+       	if (Controllers.getOperatorLeftJoystickButton(3) || Controllers.getDriverRightJoystickButton(5))
        		clapper.openClapper();
-       	if (Controllers.getOperatorLeftJoystickButton(4))
+       	if (Controllers.getOperatorLeftJoystickButton(4) || Controllers.getDriverRightJoystickButton(6))
        		clapper.closeClapper();
        	
        	if (Controllers.getOperatorLeftJoystickButton(7) && currTeleopSequence == null)

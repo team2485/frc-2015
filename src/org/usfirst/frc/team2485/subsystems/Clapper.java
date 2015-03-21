@@ -64,10 +64,10 @@ public class Clapper {
 	
 	public static final double 
 		RIGHTING_CONTAINER_POS									= 395, 
-		ABOVE_RATCHET_SETPOINT									= LOWEST_POS + 335, // 430
+		ABOVE_RATCHET_SETPOINT									= LOWEST_POS + 375, // 430, changed from 335 on 20 march because mechanical
 		DROP_OFF_POS_ON_ONE_TOTE								= ABOVE_RATCHET_SETPOINT,
-		ON_RATCHET_SETPOINT										= LOWEST_POS + 125, 
-		HOLDING_TOTE_SETPOINT									= LOWEST_POS + 262, // 387
+		ON_RATCHET_SETPOINT										= LOWEST_POS + 125, //changed from 125  
+		HOLDING_TOTE_SETPOINT									= LOWEST_POS + 351, // 387, changed from 262 on 20 mar bc mechanical
 		LOADING_SETPOINT										= LOWEST_POS + 5,
 		COOP_ZERO_TOTE_SETPOINT									= LOWEST_POS + 77, 
 		COOP_ONE_TOTE_SETPOINT									= LOWEST_POS + 175, 

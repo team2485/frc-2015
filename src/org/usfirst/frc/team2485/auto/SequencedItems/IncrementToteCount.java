@@ -22,7 +22,8 @@ public class IncrementToteCount implements SequencedItem {
 	
 	@Override
 	public void run() {
-		Robot.toteCounter.addTote(1);
+		Robot.toteCounter.addTote(amount);
+		System.out.println("Tote added. Amount was: " + amount);
 		done = true;
 	}
 

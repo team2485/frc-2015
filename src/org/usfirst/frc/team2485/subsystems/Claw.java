@@ -35,9 +35,9 @@ public class Claw {
 	private Solenoid actuator;
 	private ScaledPot potScaled; 
 	private DummyOutput dummyWinch;
-	
+	 
 	public static final double 
-						MANUAL_SAFETY_ABOVE_RACHET_POS 	= 339, //34.5	in
+						MANUAL_SAFETY_ABOVE_RACHET_POS 	= 408, //34.5	in
 						ONE_AND_TWO_TOTE_RESTING_POS	= 600, //56.5 	in 
 						TWO_TOTE_PLACEMENT_POS			= 389, //38.75	in
 						LOWEST_POS						= 120, //15.625 in
