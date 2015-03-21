@@ -1,17 +1,12 @@
 package org.usfirst.frc.team2485.auto;
 
-import org.omg.Messaging.SyncScopeHelper;
-import org.usfirst.frc.team2485.auto.SequencedItems.ClampOutputRangeDriveStraightPID;
 import org.usfirst.frc.team2485.auto.SequencedItems.CloseClapper;
 import org.usfirst.frc.team2485.auto.SequencedItems.CloseClaw;
-import org.usfirst.frc.team2485.auto.SequencedItems.DisableClawPID;
+import org.usfirst.frc.team2485.auto.SequencedItems.CommandeerContainerSequence;
 import org.usfirst.frc.team2485.auto.SequencedItems.DisableStrongbackPID;
-import org.usfirst.frc.team2485.auto.SequencedItems.DriveAtSetSpeed;
 import org.usfirst.frc.team2485.auto.SequencedItems.DriveStraight;
-import org.usfirst.frc.team2485.auto.SequencedItems.DriveStraightLowAcceleration;
 import org.usfirst.frc.team2485.auto.SequencedItems.ExtendRatchet;
 import org.usfirst.frc.team2485.auto.SequencedItems.IncrementToteCount;
-import org.usfirst.frc.team2485.auto.SequencedItems.CommandeerContainerSequence;
 import org.usfirst.frc.team2485.auto.SequencedItems.MoveClapperVertically;
 import org.usfirst.frc.team2485.auto.SequencedItems.MoveClawConstantSpeed;
 import org.usfirst.frc.team2485.auto.SequencedItems.MoveClawVertically;
@@ -24,13 +19,13 @@ import org.usfirst.frc.team2485.auto.SequencedItems.RunRollers;
 import org.usfirst.frc.team2485.auto.SequencedItems.SetClapperPID;
 import org.usfirst.frc.team2485.auto.SequencedItems.SetClapperPIDByToteCount;
 import org.usfirst.frc.team2485.auto.SequencedItems.SetClawPID;
-import org.usfirst.frc.team2485.auto.SequencedItems.SetRollers;
 import org.usfirst.frc.team2485.auto.SequencedItems.SetFingersPos;
+import org.usfirst.frc.team2485.auto.SequencedItems.SetRollers;
 import org.usfirst.frc.team2485.auto.SequencedItems.TiltStrongback;
+import org.usfirst.frc.team2485.auto.SequencedItems.ToteIntake;
 import org.usfirst.frc.team2485.robot.Robot;
 import org.usfirst.frc.team2485.subsystems.Clapper;
 import org.usfirst.frc.team2485.subsystems.Claw;
-import org.usfirst.frc.team2485.subsystems.ContainerCommandeerer;
 import org.usfirst.frc.team2485.subsystems.Fingers;
 
 public class SequencerFactory {
@@ -170,7 +165,8 @@ public class SequencerFactory {
 					new SetClawPID(Claw.kP_LESS_POWER_ALLOWS_MORE_ERROR, Robot.claw.getI(), Robot.claw.getD()),
 					new CloseClaw(),
 					new MoveClawVertically(Claw.ONE_AND_TWO_TOTE_RESTING_POS),
-					new DriveStraight(-60) //TODO: check this
+					new RotateToAngle(-90), 
+					new DriveStraight(-60)
 			});
 
 		}
@@ -317,7 +313,7 @@ public class SequencerFactory {
 			return null; 
 		
 		return new Sequencer(new SequencedItem[] {
-//				new DriveStraight(-3), 
+				new DriveStraight(-3), 
 				new CloseClapper(), 
 				new SequencedPause(.5), //probably not needed, but added this for testing
 				new MoveClapperVertically(Clapper.RIGHTING_CONTAINER_POS), 
@@ -435,37 +431,31 @@ public class SequencerFactory {
 	public static Sequencer createToteLiftRoutine() {
 		return new Sequencer(
 				new SequencedItem[] {
+						new IncrementToteCount(),
+						new SetClapperPIDByToteCount(),
 						new SetClawPID(Claw.kP_LESS_POWER_ALLOWS_MORE_ERROR, Robot.claw.getI(), Robot.claw.getD()),
 						new RetractRatchet(),
-						new IncrementToteCount(1),
-						new SequencedMultipleItem(
-								new MoveClapperVertically(Clapper.LOADING_SETPOINT),
-								new SetClapperPIDByToteCount(),
-								new RunRollers(0.3)), //new
-						new SequencedPause(0.1),
 						new SequencedMultipleItem(
 								new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
-								new MoveClawWithClapper(MoveClawWithClapper.UP),
-								new RunRollers(0.3)), //new
+								new MoveClawWithClapper(MoveClawWithClapper.UP)
+								), 
+						new SequencedMultipleItem(
+								new RunRollers(.6), 
+								new SequencedPause(.25)
+								),
+						new RunRollers(0), 
 						new ExtendRatchet(),
 						new MoveClawConstantSpeed(0),
-						new RunRollers(0.4), //also why?? 
-						new SequencedPause(0.2),
-						new RunRollers(0), //why??
 						new SetClapperPID(0.01, 0, 0),
 						new SequencedMultipleItem(
-								new RunRollers(0.4), //new
 								new MoveClapperVertically(Clapper.HOLDING_TOTE_SETPOINT),
-								new MoveClawWithClapper(MoveClawWithClapper.DOWN)),
-								new SequencedPause(0.4), //new
+								new MoveClawWithClapper(MoveClawWithClapper.DOWN)
+								),
+//						new SequencedPause(0.4), //new
 						new MoveClawConstantSpeed(0),
-						new SequencedMultipleItem(
-								new SetClapperPIDByToteCount(),
-								new MoveClapperVertically(Clapper.LOADING_SETPOINT),
-								new RunRollers(0.4)),
-						
-//						new SequencedPause(0.1) 
-					}
+						new SetClapperPIDByToteCount(),
+						new MoveClapperVertically(Clapper.LOADING_SETPOINT),
+				}
 				);
 	}
 	/*

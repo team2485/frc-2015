@@ -152,7 +152,7 @@ public class Robot extends IterativeRobot {
 //		  camServer.startAutomaticCapture("cam1");
 		//
 		toteCounter = new ToteCounter();
-		drive = new DriveTrain(leftDrive, rightDrive, centerDrive, centerWheelSuspension, imu, null, null, null);
+		drive = new DriveTrain(leftDrive, rightDrive, centerDrive, centerWheelSuspension, imu, leftEnc, rightEnc, null);
 		clapper = new Clapper(clapperLifter, clapperActuator, clapperPot, toteDetectorLimitSwitch, clapperSafetyLimitSwitch);
 		claw = new Claw(clawMotor, clawSolenoid, clawPot);
 		rollers = new Rollers(leftRoller, rightRoller);
@@ -204,10 +204,6 @@ public class Robot extends IterativeRobot {
 		/*
 		 * Drive train controls
 		 */
-    	drive.warlordDrive(Controllers.getDriverLeftJoystickAxis(Controllers.JOYSTICK_AXIS_X, 0),
-				Controllers.getDriverLeftJoystickAxis(Controllers.JOYSTICK_AXIS_Y, 0),
-    			Controllers.getDriverRightJoystickAxis(Controllers.JOYSTICK_AXIS_Z, 0));
-
        	if (Controllers.getDriverLeftJoystickButton(1)) 
        		drive.setForcedNoStrafeMode(true);
        	else if (Controllers.getDriverLeftJoystickButton(3)) 
@@ -224,6 +220,10 @@ public class Robot extends IterativeRobot {
         	drive.setNormalSpeed();
         else
         	drive.setLowSpeed();
+        
+        drive.warlordDrive(Controllers.getDriverLeftJoystickAxis(Controllers.JOYSTICK_AXIS_X, 0),
+				Controllers.getDriverLeftJoystickAxis(Controllers.JOYSTICK_AXIS_Y, 0),
+    			Controllers.getDriverRightJoystickAxis(Controllers.JOYSTICK_AXIS_Z, 0));
 
        	/*
        	 * Rollers Controls
@@ -231,7 +231,7 @@ public class Robot extends IterativeRobot {
        	if (Controllers.getDriverRightJoystickButton(2)) 
        		rollers.reverseTote(.6);
        	else if (Controllers.getDriverRightJoystickButton(1)) 
-       		rollers.intakeTote(.75); //changed from 0.6 on 20 march
+       		rollers.intakeTote(.7); //changed from 0.6 on 20 march
        	else if (Controllers.getDriverRightJoystickButton(3))
        		rollers.rotateToteCounterclockwise(.6);
        	else if (Controllers.getDriverRightJoystickButton(4))
@@ -276,7 +276,7 @@ public class Robot extends IterativeRobot {
        	if (Controllers.getOperatorLeftJoystickButton(4) || Controllers.getDriverRightJoystickButton(6))
        		clapper.closeClapper();
        	
-       	if (Controllers.getOperatorLeftJoystickButton(7) && currTeleopSequence == null)
+       	if (Controllers.getOperatorRightJoystickButton(5) && currTeleopSequence == null)
        		currTeleopSequence = SequencerFactory.createContainerRightingRoutine(); 
        		
        	
@@ -403,6 +403,10 @@ public class Robot extends IterativeRobot {
 
 	public void testPeriodic() {
 
+		claw.setSetpoint(Claw.ONE_AND_TWO_TOTE_RESTING_POS);
+		claw.elevationPID.enable(); 
+		System.out.println(claw.elevationPID.getError() + " power sent to motor: " + claw.elevationPID.get());
+		
 //		strongbackMotor.set(.3);
 //		leftRoller.set(1); 
 //		rightRoller.set(1); 

@@ -17,13 +17,13 @@ public class ToteIntake implements SequencedItem {
 	
 	@Override
 	public void run() {
-		Robot.rollers.intakeTote(1);
-//		finished = Robot.clapper.toteDetected(); 
+		Robot.rollers.intakeTote(0.75);
+//		finished = Robot.clapper.toteDetected(); // ADD THIS BACK
 	}
 
 	@Override
 	public double duration() {
-		return finished ? 0 : 2; 
+		return finished ? 0 : 0.25; // change this time 
 	}
 
 }

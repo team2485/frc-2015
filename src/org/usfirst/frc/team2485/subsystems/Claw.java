@@ -37,11 +37,11 @@ public class Claw {
 	private DummyOutput dummyWinch;
 	 
 	public static final double 
-						MANUAL_SAFETY_ABOVE_RACHET_POS 	= 408, //34.5	in
-						ONE_AND_TWO_TOTE_RESTING_POS	= 600, //56.5 	in 
-						TWO_TOTE_PLACEMENT_POS			= 389, //38.75	in
-						LOWEST_POS						= 120, //15.625 in
-						HIGHEST_POS						= 811; //74.5 	in
+						LOWEST_POS						= 38, //15.625 in
+						MANUAL_SAFETY_ABOVE_RACHET_POS 	= LOWEST_POS + 288, //34.5	in
+						ONE_AND_TWO_TOTE_RESTING_POS	= LOWEST_POS + 580, //56.5 	in 
+						TWO_TOTE_PLACEMENT_POS			= LOWEST_POS + 270, //38.75	in
+						HIGHEST_POS						= 727.5; //74.5 	in
 	
 //	private static final double LOWEST_POS    = 118; 	// 73 on Valkyrie
 //	private static final double PICKUP_POS	  = LOWEST_POS + 45;// top: 850 bottom: 112 FOR PRACTICE BOT: top: 35 bottom: 725
@@ -49,7 +49,7 @@ public class Claw {
 	public  static final double POT_TOLERANCE = 12;
 	private static final double INCH_RANGE    = 58.875; // 15.625 in from floor - 74.5 in
 	@SuppressWarnings("unused")
-	private static final double POTS_PER_INCH = POT_RANGE/INCH_RANGE;
+	public static final double POTS_PER_INCH = POT_RANGE/INCH_RANGE;
 //	
 //	private static final double LOADING_RESTING_OFFSET = 50, FIRST_LOADING_RESTING_OFFSET = 200; 
 //	

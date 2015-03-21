@@ -11,10 +11,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class MoveClawWithClapper implements SequencedItem {
 
-	private static final double CHASE_TOLERANCE = 5;
-	private static final double kP = 0.0025; 
+	private static final double kP = 0.0025,
+								slopeForOutputRamp = 0.6; 
 	private static final double 
-			DISTANCE_BETWEEN_CLAW_AND_CLAPPER_ONE_TOTE = 20, // 24.5 - first value, 
 			DISTANCE_BETWEEN_CLAW_AND_CLAPPER_STANDARD = 12.25, 
 			TOTE_OFFSET								   = 6.5; 
 	
@@ -41,33 +40,43 @@ public class MoveClawWithClapper implements SequencedItem {
 		 * Calculate error (sign matters) (desired - actual)
 		 * 
 		 */
-		if (toteCount == 0 || toteCount == 1 || toteCount == 2) {
+		if (toteCount == 0 || toteCount == 1 || toteCount == 2) { 
 			claw.setSetpoint(Claw.ONE_AND_TWO_TOTE_RESTING_POS);
 			return;
 		}
 	
 		claw.setManual();
 		
-		double idealDistance = (Robot.toteCounter.getCount() - 1) * DISTANCE_BETWEEN_CLAW_AND_CLAPPER_STANDARD + TOTE_OFFSET; 
+		double tempDistBuffer = 5;
 		
-		double error = idealDistance - (Robot.claw.getInchHeight() - Robot.clapper.getInchHeight()); 
+		double idealDistance = tempDistBuffer + (Robot.toteCounter.getCount() - 1) * DISTANCE_BETWEEN_CLAW_AND_CLAPPER_STANDARD + TOTE_OFFSET; 
 		
-		SmartDashboard.putNumber("claw with clapper error", error);
+		double actualDistance = Robot.claw.getInchHeight() - Robot.clapper.getInchHeight(); 
 		
-//		if (error <= CHASE_TOLERANCE) 
-//			claw.setWinch(0.1); //needs to stay there throughout the sequence. plus, clapper will move again it needs to keep chasing
-//		else
+		double error = idealDistance - actualDistance; 
+		
+		SmartDashboard.putNumber("Ideal distance: ", idealDistance);
+		SmartDashboard.putNumber("actual distance ", actualDistance);
 		
 		if (direction == UP) {
-			if (error < 0 || Math.abs(claw.getPotValue() - claw.HIGHEST_POS) < 10) 
-				claw.setWinch(0);
+			if (error < 0 || Math.abs(claw.getPotValue() - Claw.HIGHEST_POS) < Claw.POTS_PER_INCH * 2) {
+				double winchOutput = .8 + slopeForOutputRamp * error; 
+				if (winchOutput < 0 ||  Math.abs(claw.getPotValue() - Claw.HIGHEST_POS) < Claw.POTS_PER_INCH * 2)
+					winchOutput = 0; 
+				claw.setWinch(winchOutput); //might have to change to .1
+			}
 			else 
-				claw.setWinch(1);
+				claw.setWinch(.8);
+			
 		} else if (direction == DOWN) {
-			if (error < 0 && claw.getPotValue() > Claw.ONE_AND_TWO_TOTE_RESTING_POS) 
-				claw.setWinch(-1);
-			else
-				claw.setWinch(0); 
+			if (error < 0 && claw.getPotValue() > Claw.MANUAL_SAFETY_ABOVE_RACHET_POS) 
+				claw.setWinch(-.8);
+			else {
+				double winchOutput = -.8 + slopeForOutputRamp * error; 
+				if (winchOutput > 0)
+					winchOutput = 0; 
+				claw.setWinch(winchOutput);
+			}
 		}
 		
 	}
@@ -75,6 +84,7 @@ public class MoveClawWithClapper implements SequencedItem {
 	@Override
 	public double duration() {
 //		System.out.println("isMoving: " + Robot.clapper.isMoving());
-		return Robot.clapper.isPIDOnTarget() ? 0 : 1.5;	}
+		return Robot.clapper.isPIDOnTarget() ? 0 : 1.5;	
+		}
 
 }

@@ -288,9 +288,10 @@ public class DriveTrain {
 	 * @param rightOutput
 	 */
 	public void setLeftRight(double leftOutput, double rightOutput) {
-		double scalar = driveSpeed + 0.05*Robot.toteCounter.getCount();
 		
-		if(scalar > 1)
+		double scalar = driveSpeed + 0.05 * Robot.toteCounter.getCount();
+		
+		if (scalar > 1)
 			scalar = 1;
 		
 		leftDrive.set(leftOutput * scalar);

@@ -46,28 +46,28 @@ public class Clapper {
 		kI	= 0.00,
 		kD	= 0.00;
 	
-	public static final double //these are not tested at all whatsoever
-		kP_1_TOTES_UP = 0.005,	//put an extra 0 in all of these...they were .05, .055, etc.
+	public static final double 
+		kP_1_TOTES_UP = 0.005,	
 		kP_2_TOTES_UP = 0.006,
 		kP_3_TOTES_UP = 0.007,
-		kP_4_TOTES_UP = 0.008,
-		kP_5_TOTES_UP = 0.009,
-		kP_6_TOTES_UP = 0.010;
+		kP_4_TOTES_UP = 0.013,
+		kP_5_TOTES_UP = 0.035;
 	
-	public static final double //these are not tested at all whatsoever
+	/* unused
+	public static final double 
 		kP_1_TOTES_DOWN = 0.05,
 		kP_2_TOTES_DOWN = 0.05,
 		kP_3_TOTES_DOWN = 0.05,
 		kP_4_TOTES_DOWN = 0.04,
-		kP_5_TOTES_DOWN = 0.03,
-		kP_6_TOTES_DOWN = 0.02;
+		kP_5_TOTES_DOWN = 0.03;
+	*/	
 	
 	public static final double 
 		RIGHTING_CONTAINER_POS									= 395, 
 		ABOVE_RATCHET_SETPOINT									= LOWEST_POS + 375, // 430, changed from 335 on 20 march because mechanical
 		DROP_OFF_POS_ON_ONE_TOTE								= ABOVE_RATCHET_SETPOINT,
 		ON_RATCHET_SETPOINT										= LOWEST_POS + 125, //changed from 125  
-		HOLDING_TOTE_SETPOINT									= LOWEST_POS + 351, // 387, changed from 262 on 20 mar bc mechanical
+		HOLDING_TOTE_SETPOINT									= LOWEST_POS + 235, // 387, changed from 262 on 20 mar bc mechanical
 		LOADING_SETPOINT										= LOWEST_POS + 5,
 		COOP_ZERO_TOTE_SETPOINT									= LOWEST_POS + 77, 
 		COOP_ONE_TOTE_SETPOINT									= LOWEST_POS + 175, 
@@ -284,8 +284,7 @@ public class Clapper {
 		return !(toteDetectorLimitSwitch.get()); 
 	}
 	
-	public void updateToteCount( int toteCount )
-	{
+	public void updateToteCount(int toteCount) {
 		if (toteCount == 1)
 			setPID(kP_1_TOTES_UP, kI, kD);
 		else if (toteCount == 2)
