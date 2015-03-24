@@ -117,12 +117,12 @@ public class Robot extends IterativeRobot {
 		 clawSolenoid = new Solenoid(0);
  
 		 leftEnc = new Encoder(0, 1);
-		 rightEnc = new Encoder(4, 5);
+		 rightEnc = new Encoder(2, 3);
 //
 //		 dualEncoderVelCalc = new DualEncoder(leftEnc, rightEnc);
 //
-//		 leftEnc.setDistancePerPulse(.0414221608);
-//		 rightEnc.setDistancePerPulse(.0414221608);
+		 leftEnc.setDistancePerPulse(.0414221608);
+		 rightEnc.setDistancePerPulse(.0414221608);
 
 		 try {
 			byte update_rate_hz = 50;
@@ -196,7 +196,8 @@ public class Robot extends IterativeRobot {
 	public void teleopInit() {
 		resetAndDisableSystems();
 		
-		strongback.setSetpoint(0.0);
+		strongback.setSetpoint(Strongback.STANDARD_SETPOINT);
+		currTeleopSequence = null; //possibly change later
 	}
 
 	public void teleopPeriodic() {
@@ -204,17 +205,22 @@ public class Robot extends IterativeRobot {
 		/*
 		 * Drive train controls
 		 */
-       	if (Controllers.getDriverLeftJoystickButton(1)) 
+
+       	if (Controllers.getDriverLeftJoystickButton(6))
+       		drive.dropCenterWheel(false);
+		else if (Controllers.getDriverLeftJoystickButton(1)) 
        		drive.setForcedNoStrafeMode(true);
        	else if (Controllers.getDriverLeftJoystickButton(3)) 
        		drive.setStrafeOnlyMode(true);
        	else if (Controllers.getDriverLeftJoystickButton(4)) 
        		drive.setSlowStrafeOnlyMode(true);
        	else {
+       		drive.dropCenterWheel(true);
        		drive.setSlowStrafeOnlyMode(false);
        		drive.setStrafeOnlyMode(false);  	 
        		drive.setForcedNoStrafeMode(false);
        	}
+       	
        	
         if (Controllers.getDriverRightJoystickAxis(Controllers.JOYSTICK_AXIS_THROTTLE) > 0)
         	drive.setNormalSpeed();
@@ -265,7 +271,7 @@ public class Robot extends IterativeRobot {
        	
        	clapper.updateToteCount(toteCounter.getCount());
        	
-       	if (Controllers.getOperatorLeftJoystickButton(1) && currTeleopSequence == null) {
+       	if (Controllers.getOperatorLeftJoystickButton(1) && currTeleopSequence == null && toteCounter.getCount() < 5) {
        		currTeleopSequence = SequencerFactory.createToteLiftRoutine();
        	}
        	if (Controllers.getOperatorRightJoystickButton(2) && currTeleopSequence == null) {
@@ -278,7 +284,13 @@ public class Robot extends IterativeRobot {
        	
        	if (Controllers.getOperatorRightJoystickButton(5) && currTeleopSequence == null)
        		currTeleopSequence = SequencerFactory.createContainerRightingRoutine(); 
-       		
+       	
+       	if (Controllers.getOperatorLeftJoystickButton(5)) 
+       		clapper.setSetpoint(Clapper.RIGHTING_CONTAINER_PRE_POS);
+       	
+       	if (Controllers.getOperatorRightJoystickButton(8) && currTeleopSequence == null)
+       		currTeleopSequence = SequencerFactory.createPrepareForContainerRightingRoutine();
+       	
        	
        	/*
        	 * Ratchet Controls
@@ -359,6 +371,7 @@ public class Robot extends IterativeRobot {
        	claw.updateWinchPeriodic();
     	clapper.updateLastHeight();     	
     	strongback.checkSafety();
+    	
 //        clapper.checkSafety();
     	
     	
@@ -401,11 +414,17 @@ public class Robot extends IterativeRobot {
 		finishedRotating = false;
 	}
 
+	private boolean finished = false; 
 	public void testPeriodic() {
 
-		claw.setSetpoint(Claw.ONE_AND_TWO_TOTE_RESTING_POS);
-		claw.elevationPID.enable(); 
-		System.out.println(claw.elevationPID.getError() + " power sent to motor: " + claw.elevationPID.get());
+//		claw.setSetpoint(Claw.ONE_AND_TWO_TOTE_RESTING_POS);
+//		claw.elevationPID.enable(); 
+//		System.out.println(claw.elevationPID.getError() + " power sent to motor: " + claw.elevationPID.get());
+		
+//		if (!finished) {
+//			System.out.println(drive.driveStraightPID.getError());
+//			finished = drive.driveTo(-10); 
+//		}
 		
 //		strongbackMotor.set(.3);
 //		leftRoller.set(1); 
@@ -455,7 +474,7 @@ public class Robot extends IterativeRobot {
 		claw.setManual();
 		claw.liftManually(0.0);
 		
-		strongback.setSetpoint(0.0);
+		strongback.setSetpoint(Strongback.STANDARD_SETPOINT);
 		strongback.disablePid();
 		
 		// containerCommandeerer.resetSol();
@@ -473,6 +492,9 @@ public class Robot extends IterativeRobot {
 //		 SmartDashboard.putNumber("IPS", (int) drive.getAbsoluteRate());
 		SmartDashboard.putNumber("Battery", DriverStation.getInstance()
 				.getBatteryVoltage());
+		SmartDashboard.putNumber("IMU PID Setpoint", drive.imuPID.getSetpoint());
+		SmartDashboard.putNumber("IMU PID Error", drive.imuPID.getError());
+		SmartDashboard.putNumber("IMU yaw", drive.imu.getYaw());
 		// SmartDashboard.putBoolean("Disabled",
 		// DriverStation.getInstance().isDisabled());
 		SmartDashboard.putNumber("Claw Pot", claw.getPotValue());
@@ -488,7 +510,7 @@ public class Robot extends IterativeRobot {
 		 SmartDashboard.putNumber("Claw Inches", claw.getInchHeight());
 		// SmartDashboard.putNumber("Clapper change in height" ,
 		// (float)Robot.clapper.getChangeInHeightInInches());
-		// SmartDashboard.putNumber("Encoder Distance", leftEnc.getDistance());
+		 SmartDashboard.putNumber("Clapper Error", clapper.getError());
 		// SmartDashboard.putBoolean("Tote detected by limit switch",
 		// clapper.toteDetected());
 	}

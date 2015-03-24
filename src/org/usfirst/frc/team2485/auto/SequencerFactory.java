@@ -261,15 +261,15 @@ public class SequencerFactory {
 	/**
 	 * @return sequencer that drops a tote stack and a container 
 	 */
-	public static Sequencer createDropToteStackRoutine(boolean withToteBelowRatchet) { 
+	public static Sequencer createDropToteStackRoutine(boolean toteBelowRatchet) { 
 		// tune kp down a bit? add a seq
 		
 		Sequencer returnSequence = null;
 
-		if (withToteBelowRatchet)
+		if (toteBelowRatchet)
 			returnSequence = new Sequencer(
 					new SequencedItem[] {
-							new SetClawPID(Claw.kP_LESS_POWER_ALLOWS_MORE_ERROR, Robot.claw.getI(), Robot.claw.getD()),
+							new SetClawPID(Claw.kP_LOCK_POSITION_IN_PLACE, Robot.claw.getI(), Robot.claw.getD()),
 							new CloseClapper(),
 							new SequencedMultipleItem(
 									new MoveClapperVertically(
@@ -313,12 +313,30 @@ public class SequencerFactory {
 			return null; 
 		
 		return new Sequencer(new SequencedItem[] {
-				new DriveStraight(-3), 
+//				new DriveStraight(-3), 
 				new CloseClapper(), 
 				new SequencedPause(.5), //probably not needed, but added this for testing
 				new MoveClapperVertically(Clapper.RIGHTING_CONTAINER_POS), 
-				new SequencedPause(2), //this one is actually probably needed
+				new SequencedPause(.25), //this one is actually probably needed
 				new OpenClapper()
+		});
+	}
+	
+	public static Sequencer createPrepareForContainerRightingRoutine() {
+		
+		if (Robot.toteCounter.getCount() != 0) {
+			return null;
+		}
+		
+		return new Sequencer(new SequencedItem[] {
+				new SetClawPID(Claw.kP_LESS_POWER_ALLOWS_MORE_ERROR, Robot.claw.getI(), Robot.claw.getD()),
+				new SequencedMultipleItem(
+						new MoveClawVertically(Claw.ONE_AND_TWO_TOTE_RESTING_POS),
+						new OpenClapper()
+				),
+				new SetClapperPID(Robot.clapper.getkP(), Robot.clapper.getkI(), Robot.clapper.getkD()),
+				new MoveClapperVertically(Clapper.RIGHTING_CONTAINER_PRE_POS)
+
 		});
 	}
 
@@ -331,7 +349,8 @@ public class SequencerFactory {
 				new SetClawPID(Claw.kP_LESS_POWER_ALLOWS_MORE_ERROR, Robot.claw.getI(), Robot.claw.getD()),
 				new CloseClaw(),
 				new SequencedPause(.3),
-				new MoveClawVertically(Claw.ONE_AND_TWO_TOTE_RESTING_POS), //see comment
+				new MoveClawVertically(Claw.ONE_AND_TWO_TOTE_RESTING_POS),//see comment
+				new CloseClapper(),
 		});
 	}
 
@@ -431,27 +450,27 @@ public class SequencerFactory {
 	public static Sequencer createToteLiftRoutine() {
 		return new Sequencer(
 				new SequencedItem[] {
+						new ExtendRatchet(), 
 						new IncrementToteCount(),
 						new SetClapperPIDByToteCount(),
 						new SetClawPID(Claw.kP_LESS_POWER_ALLOWS_MORE_ERROR, Robot.claw.getI(), Robot.claw.getD()),
-						new RetractRatchet(),
+//						new RetractRatchet(), //Mr Collins said that this was not needed and made debugging harder
 						new SequencedMultipleItem(
 								new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
 								new MoveClawWithClapper(MoveClawWithClapper.UP)
-								), 
-						new SequencedMultipleItem(
-								new RunRollers(.6), 
-								new SequencedPause(.25)
-								),
-						new RunRollers(0), 
-						new ExtendRatchet(),
+						), 
 						new MoveClawConstantSpeed(0),
-						new SetClapperPID(0.01, 0, 0),
+//						new ExtendRatchet(),
+						new SequencedMultipleItem(
+//								new RunRollers(.6), 
+								new SequencedPause(.25)
+						),
+//						new RunRollers(0),
+						new SetClapperPID(0.0005, 0, 0),
 						new SequencedMultipleItem(
 								new MoveClapperVertically(Clapper.HOLDING_TOTE_SETPOINT),
 								new MoveClawWithClapper(MoveClawWithClapper.DOWN)
 								),
-//						new SequencedPause(0.4), //new
 						new MoveClawConstantSpeed(0),
 						new SetClapperPIDByToteCount(),
 						new MoveClapperVertically(Clapper.LOADING_SETPOINT),

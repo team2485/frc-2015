@@ -21,7 +21,7 @@ public class Strongback {
 	private SpeedController leadScrew; 
 	private IMUAdvanced imu; 
 	public PIDController leadScrewImuPID;
-	private double rollSetpoint = 1.0; // THIS IS CHANGED
+	public static final double STANDARD_SETPOINT = 1; // THIS IS CHANGED
 	private double absToleranceLeadScrew = 0.25; //degrees 
 	
 	private IMURollPIDSource rollPIDSource; 
@@ -39,7 +39,7 @@ public class Strongback {
 		
 		leadScrewImuPID = new PIDController(leadScrew_kP, leadScrew_kI, leadscrew_kD, rollPIDSource, this.leadScrew); 
 		leadScrewImuPID.setAbsoluteTolerance(absToleranceLeadScrew );
-		leadScrewImuPID.setSetpoint(rollSetpoint);
+		leadScrewImuPID.setSetpoint(STANDARD_SETPOINT);
 	}
 	
 	public Strongback(int leadScrewPort, IMUAdvanced imu) {
@@ -58,8 +58,11 @@ public class Strongback {
 	 * Sets PID setpoint but does not enable the PID. 
 	 */
 	public void setSetpoint(double newSetpoint) {
-		rollSetpoint = newSetpoint;
-		leadScrewImuPID.setSetpoint(rollSetpoint);
+		leadScrewImuPID.setSetpoint(newSetpoint);
+	}
+	
+	public void resetSetpoint() {
+		setSetpoint(STANDARD_SETPOINT); 
 	}
 	
 	public double getError() {

@@ -29,11 +29,12 @@ public class Clapper {
 	private boolean automatic;
 	private double lastHeight;
 
-	public static final double LOWEST_POS = 125; 	// NEED TO CHECK ON VALKYRIE
-	public static final double HIGHEST_POS = 875;	// NEEDS TO CHECK ON VALKYRIE 
+	public static final double LOWEST_POS = 89; 	// NEED TO CHECK ON VALKYRIE
+	public static final double HIGHEST_POS = 883;	// NEEDS TO CHECK ON VALKYRIE 
 	private static final double POT_RANGE = HIGHEST_POS - LOWEST_POS; 
 	public static final double POT_TOLERANCE = 18;
-	private static final double INCH_RANGE  = 38.875; // 6 and 1/8 in from floor (corresponds to a pot value of 84) - 45 in
+	public static final double INCH_LOW_POS = 6.125;
+	private static final double INCH_RANGE  = 38.875; // 6 and 1/8 in from floor to the top which is 45 in
 	@SuppressWarnings("unused")
 	private static final double POTS_PER_INCH = POT_RANGE/INCH_RANGE;
 	
@@ -41,17 +42,17 @@ public class Clapper {
 	
 	private double pidOutputMin, pidOutputMinNormal = -0.2, pidOutputMax, pidOutputMaxNormal = 0.5;
 	
-	public static double
-		kP	= 0.0075, // SHOULD BE 0.05
-		kI	= 0.00,
-		kD	= 0.00;
-	
 	public static final double 
-		kP_1_TOTES_UP = 0.005,	
-		kP_2_TOTES_UP = 0.006,
-		kP_3_TOTES_UP = 0.007,
-		kP_4_TOTES_UP = 0.013,
+		kP_1_TOTES_UP = 0.01,	
+		kP_2_TOTES_UP = 0.012,
+		kP_3_TOTES_UP = 0.015,
+		kP_4_TOTES_UP = 0.02,
 		kP_5_TOTES_UP = 0.035;
+	
+	public static final double
+		kP_DEFAULT	= kP_1_TOTES_UP, 
+		kI_DEFAULT	= 0.00,
+		kD_DEFAULT	= 0.00;
 	
 	/* unused
 	public static final double 
@@ -63,8 +64,9 @@ public class Clapper {
 	*/	
 	
 	public static final double 
-		RIGHTING_CONTAINER_POS									= 395, 
-		ABOVE_RATCHET_SETPOINT									= LOWEST_POS + 375, // 430, changed from 335 on 20 march because mechanical
+		RIGHTING_CONTAINER_POS									= LOWEST_POS + 335, 
+		RIGHTING_CONTAINER_PRE_POS								= LOWEST_POS + 58, 
+		ABOVE_RATCHET_SETPOINT									= LOWEST_POS + 333, // 430, changed from 335 on 20 march because mechanical // UPDATE changed to 299 on 3/22/15
 		DROP_OFF_POS_ON_ONE_TOTE								= ABOVE_RATCHET_SETPOINT,
 		ON_RATCHET_SETPOINT										= LOWEST_POS + 125, //changed from 125  
 		HOLDING_TOTE_SETPOINT									= LOWEST_POS + 235, // 387, changed from 262 on 20 mar bc mechanical
@@ -85,7 +87,7 @@ public class Clapper {
 		
 		this.potScaled				= new ScaledPot(pot);
 		
-		this.clapperPID = new PIDController(kP, kI, kD, potScaled, clapperLifter);
+		this.clapperPID = new PIDController(kP_DEFAULT, kI_DEFAULT, kD_DEFAULT, potScaled, clapperLifter);
 		this.clapperPID.setAbsoluteTolerance(POT_TOLERANCE);
 		
 		pidOutputMin = pidOutputMinNormal;
@@ -108,7 +110,7 @@ public class Clapper {
 		this.clapperLifter			= clapperLifter; 		
 		this.potScaled				= new ScaledPot(pot);
 		
-		this.clapperPID = new PIDController(kP, kI, kD, potScaled, clapperLifter);
+		this.clapperPID = new PIDController(kP_DEFAULT, kI_DEFAULT, kD_DEFAULT, potScaled, clapperLifter);
 		this.clapperPID.setAbsoluteTolerance(POT_TOLERANCE);
 		
 		pidOutputMin = pidOutputMinNormal;
@@ -201,8 +203,14 @@ public class Clapper {
 	
 	public double getInchHeight() {
 		// TODO: Test
-		return(potScaled.pidGet() - LOWEST_POS) / (POT_RANGE) * INCH_RANGE + 6.125;
+		return(potScaled.pidGet() - LOWEST_POS) / (POT_RANGE) * INCH_RANGE + INCH_LOW_POS;
 	}
+	
+	public double getPotValueFromInchHeight(double inches) {
+		double inchesAboveLowPos = inches - INCH_LOW_POS;
+		return inchesAboveLowPos/INCH_RANGE * POT_RANGE + LOWEST_POS;
+	}
+	
 	/**
 	 * Sets the claw to automatic control, PID will control the winch, moveManually will not function
 	 */
@@ -272,10 +280,6 @@ public class Clapper {
 			clapperPID.setOutputRange(pidOutputMin, pidOutputMax);
 	}
 	
-	public void setKP(double kP) {
-		this.kP = kP; 
-	}
-	
 	public boolean toteDetected() {
 		if(!toteDetectorLimitSwitch.get())
 			System.out.println("tote detected");
@@ -286,15 +290,15 @@ public class Clapper {
 	
 	public void updateToteCount(int toteCount) {
 		if (toteCount == 1)
-			setPID(kP_1_TOTES_UP, kI, kD);
+			setPID(kP_1_TOTES_UP, kI_DEFAULT, kD_DEFAULT);
 		else if (toteCount == 2)
-			setPID(kP_2_TOTES_UP, kI, kD);
+			setPID(kP_2_TOTES_UP, kI_DEFAULT, kD_DEFAULT);
 		else if (toteCount == 3)
-			setPID(kP_3_TOTES_UP, kI, kD);
+			setPID(kP_3_TOTES_UP, kI_DEFAULT, kD_DEFAULT);
 		else if (toteCount == 4)
-			setPID(kP_4_TOTES_UP, kI, kD);
+			setPID(kP_4_TOTES_UP, kI_DEFAULT, kD_DEFAULT);
 		else if (toteCount == 5)
-			setPID(kP_5_TOTES_UP, kI, kD);
+			setPID(kP_5_TOTES_UP, kI_DEFAULT, kD_DEFAULT);
 		
 		pidOutputMin = pidOutputMinNormal + .02 * toteCount;
 		pidOutputMax = pidOutputMaxNormal + .05 * toteCount;
@@ -303,6 +307,10 @@ public class Clapper {
 
 	public boolean isMoving() {
 		return clapperLifter.isMoving(); 
+	}
+
+	public void enablePID() {
+		clapperPID.enable();
 	}
 }
 

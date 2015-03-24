@@ -29,7 +29,7 @@ public class Claw {
 	//claw in place.
 	
 	public static final double kP_LESS_POWER_ALLOWS_MORE_ERROR = 0.0075, kI = 0.00, kD = 0; // TODO: check kP BADLY
-	public static final double kP_LOCK_POSITION_IN_PLACE = 0.035;
+	public static final double kP_LOCK_POSITION_IN_PLACE = 0.01;
 //	public static final double kP_TEMP_AGGRESSIVE = 0.005;
 	private SpeedController winchMotor;
 	private Solenoid actuator;
@@ -37,17 +37,18 @@ public class Claw {
 	private DummyOutput dummyWinch;
 	 
 	public static final double 
-						LOWEST_POS						= 38, //15.625 in
+						LOWEST_POS						= 37, //
 						MANUAL_SAFETY_ABOVE_RACHET_POS 	= LOWEST_POS + 288, //34.5	in
-						ONE_AND_TWO_TOTE_RESTING_POS	= LOWEST_POS + 580, //56.5 	in 
-						TWO_TOTE_PLACEMENT_POS			= LOWEST_POS + 270, //38.75	in
-						HIGHEST_POS						= 727.5; //74.5 	in
+						ONE_AND_TWO_TOTE_RESTING_POS	= LOWEST_POS + 555, //56.5 	in 
+						TWO_TOTE_PLACEMENT_POS			= LOWEST_POS + 280, //38.75	in; thats in value might be wrong
+						HIGHEST_POS						= 731; //
 	
 //	private static final double LOWEST_POS    = 118; 	// 73 on Valkyrie
 //	private static final double PICKUP_POS	  = LOWEST_POS + 45;// top: 850 bottom: 112 FOR PRACTICE BOT: top: 35 bottom: 725
 	private static final double POT_RANGE     = HIGHEST_POS - LOWEST_POS; /// 
 	public  static final double POT_TOLERANCE = 12;
-	private static final double INCH_RANGE    = 58.875; // 15.625 in from floor - 74.5 in
+	private static final double INCH_RANGE    = 58.875; // 15.625 in from floor up to 74.5 in
+	private static final double INCH_LOW_POS = 15.625;
 	@SuppressWarnings("unused")
 	public static final double POTS_PER_INCH = POT_RANGE/INCH_RANGE;
 //	
@@ -135,6 +136,8 @@ public class Claw {
 		 else 
 			winchMotor.set(adjustedSpeed);
 		
+//		System.out.println("Winch speed: " + adjustedSpeed);
+		
 	}
 	
 	public void setPID(double kP, double kI, double kD) {
@@ -183,6 +186,11 @@ public class Claw {
 	public double getInchHeight() {
 		// TODO: Test
 		return(potScaled.pidGet() - LOWEST_POS)/POT_RANGE * INCH_RANGE + 15.625; //TODO: check on valkyrie
+	}
+	
+	public double getPotValueFromInchHeight(double inches) {
+		double inchesAboveLowPos = inches - INCH_LOW_POS;
+		return inchesAboveLowPos/INCH_RANGE * POT_RANGE + LOWEST_POS;
 	}
 	
 	/**

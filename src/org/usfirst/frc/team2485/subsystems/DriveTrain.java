@@ -44,10 +44,6 @@ public class DriveTrain {
 	private boolean strafeOnlyMode = false, slowStrafeOnlyMode = false, forcedNoStrafeMode = false; 
 	private boolean isQuickTurn = false;
 	
-	private final double  SENSITIVITY_LOW = 0.55, SENSITIVITY_HIGH = 0.85;
-	private double quickStopAccumulator = 0.0;
-	private double oldWheel = 0.0;
-
 	private static final double SLOW_STRAFE_SCALAR = 0.6; //need to tune
 	private static final double STRAFE_TUNING_PARAMETER = 1;
 	
@@ -187,17 +183,24 @@ public class DriveTrain {
 //			}
 			imuPID.disable();
 			rotationalDrive(translateY, rotation);
-		} else {
+		} else if(Math.abs(translateY) >= 0.1 || Math.abs(translateX) >= 0.1){
+			
 			if (!maintainingHeading) {
 				maintainingHeading = true; 
 				desiredHeading = imu.getYaw(); 
 
 				setImuForDrivingStraight(); 
+				imuPID.reset();
 				imuPID.setSetpoint(desiredHeading);
 				imuPID.enable();
+				System.out.println("Switching off of roatation and reseting desired heading to " + desiredHeading);
+			}
+			else {
+				System.out.println("Maintaining heading right before strafe drive with setpoint of " + imuPID.getSetpoint());
 			}
 			strafeDrive(translateX, translateY);
-		}
+		} else
+			Robot.drive.setMotors(0, 0, 0);
 	}
 
 	public void rotationalDrive(double translateY, double rotation) {
@@ -241,6 +244,7 @@ public class DriveTrain {
 		double yOutput = 0, xOutput = 0; 		
 		double pidOut = dummyImuOutput.get(); 
 
+		System.out.println("Drive PID Out: " + pidOut);
 		/* Code for strafe driving at any angle
 		 * 
 		 * Scales y input by tuning parameter to account for the varying speeds of for/rev and strafe wheels
@@ -259,10 +263,18 @@ public class DriveTrain {
 		//		System.out.println("IMU PID enabled" + imuPID.isEnable());
 		//
 		//		System.out.println("xOut, yOut, pidOut \t" + xOutput + ", " + yOutput + ", " + pidOut);
-		setMotors(yOutput + pidOut, yOutput - pidOut, xOutput);
+		setMotors(clamp(yOutput + pidOut), clamp(yOutput - pidOut), xOutput);
 		//		System.out.println(imu.getYaw() + " : " + imuPID.getSetpoint());
 		//		System.out.println("current kP is: " + imuPID.getP());
 
+	}
+
+	private double clamp(double d) {	
+		if (d > 1)
+			return 1; 
+		if (d < -1)
+			return -1;
+		return d; 
 	}
 
 	public void setMotors(double left, double right, double center) {
@@ -517,7 +529,7 @@ public class DriveTrain {
 		forcedNoStrafeMode = b; 
 		dropCenterWheel(!b);
 		
-    	if(b) 
+    	if (b) 
     		Robot.strongback.enablePid();
     	else
     		Robot.strongback.disablePid();

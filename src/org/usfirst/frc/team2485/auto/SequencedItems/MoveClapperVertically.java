@@ -10,6 +10,7 @@ import org.usfirst.frc.team2485.robot.Robot;
 public class MoveClapperVertically implements SequencedItem {
 
 	private final double setpoint; 
+	private boolean finished = false; 
 	
 	/**
 	 * @param setpoint. use a public static field from Clapper class
@@ -22,12 +23,13 @@ public class MoveClapperVertically implements SequencedItem {
 	@Override
 	public void run() {
 		Robot.clapper.setSetpoint(setpoint); 
+		finished = Robot.clapper.isPIDOnTarget();
+		System.out.println("From MoveClapperVertically; clapper pid on target = " + finished + " duration " + duration());
 	}
 
 	@Override
 	public double duration() {
-		return Robot.clapper.isPIDOnTarget() ? 0 : 1.5;
+		return finished ? 0.03 : 1.5;
 	}
-	
-	
+
 }
