@@ -24,12 +24,12 @@ public class MoveClawVertically implements SequencedItem {
 		
 		claw.setSetpoint(setpoint);
 		claw.updateWinchPeriodic();
-//		finished = claw.isPidOnTarget(); 
+		finished = claw.isPidOnTarget(); 
 	}
 
 	@Override
 	public double duration() {
-		return finished ? 0 : 2; // TODO: fix this stuff
+		return finished ? 0 : 2; 
 	}
 	
 }

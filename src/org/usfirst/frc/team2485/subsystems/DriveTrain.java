@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.VictorSP;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * @author Anoushka Bose
@@ -42,7 +43,6 @@ public class DriveTrain {
 	private final double ROTATION_DEADBAND = 0.2;
 	
 	private boolean strafeOnlyMode = false, slowStrafeOnlyMode = false, forcedNoStrafeMode = false; 
-	private boolean isQuickTurn = false;
 	
 	private static final double SLOW_STRAFE_SCALAR = 0.6; //need to tune
 	private static final double STRAFE_TUNING_PARAMETER = 1;
@@ -62,28 +62,28 @@ public class DriveTrain {
 	private int imuOnTargetCounter = 0;
 	private final int MINIMUM_IMU_ON_TARGET_ITERATIONS = 6;
 
-	private final double
+	private static final double
 		absTolerance_Imu_TurnTo = 1.0,
 		absTolerance_Imu_DriveStraight = 2.0,
 		absTolerance_Enc_DriveStraight = 3.0, // needs tuning
-		absTolerance_Enc_Strafe = 3.0;
+		absTolerance_Enc_Strafe = 2.0;
 	
-	public static double 
+	private static final double 
 		driveStraightEncoder_Kp = 0.0275,
 		driveStraightEncoder_Ki = 0.0, 
 		driveStraightEncoder_Kd = 0.0;
 
-	public static double 
+	private static final double 
 		strafeEncoder_Kp = 0.005,
 		strafeEncoder_Ki = 0.0,
 		strafeEncoder_Kd = 0.0;
 
-	public static double
+	private static final double
 		driveStraightImu_Kp = 0.05, // new - 3/21
 		driveStraightImu_Ki = 0.0,
 		driveStraightImu_Kd = 0.01; 
 
-	public static double
+	private static final double
 		rotateImu_kP = 0.0125,
 		rotateImu_kI = 0.00,
 		rotateImu_kD = 0.01;
@@ -111,9 +111,10 @@ public class DriveTrain {
 		dummyEncoderOutput = new DummyOutput();
 		driveStraightPID = new PIDController(driveStraightEncoder_Kp, driveStraightEncoder_Ki, driveStraightEncoder_Kd, dualEncoder, dummyEncoderOutput);
 		driveStraightPID.setAbsoluteTolerance(absTolerance_Enc_DriveStraight);
-
-		if (centerEnc != null) {
-			strafePID = new PIDController(strafeEncoder_Kp, strafeEncoder_Ki, strafeEncoder_Kd, centerEnc, center);
+		
+		if (this.centerEnc != null) {
+			strafePID = new PIDController(strafeEncoder_Kp, strafeEncoder_Ki, strafeEncoder_Kd, 
+					this.centerEnc, centerDrive);
 			strafePID.setAbsoluteTolerance(absTolerance_Enc_Strafe);
 		}
 	}
@@ -341,14 +342,6 @@ public class DriveTrain {
 	}
 
 	/**
-	 * Sets the drive to quick turn mode
-	 * @param isQuickTurn
-	 */
-	public void setQuickTurn(boolean isQuickTurn) {
-		this.isQuickTurn = isQuickTurn;
-	}
-
-	/**
 	 * Sets maintainingHeading
 	 * @param true or false
 	 */
@@ -458,14 +451,14 @@ public class DriveTrain {
 		if (!driveStraightPID.isEnable()) {
 			dualEncoder.reset();
 			driveStraightPID.enable();
-			//			System.out.println("Enabling driveStraight PID in driveTo");
+			System.out.println("Enabling driveStraight PID in driveTo");
 			driveStraightPID.setSetpoint(inches);
 		}
 
 		if (imuPID != null && !imuPID.isEnable()) {
 			setImuForDrivingStraight();
 			imuPID.setSetpoint(imu.getYaw());
-			//			System.out.println("enabling IMU PID in driveTo");
+			System.out.println("enabling IMU PID in driveTo");
 			imuPID.enable();
 		}
 
@@ -473,10 +466,15 @@ public class DriveTrain {
 		double leftOutput  = encoderOutput;
 		double rightOutput = encoderOutput;
 
+		
 		double imuOutput = 0.0;
 		if (imuPID != null)
 			imuOutput = dummyImuOutput.get();
 
+		
+		SmartDashboard.putNumber("Encoder error", driveStraightPID.getError());
+		SmartDashboard.putNumber("Output from encoder", encoderOutput);
+		SmartDashboard.putNumber("IMU Output in driveTo", imuOutput);
 
 		//		System.out.println("leftEnc value: " + leftEnc.getDistance() + " rightEnc value: " + rightEnc.getDistance());
 		//		System.out.println("dualEncoder: " + dualEncoder.getDistance());
@@ -512,10 +510,11 @@ public class DriveTrain {
 	public double getRate(){
 		return dualEncoder.getRate();
 	}
-	//	public boolean strafeTo(double distance) {
-	//		// TODO Auto-generated method stub
-	//		return false;
-	//	}
+	
+	public boolean strafeTo(double distance) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 
 	public void setStrafeOnlyMode(boolean b) {
 		strafeOnlyMode = b; 
@@ -540,7 +539,9 @@ public class DriveTrain {
 	}
 
 	public void resetEncoders() {
-		dualEncoder.reset(); 
+		dualEncoder.reset();
+		if(centerEnc != null)
+			centerEnc.reset();
 	}
 }
 

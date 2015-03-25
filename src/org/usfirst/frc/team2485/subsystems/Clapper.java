@@ -29,7 +29,7 @@ public class Clapper {
 	private boolean automatic;
 	private double lastHeight;
 
-	public static final double LOWEST_POS = 89; 	// NEED TO CHECK ON VALKYRIE
+	public static final double LOWEST_POS = 85; 	// NEED TO CHECK ON VALKYRIE
 	public static final double HIGHEST_POS = 883;	// NEEDS TO CHECK ON VALKYRIE 
 	private static final double POT_RANGE = HIGHEST_POS - LOWEST_POS; 
 	public static final double POT_TOLERANCE = 18;
@@ -46,8 +46,8 @@ public class Clapper {
 		kP_1_TOTES_UP = 0.01,	
 		kP_2_TOTES_UP = 0.012,
 		kP_3_TOTES_UP = 0.015,
-		kP_4_TOTES_UP = 0.02,
-		kP_5_TOTES_UP = 0.035;
+		kP_4_TOTES_UP = 0.025,
+		kP_5_TOTES_UP = 0.04;
 	
 	public static final double
 		kP_DEFAULT	= kP_1_TOTES_UP, 
@@ -76,7 +76,7 @@ public class Clapper {
 		COOP_TWO_TOTES_SETPOINT									= LOWEST_POS + 275,
 		COOP_THREE_TOTES_SETPOINT								= LOWEST_POS + 370, 
 		SCORING_PLATFORM_HEIGHT									= LOWEST_POS + 25,
-		LIFT_BOTTOM_TOTE_TO_RAISE_STACK_OFF_RATCHET_SETPOINT	= LOWEST_POS + 50,
+		LIFT_BOTTOM_TOTE_TO_RAISE_STACK_OFF_RATCHET_SETPOINT	= LOWEST_POS + 100,
 		FIX_CONTAINER_IN_CLAW_POS								= LOWEST_POS + 125;
 	
 	public Clapper(CombinedSpeedController clapperLifter, Solenoid clapperActuator2, AnalogPotentiometer pot, 

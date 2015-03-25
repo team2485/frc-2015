@@ -70,10 +70,10 @@ public class MoveClawWithClapper implements SequencedItem {
 			double actualDistance = Robot.claw.getInchHeight() - Robot.clapper.getInchHeight(); 
 			
 			double error = idealDistance - actualDistance; 
-			
-			SmartDashboard.putNumber("Ideal distance: ", idealDistance);
-			SmartDashboard.putNumber("actual distance ", actualDistance);
-			
+//			
+//			SmartDashboard.putNumber("Ideal distance: ", idealDistance);
+//			SmartDashboard.putNumber("actual distance ", actualDistance);
+//			
 			double topWinchSpeed = .6;
 			
 			double safetyTolerance = .5; 

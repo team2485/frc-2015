@@ -113,16 +113,18 @@ public class Robot extends IterativeRobot {
 		 ratchetLatchActuator = new Solenoid(1);
 //		 commandeererSolenoidLeft = new Solenoid(1, 2);
 //		 commandeererSolenoidRight = new Solenoid(1, 0);
-		 clapperActuator = new Solenoid(2);
-		 clawSolenoid = new Solenoid(0);
+		 clapperActuator	= new Solenoid(2);
+		 clawSolenoid 		= new Solenoid(0);
  
-		 leftEnc = new Encoder(0, 1);
-		 rightEnc = new Encoder(2, 3);
-//
-//		 dualEncoderVelCalc = new DualEncoder(leftEnc, rightEnc);
-//
+		 leftEnc 	= new Encoder(0, 1);
+		 rightEnc 	= new Encoder(2, 3);
+//		 centerEnc 	= new Encoder(11, 12); 
+
 		 leftEnc.setDistancePerPulse(.0414221608);
 		 rightEnc.setDistancePerPulse(.0414221608);
+		 
+		 if (centerEnc != null)
+			 centerEnc.setDistancePerPulse(.0414221608); // TODO: test
 
 		 try {
 			byte update_rate_hz = 50;
@@ -177,10 +179,16 @@ public class Robot extends IterativeRobot {
 
 		resetAndDisableSystems();
 
+		imu.zeroYaw();
+		leftEnc.reset();
+		rightEnc.reset();
+		if(centerEnc != null)
+			centerEnc.reset();
+		
 		// int autonomousType = (int) SmartDashboard.getNumber("autoMode",
 		// SequencerFactory.DRIVE_TO_AUTO_ZONE);
 		// autoSequence = SequencerFactory.createAuto(autonomousType);
-		autoSequence = SequencerFactory.createAuto(SequencerFactory.DRIVE_TO_AUTO_ZONE);
+		autoSequence = SequencerFactory.createAuto(SequencerFactory.ONE_CONTAINER);
 
 	}
 

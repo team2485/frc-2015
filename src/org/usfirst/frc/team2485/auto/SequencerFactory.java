@@ -23,6 +23,7 @@ import org.usfirst.frc.team2485.auto.SequencedItems.SetFingersPos;
 import org.usfirst.frc.team2485.auto.SequencedItems.SetRollers;
 import org.usfirst.frc.team2485.auto.SequencedItems.TiltStrongback;
 import org.usfirst.frc.team2485.auto.SequencedItems.ToteIntake;
+import org.usfirst.frc.team2485.auto.SequencedItems.ZeroEncoders;
 import org.usfirst.frc.team2485.robot.Robot;
 import org.usfirst.frc.team2485.subsystems.Clapper;
 import org.usfirst.frc.team2485.subsystems.Claw;
@@ -31,65 +32,45 @@ import org.usfirst.frc.team2485.subsystems.Fingers;
 public class SequencerFactory {
 
 	// auto types
-	public static final int SEQ_TEST = -1, 
-			DRIVE_TO_AUTO_ZONE = 0,
-			ONE_TOTE_ONE_CONTAINER = 1, 
-			TWO_TOTE_ONE_CONTAINER = 2, 
-			THREE_TOTE_STRAIGHT = 3,
-			THREE_TOTE_PUSH_CONTAINERS = 4, 
-			CONTAINER_AND_TOTE = 5,
-			CONTAINER_STEAL = 6,
-			SECRET_CONTAINER_STEAL_START_LEFT = 7,
-			SECRET_CONTAINER_STEAL_START_RIGHT = 8, 
-			ONE_CONTAINER = 9;
-
+	public static final int  
+			DRIVE_TO_AUTO_ZONE = 0, 
+			ONE_CONTAINER = 1,
+			CONTAINER_STEAL = 2,
+			THREE_TOTE = 3; 
+			
 	public static Sequencer createAuto(int autoType) {
 
 		switch (autoType) {
 		
 		case DRIVE_TO_AUTO_ZONE:
+			return new Sequencer(new DriveStraight(70));
+
+		case ONE_CONTAINER:
 			return new Sequencer(new SequencedItem[] {
-					new DriveStraight(70), // TODO:
-//					new SetClawPID(Claw.kP_LESS_POWER_ALLOWS_MORE_ERROR, Robot.claw.getI(), Robot.claw.getD()),											// fix															// this
-					});
-		case ONE_TOTE_ONE_CONTAINER:
-			return new Sequencer(
-					new SequencedItem[] {
-							new SequencedMultipleItem(new CloseClapper(),
-//									new SetClawPID(Claw.kP_LESS_POWER_ALLOWS_MORE_ERROR, Robot.claw.getI(), Robot.claw.getD()),
-									new SetFingersPos(Fingers.PARALLEL),
-									new SetRollers(
-											SetRollers.INTAKE, 1, 1)),
-							new SequencedPause(0.7),
-							// new SequencedMultipleItem(
-							// new SetFingersPos(Fingers.PARALLEL),
-							new MoveClapperVertically(
-									Clapper.ABOVE_RATCHET_SETPOINT),
-							new SetRollers(SetRollers.OFF, .1, 0),
-							// ),
-							new SequencedPause(0.3),
-							new MoveClapperVertically(Clapper.LOADING_SETPOINT),
-							new RotateToAngle(90), // TODO: fix this
-							new DriveStraight(60) // TODO: fix this
-					});
-
-		case TWO_TOTE_ONE_CONTAINER:
-			return new Sequencer(
-					new SequencedItem[] {
-							new InnerSequencer(createContainerPickupRoutine()), 
-							new DriveStraight(15), // TODO: untested distance
-//							new InnerSequencer(createToteIntakeRoutine()), rethink this logic
-							new DriveStraight(33), // TODO: untested distance
-							new RotateToAngle(15), //push container out of the way
-							new RotateToAngle(0), 
-							new DriveStraight(5), // TODO: untested distance
-//							new InnerSequencer(createToteIntakeRoutine()), rethink this 
-							new RotateToAngle(90), // TODO: untested distance
-							new DriveStraight(180), // TODO: untested distance
-							new InnerSequencer(createDropToteStackRoutine(false))
-					});
-
-//		case ONE_CONTAINER_THREE_TOTES: //assumes that teammates push the other containers out of our way
+					new OpenClapper(), 
+					new SetClawPID(Claw.kP_LOCK_POSITION_IN_PLACE, Robot.claw.getI(), Robot.claw.getD()),
+					new CloseClaw(),
+					new MoveClawVertically(Claw.ONE_AND_TWO_TOTE_RESTING_POS),
+					new MoveClawConstantSpeed(0), 
+					new RotateToAngle(-90),
+					new ZeroEncoders(),
+					new DriveStraight(60)
+			});
+			
+		case CONTAINER_STEAL:
+			return new Sequencer(new SequencedItem[] {
+//					new TiltStrongback(0),
+//					new SequencedPause(1),
+					new CommandeerContainerSequence(CommandeerContainerSequence.BOTH),
+					new SequencedPause(1), //TODO: how long does the pause need to be?
+					new DriveStraight(60),
+					new TiltStrongback(0),
+					new MoveClapperVertically(Clapper.LOADING_SETPOINT),
+					new SequencedPause(2),
+					new DisableStrongbackPID(),
+//					new RotateToAngle(angle)
+			});
+//		case THREE_TOTE: //assumes that teammates push the other containers out of our way
 //			return new Sequencer(new SequencedItem[] {
 //					new InnerSequencer(createContainerPickupRoutine()), 
 ////					new CloseClapper(),
@@ -110,69 +91,8 @@ public class SequencerFactory {
 //							new DriveAtSetSpeed(-.4, 1)
 //							), 
 //					new DriveAtSetSpeed(0, .1)
-//					});
-
-		case THREE_TOTE_PUSH_CONTAINERS:
-			return new Sequencer(
-					new SequencedItem[] { 
-							
-							});
-			
-		/*
-		 * Starting off behind the container
-		 */
-		case CONTAINER_AND_TOTE:
-			return new Sequencer(
-					new SequencedItem[] {
-							// first pick up container
-							
-							new InnerSequencer(createContainerPickupRoutine()),
-							new OpenClapper(),
-							new DriveStraight(10),
-//							new InnerSequencer(createToteIntakeRoutine()), rethink this portion 
-							new RotateToAngle(90),
-							new DriveStraight(60), 
-
-					});
-
-		case CONTAINER_STEAL:
-			return new Sequencer(new SequencedItem[] {
-//					new TiltStrongback(0),
-//					new SequencedPause(1),
-					new CommandeerContainerSequence(CommandeerContainerSequence.BOTH),
-					new SequencedPause(1), //TODO: how long does the pause need to be?
-					new DriveStraight(60),
-					new TiltStrongback(0),
-					new MoveClapperVertically(Clapper.LOADING_SETPOINT),
-					new SequencedPause(2),
-					new DisableStrongbackPID(),
-//					new RotateToAngle(angle)
-			});
-			
-
-			// case SECRET_CONTAINER_STEAL_START_LEFT:
-			// return new Sequencer(new SequencedItem[] {
-			// new DriveStraight(60)
-			// });
-			//
-			// case SECRET_CONTAINER_STEAL_START_RIGHT:
-			// return new Sequencer(new SequencedItem[] {
-			// new DriveStraight(60)
-			// });
-			
-		case ONE_CONTAINER:
-			return new Sequencer(new SequencedItem[] {
-					new SetClawPID(Claw.kP_LESS_POWER_ALLOWS_MORE_ERROR, Robot.claw.getI(), Robot.claw.getD()),
-					new CloseClaw(),
-					new MoveClawVertically(Claw.ONE_AND_TWO_TOTE_RESTING_POS),
-					new RotateToAngle(-90), 
-					new DriveStraight(-60)
-			});
-
+//					});	
 		}
-		
-
-			
 		return new Sequencer();
 	}
 
@@ -271,18 +191,22 @@ public class SequencerFactory {
 					new SequencedItem[] {
 							new SetClawPID(Claw.kP_LOCK_POSITION_IN_PLACE, Robot.claw.getI(), Robot.claw.getD()),
 							new CloseClapper(),
+							new RetractRatchet(),
+							new SetClapperPIDByToteCount(),
 							new SequencedMultipleItem(
 									new MoveClapperVertically(
 											Clapper.LIFT_BOTTOM_TOTE_TO_RAISE_STACK_OFF_RATCHET_SETPOINT),
-									new MoveClawWithClapper(
-											MoveClawWithClapper.UP)),
-							new RetractRatchet(),
-							new SequencedPause(.1),
+									new MoveClawVertically(Claw.HIGHEST_POS - Claw.POTS_PER_INCH * .5)
+									),
+							new SequencedPause(.5),
 							new SequencedMultipleItem(
 									new MoveClapperVertically(Clapper.LOADING_SETPOINT),
 									new MoveClawWithClapper(MoveClawWithClapper.DOWN)),
 							new OpenClaw(), 
-							new OpenClapper() });
+							new OpenClapper(), 
+							new SequencedPause(.1),
+							new MoveClawVertically(Claw.HIGHEST_POS - Claw.POTS_PER_INCH*.5)
+						});
 		else {
 			// assumption is that all of the totes are on the hook...start by
 			// making sure that the clapper is in the correct position
@@ -332,10 +256,9 @@ public class SequencerFactory {
 				new SetClawPID(Claw.kP_LESS_POWER_ALLOWS_MORE_ERROR, Robot.claw.getI(), Robot.claw.getD()),
 				new SequencedMultipleItem(
 						new MoveClawVertically(Claw.ONE_AND_TWO_TOTE_RESTING_POS),
-						new OpenClapper()
-				),
-				new SetClapperPID(Robot.clapper.getkP(), Robot.clapper.getkI(), Robot.clapper.getkD()),
-				new MoveClapperVertically(Clapper.RIGHTING_CONTAINER_PRE_POS)
+						new OpenClapper(),
+						new MoveClapperVertically(Clapper.RIGHTING_CONTAINER_PRE_POS)
+					)
 
 		});
 	}
@@ -348,7 +271,7 @@ public class SequencerFactory {
 		return new Sequencer(new SequencedItem[] {
 				new SetClawPID(Claw.kP_LESS_POWER_ALLOWS_MORE_ERROR, Robot.claw.getI(), Robot.claw.getD()),
 				new CloseClaw(),
-				new SequencedPause(.3),
+				new SequencedPause(.1),
 				new MoveClawVertically(Claw.ONE_AND_TWO_TOTE_RESTING_POS),//see comment
 				new CloseClapper(),
 		});
@@ -453,7 +376,7 @@ public class SequencerFactory {
 						new ExtendRatchet(), 
 						new IncrementToteCount(),
 						new SetClapperPIDByToteCount(),
-						new SetClawPID(Claw.kP_LESS_POWER_ALLOWS_MORE_ERROR, Robot.claw.getI(), Robot.claw.getD()),
+						new SetClawPID(Claw.kP_LOCK_POSITION_IN_PLACE, Robot.claw.getI(), Robot.claw.getD()),
 //						new RetractRatchet(), //Mr Collins said that this was not needed and made debugging harder
 						new SequencedMultipleItem(
 								new MoveClapperVertically(Clapper.ABOVE_RATCHET_SETPOINT),
@@ -535,6 +458,8 @@ public class SequencerFactory {
 		if (Robot.toteCounter.getCount() != 2)
 			return null; //return null instead of empty sequence so driver and op still have control
 		return new Sequencer(new SequencedItem[] {
+				new MoveClawVertically(Claw.CONTAINER_ADJUSTMANT_POS),
+				new SequencedPause(1), 
 				new OpenClaw(), 
 				new MoveClawVertically(Claw.TWO_TOTE_PLACEMENT_POS), 
 				new CloseClaw()
