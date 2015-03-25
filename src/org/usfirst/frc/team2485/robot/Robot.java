@@ -118,7 +118,7 @@ public class Robot extends IterativeRobot {
  
 		 leftEnc 	= new Encoder(0, 1);
 		 rightEnc 	= new Encoder(2, 3);
-//		 centerEnc 	= new Encoder(11, 12); 
+		 centerEnc 	= new Encoder(21, 22); 
 
 		 leftEnc.setDistancePerPulse(.0414221608);
 		 rightEnc.setDistancePerPulse(.0414221608);
@@ -154,7 +154,7 @@ public class Robot extends IterativeRobot {
 //		  camServer.startAutomaticCapture("cam1");
 		//
 		toteCounter = new ToteCounter();
-		drive = new DriveTrain(leftDrive, rightDrive, centerDrive, centerWheelSuspension, imu, leftEnc, rightEnc, null);
+		drive = new DriveTrain(leftDrive, rightDrive, centerDrive, centerWheelSuspension, imu, leftEnc, rightEnc, centerEnc);
 		clapper = new Clapper(clapperLifter, clapperActuator, clapperPot, toteDetectorLimitSwitch, clapperSafetyLimitSwitch);
 		claw = new Claw(clawMotor, clawSolenoid, clawPot);
 		rollers = new Rollers(leftRoller, rightRoller);

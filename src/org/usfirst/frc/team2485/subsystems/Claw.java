@@ -37,12 +37,12 @@ public class Claw {
 	private DummyOutput dummyWinch;
 	 
 	public static final double 
-						LOWEST_POS						= 10, //
-						MANUAL_SAFETY_ABOVE_RACHET_POS 	= LOWEST_POS + 288, //34.5	in
+						LOWEST_POS						= 58, //
+						MANUAL_SAFETY_ABOVE_RACHET_POS 	= LOWEST_POS + 233, //34.5	in
 						CONTAINER_ADJUSTMANT_POS		= LOWEST_POS + 480, 
 						ONE_AND_TWO_TOTE_RESTING_POS	= LOWEST_POS + 550, //56.5 	in 
 						TWO_TOTE_PLACEMENT_POS			= LOWEST_POS + 292, //39.75	in; thats in value might be wrong
-						HIGHEST_POS						= 715; //
+						HIGHEST_POS						= 770; //
 	
 //	private static final double LOWEST_POS    = 118; 	// 73 on Valkyrie
 //	private static final double PICKUP_POS	  = LOWEST_POS + 45;// top: 850 bottom: 112 FOR PRACTICE BOT: top: 35 bottom: 725

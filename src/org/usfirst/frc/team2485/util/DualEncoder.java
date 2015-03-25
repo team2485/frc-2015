@@ -13,6 +13,8 @@ public class DualEncoder implements PIDSource {
 	private Encoder leftEncoder;
 	private Encoder rightEncoder;
 	
+	private int signFlipHackForPracticeBot = -1;	//TODO: change back to +1 for Valkyrie
+	
 	//right incoder vals are neg, left pos
 	
 	public DualEncoder (Encoder leftEncoder, Encoder rightEncoder) {
@@ -22,24 +24,24 @@ public class DualEncoder implements PIDSource {
 	
 	@Override
 	public double pidGet() {
-		return (leftEncoder.getDistance() - rightEncoder.getDistance()) / 2;//check if distances are in both positive
+		return (signFlipHackForPracticeBot * leftEncoder.getDistance() - signFlipHackForPracticeBot * rightEncoder.getDistance()) / 2;//check if distances are in both positive
 	}
 	
-	public double getRate(){
-		return (leftEncoder.getRate() - rightEncoder.getRate()) / 2;
+	public double getRate() {
+		return (signFlipHackForPracticeBot * leftEncoder.getRate() - signFlipHackForPracticeBot * rightEncoder.getRate()) / 2;
 	}
 	
-	public double getAbsoluteRate(){
+	public double getAbsoluteRate() {
 		return (Math.abs(leftEncoder.getRate()) + Math.abs(rightEncoder.getRate())) / 2;
 	}
 	
-	public void reset(){
+	public void reset() {
 		leftEncoder.reset();
 		rightEncoder.reset();
 	}
 	
 	public double getDistance() {
-		return (leftEncoder.getDistance() - rightEncoder.getDistance()) / 2;
+		return (signFlipHackForPracticeBot * leftEncoder.getDistance() - signFlipHackForPracticeBot * rightEncoder.getDistance()) / 2;
 	}
 
 }

@@ -55,7 +55,7 @@ public class DriveTrain {
 	public double desiredHeading = 0.0; 
 	public boolean maintainingHeading = false; //use for auto and while !rotating
 	
-	private DummyOutput dummyEncoderOutput;
+	private DummyOutput dummyDriveStraightEncoderOutput, dummyStrafeEncoderOutput;
 	private DummyOutput dummyImuOutput;
 
 	private double lowEncRate = 40;
@@ -108,13 +108,14 @@ public class DriveTrain {
 		if (this.imu != null) 
 			setImu(this.imu);
 		
-		dummyEncoderOutput = new DummyOutput();
-		driveStraightPID = new PIDController(driveStraightEncoder_Kp, driveStraightEncoder_Ki, driveStraightEncoder_Kd, dualEncoder, dummyEncoderOutput);
+		dummyDriveStraightEncoderOutput = new DummyOutput();
+		driveStraightPID = new PIDController(driveStraightEncoder_Kp, driveStraightEncoder_Ki, driveStraightEncoder_Kd, dualEncoder, dummyDriveStraightEncoderOutput);
 		driveStraightPID.setAbsoluteTolerance(absTolerance_Enc_DriveStraight);
 		
 		if (this.centerEnc != null) {
+			dummyStrafeEncoderOutput = new DummyOutput();
 			strafePID = new PIDController(strafeEncoder_Kp, strafeEncoder_Ki, strafeEncoder_Kd, 
-					this.centerEnc, centerDrive);
+					this.centerEnc, dummyStrafeEncoderOutput);
 			strafePID.setAbsoluteTolerance(absTolerance_Enc_Strafe);
 		}
 	}
@@ -462,7 +463,7 @@ public class DriveTrain {
 			imuPID.enable();
 		}
 
-		double encoderOutput = dummyEncoderOutput.get();
+		double encoderOutput = dummyDriveStraightEncoderOutput.get();
 		double leftOutput  = encoderOutput;
 		double rightOutput = encoderOutput;
 
@@ -486,7 +487,11 @@ public class DriveTrain {
 		//		System.out.println("Kp from enc PID " + driveStraightPID.getP());
 
 		//		just changed this sign
-		setLeftRight(leftOutput + imuOutput, rightOutput - imuOutput);
+		
+		leftOutput 	+= imuOutput;
+		rightOutput -= imuOutput;
+		
+		setLeftRight(leftOutput, rightOutput);
 
 		// Check to see if we're on target
 		if (driveStraightPID.onTarget() && Math.abs(dualEncoder.getRate()) < lowEncRate) {
@@ -511,8 +516,62 @@ public class DriveTrain {
 		return dualEncoder.getRate();
 	}
 	
-	public boolean strafeTo(double distance) {
-		// TODO Auto-generated method stub
+	public boolean strafeTo(double inches) {
+		if (strafePID == null)
+			throw new IllegalStateException("Attempting to strafeTo but no PID controller");
+
+		if (!strafePID.isEnable()) {
+			centerEnc.reset();
+			strafePID.enable();
+			System.out.println("Enabling driveStraight PID in driveTo");
+			strafePID.setSetpoint(inches);
+		}
+
+		if (imuPID != null && !imuPID.isEnable()) {
+			setImuForDrivingStraight();			//this is correct even though we are strafing...we are NOT rotating
+			imuPID.setSetpoint(imu.getYaw());
+			System.out.println("enabling IMU PID in driveTo");
+			imuPID.enable();
+		}
+
+		double dummyEncoderOutput = dummyStrafeEncoderOutput.get();
+		
+		double imuOutput = 0.0;
+		if (imuPID != null)
+			imuOutput = dummyImuOutput.get();
+
+		setCenterWheel(dummyEncoderOutput);
+		setLeftRight(imuOutput, -imuOutput);
+
+		
+//		
+//		SmartDashboard.putNumber("Strafe Encoder error", strafePID.getError());
+//		SmartDashboard.putNumber("Strafe Output from encoder", encoderOutput);
+//		SmartDashboard.putNumber("IMU Output in strafeTo", imuOutput);
+
+		//		System.out.println("leftEnc value: " + leftEnc.getDistance() + " rightEnc value: " + rightEnc.getDistance());
+		//		System.out.println("dualEncoder: " + dualEncoder.getDistance());
+
+		//		System.out.println("encoderPID output: " + encoderOutput + " imuPID output: " + imuOutput);
+		//		System.out.println("error from enc PID " + driveStraightPID.getError());
+		//		System.out.println("dual encoder rate: " + dualEncoder.getRate()); 
+		//		System.out.println("signal sent: " + driveStraightPID.get());
+		//		System.out.println("Kp from enc PID " + driveStraightPID.getP());
+
+		//		just changed this sign
+		
+		
+
+		// Check to see if we're on target
+		if (strafePID.onTarget() && Math.abs(centerEnc.getRate()) < lowEncRate) {
+			//			System.out.println("Reached PID on target");
+			setCenterWheel(0.0);
+			setLeftRight(0.0, 0.0);
+			strafePID.disable();
+			imuPID.disable();
+			//			System.out.println("driveTo finished inside of driveTo");
+			return true;
+		}
 		return false;
 	}
 

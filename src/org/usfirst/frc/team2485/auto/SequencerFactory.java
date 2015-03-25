@@ -13,6 +13,7 @@ import org.usfirst.frc.team2485.auto.SequencedItems.MoveClawVertically;
 import org.usfirst.frc.team2485.auto.SequencedItems.MoveClawWithClapper;
 import org.usfirst.frc.team2485.auto.SequencedItems.OpenClapper;
 import org.usfirst.frc.team2485.auto.SequencedItems.OpenClaw;
+import org.usfirst.frc.team2485.auto.SequencedItems.ResetDriveEncoders;
 import org.usfirst.frc.team2485.auto.SequencedItems.RetractRatchet;
 import org.usfirst.frc.team2485.auto.SequencedItems.RotateToAngle;
 import org.usfirst.frc.team2485.auto.SequencedItems.RunRollers;
@@ -21,6 +22,7 @@ import org.usfirst.frc.team2485.auto.SequencedItems.SetClapperPIDByToteCount;
 import org.usfirst.frc.team2485.auto.SequencedItems.SetClawPID;
 import org.usfirst.frc.team2485.auto.SequencedItems.SetFingersPos;
 import org.usfirst.frc.team2485.auto.SequencedItems.SetRollers;
+import org.usfirst.frc.team2485.auto.SequencedItems.StrafeTo;
 import org.usfirst.frc.team2485.auto.SequencedItems.TiltStrongback;
 import org.usfirst.frc.team2485.auto.SequencedItems.ToteIntake;
 import org.usfirst.frc.team2485.auto.SequencedItems.ZeroEncoders;
@@ -28,6 +30,7 @@ import org.usfirst.frc.team2485.robot.Robot;
 import org.usfirst.frc.team2485.subsystems.Clapper;
 import org.usfirst.frc.team2485.subsystems.Claw;
 import org.usfirst.frc.team2485.subsystems.Fingers;
+import org.usfirst.frc.team2485.subsystems.Strongback;
 
 public class SequencerFactory {
 
@@ -64,34 +67,44 @@ public class SequencerFactory {
 					new CommandeerContainerSequence(CommandeerContainerSequence.BOTH),
 					new SequencedPause(1), //TODO: how long does the pause need to be?
 					new DriveStraight(60),
-					new TiltStrongback(0),
+					new TiltStrongback(Strongback.STANDARD_SETPOINT),
 					new MoveClapperVertically(Clapper.LOADING_SETPOINT),
 					new SequencedPause(2),
 					new DisableStrongbackPID(),
 //					new RotateToAngle(angle)
 			});
-//		case THREE_TOTE: //assumes that teammates push the other containers out of our way
-//			return new Sequencer(new SequencedItem[] {
-//					new InnerSequencer(createContainerPickupRoutine()), 
-////					new CloseClapper(),
-////					new SetFingersPos(Fingers.CLOSED),
-////					new SetFingerRollers(SetFingerRollers.LEFT, 1, 1),
-//					new SequencedMultipleItem(
-//							new InnerSequencer(createTestPickupWithStrongbackTiltAndLowerClapper()),
-//							new ClampOutputRangeDriveStraightPID(-.5, .5), // TODO: find values
-//							new DriveStraight(50)), //unknown distance
-//					new SequencedMultipleItem(
-//							new InnerSequencer(createTestPickupWithStrongbackTiltAndLowerClapper()),
-//							new DriveStraight(100)), //unknown distance
-//					new InnerSequencer(createTestPickupWithStrongbackTilt()), 
-//					new RotateToAngle(90), // find angle
-//					new DriveAtSetSpeed(-.6, 2), //tune 
-//					new SequencedMultipleItem(
-//							new InnerSequencer(createDropToteStackRoutineKeepContainer(false)),
-//							new DriveAtSetSpeed(-.4, 1)
-//							), 
-//					new DriveAtSetSpeed(0, .1)
-//					});	
+		case THREE_TOTE: 
+			return new Sequencer(new SequencedItem[] {
+					new InnerSequencer(createToteLiftRoutine()), 
+					new StrafeTo(30), //distance unknown 
+					new DriveStraight(50), //distance unknown
+					new StrafeTo(0), 
+					new ResetDriveEncoders(),
+					new SequencedMultipleItem(
+							new DriveStraight(3), //distance unknown
+							new RunRollers(.8)
+						), 
+					new InnerSequencer(createToteLiftRoutine()), //pickup second tote
+					new ResetDriveEncoders(), 
+					new StrafeTo(30), //distance unknown 
+					new DriveStraight(50), //distance unknown
+					new StrafeTo(0), 
+					new ResetDriveEncoders(),
+					new SequencedMultipleItem(
+							new DriveStraight(3), //distance unknown
+							new RunRollers(.8)
+						), 
+					new ResetDriveEncoders(),
+					new InnerSequencer(createToteLiftRoutine()), //3rd tote :D
+					new StrafeTo(30), //maybe should use rotate and drive
+					
+					
+					//drop the totes
+					new InnerSequencer(createDropToteStackRoutine(false)), 
+					new DriveStraight(-40) //get away from the tote stack
+					
+			}); 
+			//end of switch statement
 		}
 		return new Sequencer();
 	}

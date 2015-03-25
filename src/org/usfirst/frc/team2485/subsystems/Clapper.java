@@ -47,7 +47,7 @@ public class Clapper {
 		kP_2_TOTES_UP = 0.012,
 		kP_3_TOTES_UP = 0.015,
 		kP_4_TOTES_UP = 0.025,
-		kP_5_TOTES_UP = 0.04;
+		kP_5_TOTES_UP = 0.0425; //0.4
 	
 	public static final double
 		kP_DEFAULT	= kP_1_TOTES_UP, 
