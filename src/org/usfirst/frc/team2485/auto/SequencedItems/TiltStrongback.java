@@ -10,7 +10,7 @@ public class TiltStrongback implements SequencedItem {
 	public TiltStrongback(double setpoint) {
 		this.setpoint = setpoint;
 		Robot.strongback.setSetpoint(setpoint);
-		Robot.strongback.enablePid();
+//		Robot.strongback.enablePid();
 	}
 	
 	@Override

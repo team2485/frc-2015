@@ -3,21 +3,18 @@ package org.usfirst.frc.team2485.auto.SequencedItems;
 import org.usfirst.frc.team2485.auto.SequencedItem;
 import org.usfirst.frc.team2485.robot.Robot;
 
-public class RunRollers implements SequencedItem {
+public class DisableIMUPID implements SequencedItem {
 
-	private double speed; 
-	
-	public RunRollers(double speed) {
-		this.speed = speed;
-	}
 	@Override
 	public void run() {
-		Robot.rollers.intakeTote(speed);
+		Robot.drive.disableIMUPID();
+
 	}
 
 	@Override
 	public double duration() {
-		return .2; 
+		// TODO Auto-generated method stub
+		return 0.03;
 	}
 
 }

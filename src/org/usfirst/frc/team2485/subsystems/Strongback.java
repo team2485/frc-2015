@@ -20,7 +20,7 @@ public class Strongback {
 	//serial port is the "tail" of the imu
 	private SpeedController leadScrew; 
 	private IMUAdvanced imu; 
-	public PIDController leadScrewImuPID;
+	private PIDController leadScrewImuPID;
 	public static final double STANDARD_SETPOINT = 1; // THIS IS CHANGED
 	private double absToleranceLeadScrew = 0.25; //degrees 
 	
@@ -78,5 +78,10 @@ public class Strongback {
 			System.out.println("ERROR in check safety");
 			leadScrewImuPID.disable();
 		}
+	}
+
+	public boolean isPIDEnabled() {
+		// TODO Auto-generated method stub
+		return leadScrewImuPID.isEnable();
 	}
 }

@@ -10,7 +10,7 @@ import org.usfirst.frc.team2485.robot.Robot;
 public class CommandeerContainerSequence implements SequencedItem {
 	
 	private int	direction;
-	public static final int LEFT = 0, RIGHT = 1, BOTH = 2;
+	public static final int LEFT = 0, RIGHT = 1, BOTH = 2, RETRACT_BOTH = 3;
 
 	public CommandeerContainerSequence(int direction) {
 		this.direction = direction;
@@ -20,7 +20,7 @@ public class CommandeerContainerSequence implements SequencedItem {
 	public void run() {
 		switch (direction) {
 		
-			case LEFT:
+			case LEFT: 
 				Robot.containerCommandeerer.liberateLeft();				
 				break;
 				
@@ -31,6 +31,10 @@ public class CommandeerContainerSequence implements SequencedItem {
 			case BOTH:
 				Robot.containerCommandeerer.liberateLeft();
 				Robot.containerCommandeerer.liberateRight();
+				break;
+				
+			case RETRACT_BOTH:
+				Robot.containerCommandeerer.resetSol();
 				break;
 
 			default:

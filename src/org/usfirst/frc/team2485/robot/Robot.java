@@ -111,8 +111,8 @@ public class Robot extends IterativeRobot {
 
 		 centerWheelSuspension = new Solenoid(3);
 		 ratchetLatchActuator = new Solenoid(1);
-//		 commandeererSolenoidLeft = new Solenoid(1, 2);
-//		 commandeererSolenoidRight = new Solenoid(1, 0);
+		 commandeererSolenoidLeft = new Solenoid(4);
+		 commandeererSolenoidRight = new Solenoid(5);
 		 clapperActuator	= new Solenoid(2);
 		 clawSolenoid 		= new Solenoid(0);
  
@@ -124,7 +124,7 @@ public class Robot extends IterativeRobot {
 		 rightEnc.setDistancePerPulse(.0414221608);
 		 
 		 if (centerEnc != null)
-			 centerEnc.setDistancePerPulse(.0414221608); // TODO: test
+			 centerEnc.setDistancePerPulse(0.03066181); // TODO: test
 
 		 try {
 			byte update_rate_hz = 50;
@@ -139,7 +139,7 @@ public class Robot extends IterativeRobot {
 			LiveWindow.addSensor("IMU", "Gyro", imu);
 		
 		// clapperSafetyLimitSwitch = new DigitalInput(16);
-		// toteDetectorLimitSwitch = new DigitalInput(17);
+//		 toteDetectorLimitSwitch = new DigitalInput(23);
 		// pressureSwitch = new DigitalInput(10); //TODO: find port
 		
 		 clawPot = new AnalogPotentiometer(0);
@@ -160,9 +160,7 @@ public class Robot extends IterativeRobot {
 		rollers = new Rollers(leftRoller, rightRoller);
 		ratchet = new RatchetSystem(ratchetLatchActuator);
 		strongback = new Strongback(strongbackMotor, imu);
-		// containerCommandeerer = new
-		// ContainerCommandeerer(commandeererSolenoidLeft,
-		// commandeererSolenoidRight);
+		containerCommandeerer = new ContainerCommandeerer(commandeererSolenoidLeft, commandeererSolenoidRight);
 		drive.setImu(imu);
 
 		Controllers.set(new Joystick(0), new Joystick(1), new Joystick(2), new Joystick(3));
@@ -188,7 +186,7 @@ public class Robot extends IterativeRobot {
 		// int autonomousType = (int) SmartDashboard.getNumber("autoMode",
 		// SequencerFactory.DRIVE_TO_AUTO_ZONE);
 		// autoSequence = SequencerFactory.createAuto(autonomousType);
-		autoSequence = SequencerFactory.createAuto(SequencerFactory.ONE_CONTAINER);
+		autoSequence = SequencerFactory.createAuto(SequencerFactory.CONTAINER_STEAL);
 
 	}
 
@@ -206,6 +204,7 @@ public class Robot extends IterativeRobot {
 		
 		strongback.setSetpoint(Strongback.STANDARD_SETPOINT);
 		currTeleopSequence = null; //possibly change later
+		containerCommandeerer.resetSol();
 	}
 
 	public void teleopPeriodic() {
@@ -313,9 +312,9 @@ public class Robot extends IterativeRobot {
        	/*
        	 * Claw Logic
        	 */
-       	if (Controllers.getOperatorRightJoystickAxis(Controllers.JOYSTICK_AXIS_Y, .1f) != 0) {
+       	if (Controllers.getOperatorRightJoystickAxis(Controllers.JOYSTICK_AXIS_Y, .1f) != 0) 
        		claw.liftManually(Controllers.getOperatorRightJoystickAxis(Controllers.JOYSTICK_AXIS_Y));
-       	} else if (claw.isManual()) {
+       	else if (claw.isManual()) {
        		claw.setPID(Claw.kP_LOCK_POSITION_IN_PLACE, 0, 0);
     		claw.setSetpoint(claw.getPotValue());
        	}
@@ -420,10 +419,16 @@ public class Robot extends IterativeRobot {
 	public void testInit() {
 		resetAndDisableSystems();
 		finishedRotating = false;
+		centerEnc.reset();
+		leftEnc.reset();
+		rightEnc.reset();
 	}
 
 	private boolean finished = false; 
 	public void testPeriodic() {
+		
+		drive.dropCenterWheel(true);
+		System.out.println(centerEnc.get() + ", " + leftEnc.get());
 
 //		claw.setSetpoint(Claw.ONE_AND_TWO_TOTE_RESTING_POS);
 //		claw.elevationPID.enable(); 
@@ -470,10 +475,9 @@ public class Robot extends IterativeRobot {
 
 		drive.setMaintainHeading(false);
 		drive.dropCenterWheel(false);
-//		drive.disableDriveStraightPID();
-//		drive.disableIMUPID();
-		// // drive.disableStrafePID(); //keep this commented out as long as
-		// there is no center encoder
+		drive.disableDriveStraightPID();
+		drive.disableIMUPID();
+		drive.disableStrafePID(); //keep this commented out as long as there is no center encoder
 		drive.setMotors(0.0, 0.0, 0.0);
 
 		clapper.setManual();
@@ -521,5 +525,7 @@ public class Robot extends IterativeRobot {
 		 SmartDashboard.putNumber("Clapper Error", clapper.getError());
 		// SmartDashboard.putBoolean("Tote detected by limit switch",
 		// clapper.toteDetected());
+		 
+		SmartDashboard.putBoolean("Strongback enabled", strongback.isPIDEnabled());
 	}
 }

@@ -8,18 +8,18 @@ import org.usfirst.frc.team2485.robot.Robot;
  */
 
 //Need a center encoder to do this. 
-public class StrafeTo implements SequencedItem {
+public class StrafeToWithoutMaintainingHeading implements SequencedItem {
 
 	private final double distance; 
 	private boolean finished; 
 	
-	public StrafeTo(double inches) {
+	public  StrafeToWithoutMaintainingHeading(double inches) {
 		distance = inches; 
 		finished = false; 
 	}
 	@Override
 	public void run() {
-		finished = Robot.drive.strafeTo(distance);  
+		finished = Robot.drive.strafeToWithoutMaintainingHeading(distance);  
 	}
 
 	@Override
