@@ -12,9 +12,17 @@ public class DriveStraight implements SequencedItem {
 	private final double distance; //inches
 	private boolean finished; 
 	
-	public DriveStraight(double inches) {
+	private double timeout; 
+	
+	public DriveStraight(double inches, double timeout) {
 		distance = inches; 
 		finished = false; 
+		
+		this.timeout = timeout; 
+	}
+	
+	public DriveStraight(double inches) {
+		this(inches, 4); 
 	}
 	
 	@Override
@@ -24,7 +32,7 @@ public class DriveStraight implements SequencedItem {
 
 	@Override
 	public double duration() {
-		return finished ? 0 : 4; //4 untested
+		return finished ? 0 : timeout; 
 	}
 
 }

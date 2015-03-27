@@ -31,7 +31,6 @@ import org.usfirst.frc.team2485.auto.SequencedItems.StrafeTo;
 import org.usfirst.frc.team2485.auto.SequencedItems.StrafeToWithoutMaintainingHeading;
 import org.usfirst.frc.team2485.auto.SequencedItems.TiltStrongback;
 import org.usfirst.frc.team2485.auto.SequencedItems.ToteIntake;
-import org.usfirst.frc.team2485.auto.SequencedItems.ZeroEncoders;
 import org.usfirst.frc.team2485.robot.Robot;
 import org.usfirst.frc.team2485.subsystems.Clapper;
 import org.usfirst.frc.team2485.subsystems.Claw;
@@ -55,7 +54,10 @@ public class SequencerFactory {
 		switch (autoType) {
 		
 		case DRIVE_TO_AUTO_ZONE:
-			return new Sequencer(new DriveStraight(70));
+			return new Sequencer( new SequencedItem[] {
+					new DriveStraight(70),
+					new DisableDriveStraightPID()
+			});
 			
 		case STRAFE_TESTING:
 			return new Sequencer( new SequencedItem[] {
@@ -67,13 +69,13 @@ public class SequencerFactory {
 					new SequencedPause(.5),
 					new DisableDriveStraightPID(),
 					new DisableStrafePID(),
-					new ResetDriveEncoders(),
-					new StrafeTo(25),
+//					new ResetDriveEncoders(),
+					new StrafeTo(0),
 					new SequencedPause(1),
-					new DriveStraight(25),
+					new DriveStraight(50),
 					new DisableStrafePID(),
 					new DisableDriveStraightPID(),
-					new ResetDriveEncoders()
+//					new ResetDriveEncoders()
 			});
 			
 
@@ -85,8 +87,10 @@ public class SequencerFactory {
 					new MoveClawVertically(Claw.ONE_AND_TWO_TOTE_RESTING_POS),
 					new MoveClawConstantSpeed(0), 
 					new RotateToAngle(-90),
-					new ZeroEncoders(),
-					new DriveStraight(60)
+					new DisableIMUPID(),
+					new ResetDriveEncoders(),
+					new DriveStraight(60),
+					new DisableDriveStraightPID()
 			});
 			
 		case CONTAINER_STEAL:
@@ -103,8 +107,8 @@ public class SequencerFactory {
 					new MoveClapperVertically(Clapper.LOADING_SETPOINT),
 					new SequencedPause(2),
 					new DisableStrongbackPID(),
-					new DriveStraight(-20),
-					new DisableDriveStraightPID(),
+//					new DriveStraight(-20),
+//					new DisableDriveStraightPID(),
 					new OpenClapper(),
 					new RetractRatchet(),
 					new MoveClawVertically(Claw.LOWEST_POS)
@@ -113,45 +117,42 @@ public class SequencerFactory {
 		case THREE_TOTE: 
 			return new Sequencer(new SequencedItem[] {
 					new InnerSequencer(createToteLiftRoutine()), 
-					new StrafeTo(30), //distance unknown 
+					new StrafeTo(-30, .75), //distance unknown 
 					new DisableStrafePID(), 
-					new DriveStraight(50), //distance unknown
+					new DriveStraight(50, 1), //distance unknown
 					new DisableDriveStraightPID(),
-					new StrafeTo(-30), //encoders get reset when reenabling the pid
+					new StrafeTo(0), 
 					new DisableStrafePID(), 
-					new ResetDriveEncoders(),
 					new SequencedMultipleItem(
-							new DriveStraight(6), //distance unknown
+							new DriveStraight(56), //distance unknown
 							new RunRollers(.8)
 						), 
 					new RunRollers(0),
 					new DisableDriveStraightPID(), 
-					new InnerSequencer(createToteLiftRoutine()), //pickup second tote
-					new ResetDriveEncoders(), 
-					new StrafeTo(30), //distance unknown 
+					new InnerSequencer(createToteLiftRoutine()), //pickup second tote 
+					new StrafeTo(-30, .75), //distance unknown 
 					new DisableStrafePID(), 
-					new DriveStraight(50), //distance unknown
+					new DriveStraight(100, 1), //distance unknown but cumulative and relative to starting 0
 					new DisableDriveStraightPID(),
-					new StrafeTo(-30), 
+					new StrafeTo(0), 
 					new DisableStrafePID(), 
-					new ResetDriveEncoders(),
 					new SequencedMultipleItem(
-							new DriveStraight(6), //distance unknown
+							new DriveStraight(106), //distance unknown
 							new RunRollers(.8)
 						), 
 					new RunRollers(0),
 					new DisableDriveStraightPID(), 
-					new ResetDriveEncoders(),
 					new InnerSequencer(createToteLiftRoutine()), //3rd tote :D
 //					new StrafeTo(-60), //maybe should use rotate and drive
 					new RotateToAngle(-90),
 					new DisableIMUPID(),
 //					new DriveAtSetSpeedForADistance(-.7, -60),
+					new ResetDriveEncoders(),
 					new DriveStraight(-60),
-					new DisableStrafePID(), 
+					new DisableDriveStraightPID(), 
 					//drop the totes
 					new InnerSequencer(createDropToteStackRoutine(false)), 
-					new DriveStraight(-20), //get away from the tote stack (Distance untested) 
+					new DriveStraight(-80), //get away from the tote stack (Distance untested) 
 					new DisableDriveStraightPID(), 
 			}); 
 			//end of switch statement

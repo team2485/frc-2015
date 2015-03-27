@@ -13,10 +13,19 @@ public class StrafeTo implements SequencedItem {
 	private final double distance; 
 	private boolean finished; 
 	
-	public StrafeTo(double inches) {
+	private double timeout; 
+	
+	public StrafeTo(double inches, double timeout) {
 		distance = inches; 
 		finished = false; 
+		
+		this.timeout = timeout;
 	}
+	
+	public StrafeTo(double inches) {
+		this(inches, 2); 
+	}
+	
 	@Override
 	public void run() {
 		finished = Robot.drive.strafeTo(distance);  
@@ -24,7 +33,7 @@ public class StrafeTo implements SequencedItem {
 
 	@Override
 	public double duration() {
-		return finished ? 0 : 2; //2 not tested 
+		return finished ? 0 : timeout; //2 not tested 
 	}
 
 }

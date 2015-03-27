@@ -5,11 +5,17 @@ import org.usfirst.frc.team2485.robot.Robot;
 
 public class RunRollers implements SequencedItem {
 
-	private double speed; 
+	private double speed, timeout; 
+	
+	public RunRollers(double speed, double timeout) {
+		this.speed = speed;
+		this.timeout = timeout; 
+	}
 	
 	public RunRollers(double speed) {
-		this.speed = speed;
+		this(speed, .03); 
 	}
+	
 	@Override
 	public void run() {
 		Robot.rollers.intakeTote(speed);
@@ -17,7 +23,7 @@ public class RunRollers implements SequencedItem {
 
 	@Override
 	public double duration() {
-		return .2; 
+		return timeout; 
 	}
 
 }

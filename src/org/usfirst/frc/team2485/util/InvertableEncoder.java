@@ -13,7 +13,7 @@ public class InvertableEncoder implements PIDSource {
 	private Encoder encoder;
 	
 	
-	private int signFlipHackForPracticeBot = -1;	//TODO: change back to +1 for Valkyrie
+	private int signFlipHackForPracticeBot = -1;	//TODO: check changing this back to +1 for Valkyrie
 	
 	//right incoder vals are neg, left pos
 	

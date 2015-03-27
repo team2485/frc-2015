@@ -195,7 +195,7 @@ public class DriveTrain {
 				desiredHeading = imu.getYaw(); 
 
 				setImuForDrivingStraight(); 
-				imuPID.reset();
+//				imuPID.reset();
 				imuPID.setSetpoint(desiredHeading);
 				imuPID.enable();
 			}
@@ -365,15 +365,20 @@ public class DriveTrain {
 
 	public void disableIMUPID() {
 		imuPID.disable();
+		setLeftRight(0,0);
 		maintainingHeading = false;
 	}
 
 	public void disableDriveStraightPID() {
 		driveStraightPID.disable();
+		disableIMUPID();
+		setLeftRight(0,0);
 	}
 
 	public void disableStrafePID() {
 		strafePID.disable();
+		setCenterWheel(0);
+		setLeftRight(0, 0);
 	}
 
 	public void dropCenterWheel(boolean solValue) {
@@ -451,7 +456,7 @@ public class DriveTrain {
 			throw new IllegalStateException("Attempting to driveTo but no PID controller");
 
 		if (!driveStraightPID.isEnable()) {
-			dualEncoder.reset();
+		//	dualEncoder.reset();	//not resetting...making autonomous relative to a starting 0
 			driveStraightPID.enable();
 			System.out.println("Enabling driveStraight PID in driveTo " + dualEncoder.getDistance() + " , " + inches);
 			driveStraightPID.setSetpoint(inches);
@@ -527,7 +532,7 @@ public class DriveTrain {
 			throw new IllegalStateException("Attempting to strafeTo but no PID controller");
 
 		if (!strafePID.isEnable()) {
-			centerEnc.reset();
+		//	centerEnc.reset(); 	//not resetting...making auto relative to a starting 0
 			strafePID.enable();
 			System.out.println("Enabling strafe PID in strafeTo");
 			strafePID.setSetpoint(inches);
@@ -601,7 +606,7 @@ public class DriveTrain {
 			throw new IllegalStateException("Attempting to strafeTo but no PID controller");
 
 		if (!strafePID.isEnable()) {
-			centerEnc.reset();
+//			centerEnc.reset();	// not resetting...making auto relative to a starting 0
 			strafePID.enable();
 			System.out.println("Enabling strafe PID in strafeTo");
 			strafePID.setSetpoint(inches);
