@@ -42,7 +42,7 @@ public class Claw {
 						CONTAINER_ADJUSTMANT_POS		= LOWEST_POS + 480, 
 						ONE_AND_TWO_TOTE_RESTING_POS	= LOWEST_POS + 550, //56.5 	in 
 						TWO_TOTE_PLACEMENT_POS			= LOWEST_POS + 292, //39.75	in; thats in value might be wrong
-						HIGHEST_POS						= 765; //
+						HIGHEST_POS						= 774; //
 	
 //	private static final double LOWEST_POS    = 118; 	// 73 on Valkyrie
 //	private static final double PICKUP_POS	  = LOWEST_POS + 45;// top: 850 bottom: 112 FOR PRACTICE BOT: top: 35 bottom: 725
@@ -52,11 +52,18 @@ public class Claw {
 	private static final double INCH_LOW_POS = 15.625;
 	@SuppressWarnings("unused")
 	public static final double POTS_PER_INCH = POT_RANGE/INCH_RANGE;
+	
+	public static final double
+						DROP_SEQ_POS_1					= LOWEST_POS + (POTS_PER_INCH * .5), 
+						DROP_SEQ_POS_2					= LOWEST_POS + 135, 
+						DROP_SEQ_POS_3					= LOWEST_POS + 255, 
+						DROP_SEQ_POS_4					= LOWEST_POS + 410, 
+						DROP_SEQ_POS_5					= LOWEST_POS + 440, 
+						DROP_SEQ_POS_6					= HIGHEST_POS - (POTS_PER_INCH * .5); 
+
 //	
 //	private static final double LOADING_RESTING_OFFSET = 50, FIRST_LOADING_RESTING_OFFSET = 200; 
-//	
-//	private static final double TOTE_HEIGHT = 140;
-//	
+//	+6
 //	public static final double 
 //		CONTAINER_LOADING_POINT	= LOWEST_POS + 2,
 //		HIGHEST_POS				= LOWEST_POS + POS_RANGE - 5,

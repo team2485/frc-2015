@@ -1,5 +1,7 @@
 package org.usfirst.frc.team2485.auto;
 
+import javax.swing.text.Highlighter;
+
 import org.usfirst.frc.team2485.auto.SequencedItems.CloseClapper;
 import org.usfirst.frc.team2485.auto.SequencedItems.CloseClaw;
 import org.usfirst.frc.team2485.auto.SequencedItems.CommandeerContainerSequence;
@@ -204,28 +206,57 @@ public class SequencerFactory {
 		
 		Sequencer returnSequence = null;
 
-		if (toteBelowRatchet)
+		if (toteBelowRatchet) {
+			
+			double clawSetpoint = Claw.HIGHEST_POS - (Claw.POTS_PER_INCH * .5);
+		
+			switch (Robot.toteCounter.getCount()) {
+				
+			case 1: 
+				clawSetpoint = Claw.DROP_SEQ_POS_2; // tote count is one less than number of totes that we have
+				break; 
+			case 2: 
+				clawSetpoint = Claw.DROP_SEQ_POS_3;
+				break; 
+			case 3:
+				clawSetpoint = Claw.DROP_SEQ_POS_4;
+				break;
+			case 4:
+				clawSetpoint = Claw.DROP_SEQ_POS_5;
+				break;
+			case 5:
+				clawSetpoint = Claw.DROP_SEQ_POS_6;
+				break;
+		
+			}
+			
 			returnSequence = new Sequencer(
 					new SequencedItem[] {
+//							new IncrementToteCount(), //added 3/27
 							new SetClawPID(Claw.kP_LOCK_POSITION_IN_PLACE, Robot.claw.getI(), Robot.claw.getD()),
 							new CloseClapper(),
 							new RetractRatchet(),
 							new SetClapperPIDByToteCount(),
 							new SequencedMultipleItem(
-									new MoveClapperVerticallyForToteDrop(
-											Clapper.LIFT_BOTTOM_TOTE_TO_RAISE_STACK_OFF_RATCHET_SETPOINT),
-									new MoveClawVertically(Claw.HIGHEST_POS - Claw.POTS_PER_INCH * .5)
+									new MoveClapperVertically(
+											Clapper.LIFT_BOTTOM_TOTE_TO_RAISE_STACK_OFF_RATCHET_SETPOINT, 1.5),
+									new MoveClawVertically(Claw.HIGHEST_POS - Claw.POTS_PER_INCH * .5
+											- ((5 - Robot.toteCounter.getCount()) * (Claw.POTS_PER_INCH * 12)))
+//									new MoveClawWithClapper(MoveClawWithClapper.UP)
 									),
-							new SequencedPause(.5),
+							new SequencedPause(.25), //change back to .5
 							new SequencedMultipleItem(
 									new MoveClapperVertically(Clapper.LOADING_SETPOINT),
-									new MoveClawWithClapper(MoveClawWithClapper.DOWN)),
+//									new MoveClawWithClapper(MoveClawWithClapper.DOWN)),
+									new MoveClawVertically(clawSetpoint)
+									),
 							new OpenClaw(), 
-							new OpenClapper(), 
-							new SequencedPause(.1),
-							new MoveClawVertically(Claw.HIGHEST_POS - Claw.POTS_PER_INCH*.5)
+							new OpenClapper(),
+							new SequencedPause(.5), //change back to .1
+							new MoveClawVertically(Claw.HIGHEST_POS - (Claw.POTS_PER_INCH * 1.5))
 						});
-		else {
+			
+		} else {
 			// assumption is that all of the totes are on the hook...start by
 			// making sure that the clapper is in the correct position
 			returnSequence = new Sequencer(new SequencedItem[] {
@@ -238,10 +269,10 @@ public class SequencerFactory {
 							new MoveClapperVerticallyForToteDrop(Clapper.ABOVE_RATCHET_SETPOINT),
 							new MoveClawWithClapper(MoveClawWithClapper.UP)),
 					new RetractRatchet(),
+					new OpenClaw(),
 					new SequencedMultipleItem(
 							new MoveClapperVertically(Clapper.LOADING_SETPOINT), 
 							new MoveClawWithClapper(MoveClawWithClapper.DOWN)), 
-					new OpenClaw(),
 					new OpenClapper() });
 		}
 		

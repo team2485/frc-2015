@@ -29,7 +29,7 @@ public class MoveClawVertically implements SequencedItem {
 
 	@Override
 	public double duration() {
-		return finished ? 0 : 2; 
+		return finished ? 0 : 1.5; 
 	}
 	
 }

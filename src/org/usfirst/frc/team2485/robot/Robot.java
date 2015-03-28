@@ -94,6 +94,8 @@ public class Robot extends IterativeRobot {
 	private double curPos, lastPos;
 	private static double currVelocity;
 	private double lastVelocity;
+	
+	private double buttonMashCount = 1; 
 
 	// Other needed variables
 	private Relay compressorSpike;
@@ -180,7 +182,7 @@ public class Robot extends IterativeRobot {
 		imu.zeroYaw();
 		leftEnc.reset();
 		rightEnc.reset();
-		if(centerEnc != null)
+		if (centerEnc != null)
 			centerEnc.reset();
 		
 		// int autonomousType = (int) SmartDashboard.getNumber("autoMode",
@@ -265,7 +267,8 @@ public class Robot extends IterativeRobot {
     		toteCounter.subtractTote();
     		timeLastToteCountProcessed = currTime;
     	}
-       	
+    	if (Controllers.getOperatorLeftJoystickButton(7))
+    			toteCounter.resetCount(); 
         /*
          * Clapper and intake sequence controls
          */
@@ -325,9 +328,10 @@ public class Robot extends IterativeRobot {
        	if (Controllers.getOperatorRightJoystickButton(2) && currTeleopSequence == null)
        		currTeleopSequence = SequencerFactory.createPrepareForContainerLiftRoutine();
        	
-       	if (Controllers.getOperatorRightJoystickButton(6) && currTeleopSequence == null)
+       	if (Controllers.getOperatorRightJoystickButton(6) && currTeleopSequence == null) {
        		currTeleopSequence = SequencerFactory.createAdjustClawOnContainerRoutine(); 
-
+       		System.out.println("Number times Button mashed = " + buttonMashCount++); 
+       	}
        	if (Controllers.getOperatorRightJoystickButton(5) && currTeleopSequence == null) 
        		currTeleopSequence = SequencerFactory.createContainerRightingRoutine();
        	
