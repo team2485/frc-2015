@@ -3,20 +3,17 @@ package org.usfirst.frc.team2485.auto.SequencedItems;
 import org.usfirst.frc.team2485.auto.SequencedItem;
 import org.usfirst.frc.team2485.robot.Robot;
 
-/**
- * @author Patrick Wamsley
- */
-
-public class OpenClapper implements SequencedItem {
+public class ResetLastStrafeValue implements SequencedItem {
 
 	@Override
 	public void run() {
-		Robot.clapper.openClapper();
+		Robot.drive.resetLastStrafeValue();
 	}
 
 	@Override
 	public double duration() {
-		return .05; 
+		// TODO Auto-generated method stub
+		return 0.03;
 	}
-	
+
 }

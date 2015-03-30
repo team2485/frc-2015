@@ -40,8 +40,8 @@ public class Claw {
 						LOWEST_POS						= 60, //
 						MANUAL_SAFETY_ABOVE_RACHET_POS 	= LOWEST_POS + 233, //34.5	in
 						CONTAINER_ADJUSTMANT_POS		= LOWEST_POS + 480, 
-						ONE_AND_TWO_TOTE_RESTING_POS	= LOWEST_POS + 550, //56.5 	in 
-						TWO_TOTE_PLACEMENT_POS			= LOWEST_POS + 292, //39.75	in; thats in value might be wrong
+						ONE_AND_TWO_TOTE_RESTING_POS	= LOWEST_POS + 550, //56.5 	in
+						TWO_TOTE_PLACEMENT_POS			= LOWEST_POS + 280, //39.75	in; thats in value might be wrong 365
 						HIGHEST_POS						= 774; //
 	
 //	private static final double LOWEST_POS    = 118; 	// 73 on Valkyrie

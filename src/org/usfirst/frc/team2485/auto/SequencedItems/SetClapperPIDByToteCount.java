@@ -15,7 +15,7 @@ public class SetClapperPIDByToteCount implements SequencedItem {
 
 	@Override
 	public double duration() {
-		return done ? 0 : .05;
+		return done ? 0 : .03;
 	}
 
 }

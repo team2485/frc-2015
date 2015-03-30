@@ -51,6 +51,7 @@ public class Strongback {
 	}
 	
 	public void enablePid() {
+		leadScrewImuPID.setSetpoint(STANDARD_SETPOINT);
 		leadScrewImuPID.enable();
 	}
 	

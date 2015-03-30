@@ -10,15 +10,22 @@ import org.usfirst.frc.team2485.robot.Robot;
 //Need a center encoder to do this. 
 public class StrafeTo implements SequencedItem {
 
-	private final double distance; 
+	private double inches, yawSetpoint; 
 	private boolean finished; 
-	
+	private boolean customHeading;
 	private double timeout; 
 	
+	public StrafeTo(double inches, double timeout, double yawSetpoint) {
+		this.inches = inches;
+		this.timeout = timeout;
+		customHeading = true;
+		this.yawSetpoint = yawSetpoint;
+	}
+	
 	public StrafeTo(double inches, double timeout) {
-		distance = inches; 
+		this.inches = inches; 
 		finished = false; 
-		
+		customHeading = false;
 		this.timeout = timeout;
 	}
 	
@@ -28,12 +35,15 @@ public class StrafeTo implements SequencedItem {
 	
 	@Override
 	public void run() {
-		finished = Robot.drive.strafeTo(distance);  
+		if(customHeading)
+			finished = Robot.drive.strafeTo(inches);  
+		else
+			finished = Robot.drive.strafeTo(inches, yawSetpoint);
 	}
 
 	@Override
 	public double duration() {
-		return finished ? 0 : timeout; //2 not tested 
+		return finished ? 0.03 : timeout; //2 not tested 
 	}
 
 }

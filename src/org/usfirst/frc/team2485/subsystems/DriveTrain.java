@@ -67,7 +67,7 @@ public class DriveTrain {
 		absTolerance_Imu_TurnTo = 1.0,
 		absTolerance_Imu_DriveStraight = 2.0,
 		absTolerance_Enc_DriveStraight = 3.0, // needs tuning
-		absTolerance_Enc_Strafe = 3.0;
+		absTolerance_Enc_Strafe = 2.0;
 	
 	private static final double 
 		driveStraightEncoder_Kp = 0.0325,
@@ -78,11 +78,11 @@ public class DriveTrain {
 		strafeEncoder_Kp = 0.08,
 		strafeEncoder_Ki = 0.0,
 		strafeEncoder_Kd = 0.0,
-		STRAFE_MAX_SIGNAL_DELTA = .05;
+		STRAFE_MAX_SIGNAL_DELTA = .035;
 	private double lastStrafeValue = 0.0;
 
 	private static final double
-		driveStraightImu_Kp = 0.05, // new - 3/21
+		driveStraightImu_Kp = 0.05, // new - 3/21 and again on 3/28 (was 0.05 before)
 		driveStraightImu_Ki = 0.0,
 		driveStraightImu_Kd = 0.01; 
 
@@ -446,11 +446,15 @@ public class DriveTrain {
 	public boolean rotate(double angle){
 		return rotateTo(imu.getYaw()+angle);
 	}
+	
+	public boolean driveTo(double inches) {
+		return driveTo(inches, imu.getYaw());
+	}
 	/**
 	 * @param inches to drive forward
 	 * @return true when robot has driven that many inches, false if not completed
 	 */
-	public boolean driveTo(double inches) {
+	public boolean driveTo(double inches, double yawSetpoint) {
 
 		if (driveStraightPID == null)
 			throw new IllegalStateException("Attempting to driveTo but no PID controller");
@@ -464,7 +468,7 @@ public class DriveTrain {
 
 		if (imuPID != null && !imuPID.isEnable()) {
 			setImuForDrivingStraight();
-			imuPID.setSetpoint(imu.getYaw());
+			imuPID.setSetpoint(yawSetpoint);
 			System.out.println("enabling IMU PID in driveTo");
 			imuPID.enable();
 		}
@@ -479,9 +483,9 @@ public class DriveTrain {
 			imuOutput = dummyImuOutput.get();
 
 		
-		SmartDashboard.putNumber("Encoder error", driveStraightPID.getError());
-		SmartDashboard.putNumber("Output from encoder", (float)encoderOutput);
-		SmartDashboard.putNumber("IMU Output in driveTo", imuOutput);
+//		SmartDashboard.putNumber("Encoder error", driveStraightPID.getError());
+//		SmartDashboard.putNumber("Output from encoder", (float)encoderOutput);
+//		SmartDashboard.putNumber("IMU Output in driveTo", imuOutput);
 
 		//		System.out.println("leftEnc value: " + leftEnc.getDistance() + " rightEnc value: " + rightEnc.getDistance());
 		//		System.out.println("dualEncoder: " + dualEncoder.getDistance());
@@ -515,6 +519,10 @@ public class DriveTrain {
 		return dualEncoder.getDistance();
 	}
 	
+	public double getDistanceFromCenterEncoders() {
+		return centerEnc.getDistance();
+	}
+	
 	public IMU getIMU() {
 		return imu;
 	}
@@ -528,6 +536,10 @@ public class DriveTrain {
 	}
 	
 	public boolean strafeTo(double inches) {
+		return strafeTo(inches, imu.getYaw());
+	}
+	
+	public boolean strafeTo(double inches, double yawSetpoint) {
 		if (strafePID == null)
 			throw new IllegalStateException("Attempting to strafeTo but no PID controller");
 
@@ -540,7 +552,7 @@ public class DriveTrain {
 
 		if (imuPID != null && !imuPID.isEnable()) {
 			setImuForDrivingStraight();			//this is correct even though we are strafing...we are NOT rotating
-			imuPID.setSetpoint(imu.getYaw());
+			imuPID.setSetpoint(yawSetpoint);
 			System.out.println("enabling IMU PID in strafeTo");
 			imuPID.enable();
 		}
@@ -548,16 +560,15 @@ public class DriveTrain {
 		
 		double dummyEncoderOutput = dummyStrafeEncoderOutput.get();
 		
-		if(Math.abs(dummyEncoderOutput - lastStrafeValue) > STRAFE_MAX_SIGNAL_DELTA)
-		{
-			if(dummyEncoderOutput > lastStrafeValue)
+		if (Math.abs(dummyEncoderOutput - lastStrafeValue) > STRAFE_MAX_SIGNAL_DELTA) {
+			if (dummyEncoderOutput > lastStrafeValue)
 				dummyEncoderOutput = lastStrafeValue + STRAFE_MAX_SIGNAL_DELTA;
 			else
 				dummyEncoderOutput =  lastStrafeValue - STRAFE_MAX_SIGNAL_DELTA;
 		}
-		if(dummyEncoderOutput > 1)
+		if (dummyEncoderOutput > 1)
 			dummyEncoderOutput = 1;
-		else if(dummyEncoderOutput < -1)
+		else if (dummyEncoderOutput < -1)
 			dummyEncoderOutput = -1;
 		lastStrafeValue = dummyEncoderOutput;
 		
@@ -571,9 +582,9 @@ public class DriveTrain {
 		System.out.println("strafeTo encOutput and imuOutput " + dummyEncoderOutput + ", " + imuOutput);
 		
 //		
-		SmartDashboard.putNumber("Strafe Encoder error", strafePID.getError());
-		SmartDashboard.putNumber("Strafe Output from encoder", dummyEncoderOutput);
-		SmartDashboard.putNumber("IMU Output in strafeTo", imuOutput);
+//		SmartDashboard.putNumber("Strafe Encoder error", strafePID.getError());
+//		SmartDashboard.putNumber("Strafe Output from encoder", dummyEncoderOutput);
+//		SmartDashboard.putNumber("IMU Output in strafeTo", imuOutput);
 
 		//		System.out.println("leftEnc value: " + leftEnc.getDistance() + " rightEnc value: " + rightEnc.getDistance());
 		//		System.out.println("dualEncoder: " + dualEncoder.getDistance());
@@ -590,15 +601,19 @@ public class DriveTrain {
 
 		// Check to see if we're on target
 		if (strafePID.onTarget() && Math.abs(centerEnc.getRate()) < lowEncRate) {
-			//			System.out.println("Reached PID on target");
+						System.out.println("Reached PID on target");
 			setCenterWheel(0.0);
 			setLeftRight(0.0, 0.0);
 			strafePID.disable();
 			imuPID.disable();
-			//			System.out.println("driveTo finished inside of driveTo");
+						System.out.println("strafeTo finished inside of strafeTo");
 			return true;
 		}
 		return false;
+	}
+	
+	public void resetLastStrafeValue() {
+		lastStrafeValue = 0.0;
 	}
 
 	public boolean strafeToWithoutMaintainingHeading(double inches) {
@@ -683,6 +698,14 @@ public class DriveTrain {
 		dualEncoder.reset();
 		if(centerEnc != null)
 			centerEnc.reset();
+	}
+
+	public double getErrorFromDriveStraightPID() {
+		return driveStraightPID.getError();
+	}
+
+	public double getErrorFromStrafePID() {
+		return strafePID.getError();
 	}
 }
 

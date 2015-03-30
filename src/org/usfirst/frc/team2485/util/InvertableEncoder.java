@@ -35,6 +35,7 @@ public class InvertableEncoder implements PIDSource {
 	}
 	
 	public void reset() {
+		System.out.println("Reset method called from InvertableEncoder");
 		encoder.reset();
 	}
 	

@@ -11,17 +11,26 @@ import org.usfirst.frc.team2485.robot.Robot;
  */
 
 public class MoveClapperConstantSpeed implements SequencedItem {
+	
+	private double speed, timeout;
 
 	public MoveClapperConstantSpeed(double speed) {
-		Robot.clapper.liftManually(speed);
+		this(speed, .03);
+		}
+	
+	public MoveClapperConstantSpeed(double speed, double timeout) {
+		this.speed = speed;
+		this.timeout = timeout;
 	}
 	
 	@Override
-	public void run() {}
+	public void run() {
+		Robot.clapper.liftManually(speed);
+	}
 
 	@Override
 	public double duration() {
-		return .05; 
+		return timeout; 
 	}
 
 }

@@ -9,15 +9,23 @@ import org.usfirst.frc.team2485.robot.Robot;
 
 public class DriveStraight implements SequencedItem {
 
-	private final double distance; //inches
+	private double inches, yawSetpoint; 
 	private boolean finished; 
+	private boolean customHeading;
 	
 	private double timeout; 
+	 
+	public DriveStraight(double inches, double timeout, double yawSetpoint) {
+		this.inches = inches;
+		this.timeout = timeout;
+		this.yawSetpoint = yawSetpoint;
+		customHeading = true;
+	}
 	
 	public DriveStraight(double inches, double timeout) {
-		distance = inches; 
+		this.inches = inches; 
 		finished = false; 
-		
+		customHeading = false;
 		this.timeout = timeout; 
 	}
 	
@@ -27,7 +35,10 @@ public class DriveStraight implements SequencedItem {
 	
 	@Override
 	public void run() {
-		finished = Robot.drive.driveTo(distance); 
+		if(customHeading)
+			finished = Robot.drive.driveTo(inches, yawSetpoint); 
+		else
+			finished = Robot.drive.driveTo(inches);
 	}
 
 	@Override
