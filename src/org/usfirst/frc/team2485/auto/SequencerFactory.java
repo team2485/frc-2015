@@ -10,6 +10,7 @@ import org.usfirst.frc.team2485.auto.SequencedItems.DisableIMUPID;
 import org.usfirst.frc.team2485.auto.SequencedItems.DisableStrafePID;
 import org.usfirst.frc.team2485.auto.SequencedItems.DisableStrongbackPID;
 import org.usfirst.frc.team2485.auto.SequencedItems.DriveAtSetSpeed;
+import org.usfirst.frc.team2485.auto.SequencedItems.DriveBackAndDropTotesForAuto;
 import org.usfirst.frc.team2485.auto.SequencedItems.DriveStraight;
 import org.usfirst.frc.team2485.auto.SequencedItems.DropCenterWheel;
 import org.usfirst.frc.team2485.auto.SequencedItems.ExtendRatchet;
@@ -224,14 +225,15 @@ public class SequencerFactory {
 					new ResetDriveEncoders(),
 //					new MoveClapperConstantSpeed(.6, .1),
 					new SequencedMultipleItem(
-							new DriveStraight(-150, 1.5, ANGLE_TO_ROTATE_AT_END),
-							new RetractRatchet()
+//							new DriveStraight(-150, 1.5, ANGLE_TO_ROTATE_AT_END),
+							new RetractRatchet(), 
+							new MoveClapperVertically(Clapper.LOADING_SETPOINT, .2),
+							new DriveBackAndDropTotesForAuto(1, 2)
 						),
-					new DriveAtSetSpeed(0, 0.03),
-					new SequencedPause(.2),
-					new MoveClapperVertically(Clapper.LOADING_SETPOINT, .2),
-					new OpenClapper(),
-					new DriveStraight(-170, 0.75, ANGLE_TO_ROTATE_AT_END),
+//					new DriveAtSetSpeed(0, 0.03),
+//					new SequencedPause(.2),
+//					new OpenClapper(),
+//					new DriveStraight(-170, 0.75, ANGLE_TO_ROTATE_AT_END),
 //					new SequencedMultipleItem(
 //							new DriveStraight(-150, 1, ANGLE_TO_ROTATE_AT_END),
 //							new MoveClapperVertically(Clapper.LOADING_SETPOINT, 1),
