@@ -8,11 +8,14 @@ import org.usfirst.frc.team2485.util.DualEncoder;
 import org.usfirst.frc.team2485.util.DummyOutput;
 import org.usfirst.frc.team2485.util.InvertableEncoder;
 import org.usfirst.frc.team2485.util.ThresholdHandler;
+import org.usfirst.frc.team2485.util.UltrasonicWrapper;
 
+import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Talon;
+import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.VictorSP;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -30,6 +33,7 @@ public class DriveTrain {
 	private DualEncoder dualEncoder;
 	private InvertableEncoder centerEnc;
 	public IMU imu;
+	private UltrasonicWrapper sonicSensorWrapper; 
 
 	//Drive Controls 
 	private final double 
@@ -52,16 +56,17 @@ public class DriveTrain {
 	public PIDController driveStraightPID;
 	public PIDController imuPID;
 	private PIDController strafePID; 
+	public PIDController sonicStrafePID; 
 	  
 	public double desiredHeading = 0.0; 
 	public boolean maintainingHeading = false; //use for auto and while !rotating
 	
-	private DummyOutput dummyDriveStraightEncoderOutput, dummyStrafeEncoderOutput;
+	private DummyOutput dummyDriveStraightEncoderOutput, dummyStrafeEncoderOutput, dummySonicStrafeOutput;
 	private DummyOutput dummyImuOutput;
 
 	private double lowEncRate = 40;
 	private int imuOnTargetCounter = 0;
-	private final int MINIMUM_IMU_ON_TARGET_ITERATIONS = 6;
+	private final int MINIMUM_IMU_ON_TARGET_ITERATIONS = 10;
 
 	private static final double
 		absTolerance_Imu_TurnTo = 1.0,
@@ -70,7 +75,7 @@ public class DriveTrain {
 		absTolerance_Enc_Strafe = 2.0;
 	
 	private static final double 
-		driveStraightEncoder_Kp = 0.0325,
+		driveStraightEncoder_Kp = 0.025,  //was .0325, changed on 3/31
 		driveStraightEncoder_Ki = 0.0, 
 		driveStraightEncoder_Kd = 0.0;
 
@@ -79,6 +84,12 @@ public class DriveTrain {
 		strafeEncoder_Ki = 0.0,
 		strafeEncoder_Kd = 0.0,
 		STRAFE_MAX_SIGNAL_DELTA = .035;
+	
+	private static final double
+		sonicStrafe_Kp = 0.06, 
+		sonicStrafe_Ki = 0, 
+		sonicStrafe_Kd = 0; 
+	
 	private double lastStrafeValue = 0.0;
 
 	private static final double
@@ -92,13 +103,13 @@ public class DriveTrain {
 		rotateImu_kD = 0.01;
 	
 	//Anti-tipping 
-	private double oldXInput, oldYInput; 
+	private double oldXInput, oldYInput;   
 	
 	private static double MAX_DELTA_X = 0.02; 
 	private static double MAX_DELTA_Y_NORMAL = 0.05, MAX_DELTA_Y_DANGER = 0.025; 
 
 	public DriveTrain(CombinedSpeedController leftDrive, CombinedSpeedController rightDrive, CombinedSpeedController center, Solenoid suspension, 
-			IMU imu, Encoder leftEnc, Encoder rightEnc, Encoder centerEnc) {
+			IMU imu, Encoder leftEnc, Encoder rightEnc, Encoder centerEnc, Ultrasonic sonicSensor) {
 
 		this.leftDrive 		= leftDrive; 
 		this.rightDrive     = rightDrive; 
@@ -107,6 +118,7 @@ public class DriveTrain {
 		this.imu            = imu;
 		this.centerEnc		= new InvertableEncoder(centerEnc);
 		this.dualEncoder	= new DualEncoder(leftEnc, rightEnc); 
+		this.sonicSensorWrapper	= new UltrasonicWrapper(sonicSensor); //units set in UltraSonic constructor
 
 		if (this.imu != null) 
 			setImu(this.imu);
@@ -114,6 +126,10 @@ public class DriveTrain {
 		dummyDriveStraightEncoderOutput = new DummyOutput();
 		driveStraightPID = new PIDController(driveStraightEncoder_Kp, driveStraightEncoder_Ki, driveStraightEncoder_Kd, dualEncoder, dummyDriveStraightEncoderOutput);
 		driveStraightPID.setAbsoluteTolerance(absTolerance_Enc_DriveStraight);
+		
+		dummySonicStrafeOutput = new DummyOutput();
+		sonicStrafePID = new PIDController(sonicStrafe_Kp, sonicStrafe_Ki, sonicStrafe_Kd, sonicSensorWrapper, dummySonicStrafeOutput); 
+		sonicStrafePID.setAbsoluteTolerance(absTolerance_Enc_Strafe); 
 		
 		if (this.centerEnc != null) {
 			dummyStrafeEncoderOutput = new DummyOutput();
@@ -248,7 +264,7 @@ public class DriveTrain {
 		double yOutput = 0, xOutput = 0; 		
 		double pidOut = dummyImuOutput.get(); 
 
-		System.out.println("Drive PID Out: " + pidOut);
+//		System.out.println("Drive PID Out: " + pidOut);
 		/* Code for strafe driving at any angle
 		 * 
 		 * Scales y input by tuning parameter to account for the varying speeds of for/rev and strafe wheels
@@ -419,7 +435,7 @@ public class DriveTrain {
 
 		if (imuPID.onTarget()) {
 			imuOnTargetCounter++;
-			//			System.out.println("On target with count: " + imuOnTargetCounter);
+						System.out.println("On target with count: " + imuOnTargetCounter);
 		} else {
 			imuOnTargetCounter = 0;
 			
@@ -428,7 +444,7 @@ public class DriveTrain {
 		if (imuOnTargetCounter >= MINIMUM_IMU_ON_TARGET_ITERATIONS){
 			setLeftRight(0, 0);
 			imuPID.disable();
-			//			System.out.println("Disabling PID with count: " + imuOnTargetCounter);
+						System.out.println("Disabling PID with count: " + imuOnTargetCounter);
 			return true;
 		}
 
@@ -604,12 +620,96 @@ public class DriveTrain {
 						System.out.println("Reached PID on target");
 			setCenterWheel(0.0);
 			setLeftRight(0.0, 0.0);
+			lastStrafeValue = 0;
 			strafePID.disable();
 			imuPID.disable();
 						System.out.println("strafeTo finished inside of strafeTo");
 			return true;
 		}
 		return false;
+	}
+	
+	public boolean strafeToUsingSonicSensor(double inches) {
+		return strafeToUsingSonicSensor(inches, imu.getYaw());
+	}
+	
+	public boolean strafeToUsingSonicSensor(double inches, double yawSetpoint) {
+		
+		if (sonicStrafePID == null)
+			throw new IllegalStateException("Attempting to strafeTo but no PID controller");
+
+		if (!sonicStrafePID.isEnable()) {
+		//	centerEnc.reset(); 	//not resetting...making auto relative to a starting 0
+			sonicStrafePID.enable();
+			System.out.println("Enabling strafe PID in strafeTo w/ sonic");
+			sonicStrafePID.setSetpoint(inches);
+		}
+
+		if (imuPID != null && !imuPID.isEnable()) {
+			setImuForDrivingStraight();			//this is correct even though we are strafing...we are NOT rotating
+			imuPID.setSetpoint(yawSetpoint);
+			System.out.println("enabling IMU PID in strafeTo");
+			imuPID.enable();
+		}
+		dropCenterWheel(true);
+		
+		double dummySonicOutput = dummySonicStrafeOutput.get();
+		
+		if (Math.abs(dummySonicOutput - lastStrafeValue) > STRAFE_MAX_SIGNAL_DELTA) {
+			if (dummySonicOutput > lastStrafeValue)
+				dummySonicOutput = lastStrafeValue + STRAFE_MAX_SIGNAL_DELTA;
+			else
+				dummySonicOutput =  lastStrafeValue - STRAFE_MAX_SIGNAL_DELTA;
+		}
+		if (dummySonicOutput > 1)
+			dummySonicOutput = 1;
+		else if (dummySonicOutput < -1)
+			dummySonicOutput = -1;
+		lastStrafeValue = dummySonicOutput;
+		
+		double imuOutput = 0.0;
+		if (imuPID != null)
+			imuOutput = dummyImuOutput.get();
+
+		setCenterWheel(dummySonicOutput);
+		setLeftRight(imuOutput, -imuOutput);
+
+		System.out.println("strafeTo encOutput and imuOutput " + dummySonicOutput + ", " + imuOutput);
+		
+//		
+//		SmartDashboard.putNumber("Strafe Encoder error", strafePID.getError());
+//		SmartDashboard.putNumber("Strafe Output from encoder", dummyEncoderOutput);
+//		SmartDashboard.putNumber("IMU Output in strafeTo", imuOutput);
+
+		//		System.out.println("leftEnc value: " + leftEnc.getDistance() + " rightEnc value: " + rightEnc.getDistance());
+		//		System.out.println("dualEncoder: " + dualEncoder.getDistance());
+
+		//		System.out.println("encoderPID output: " + encoderOutput + " imuPID output: " + imuOutput);
+		//		System.out.println("error from enc PID " + driveStraightPID.getError());
+		//		System.out.println("dual encoder rate: " + dualEncoder.getRate()); 
+		//		System.out.println("signal sent: " + driveStraightPID.get());
+		//		System.out.println("Kp from enc PID " + driveStraightPID.getP());
+
+		//		just changed this sign
+		
+		
+
+		// Check to see if we're on target //doesnt check speed 
+		if (sonicStrafePID.onTarget()) {
+			System.out.println("Reached PID on target");
+			setCenterWheel(0.0);
+			setLeftRight(0.0, 0.0);
+			lastStrafeValue = 0;
+			sonicStrafePID.disable();
+			imuPID.disable();
+			System.out.println("strafeTo finished inside of strafeTo");
+			return true;
+		}
+		return false;
+	}
+	
+	public double getUltrasonicDistance() {
+		return sonicSensorWrapper.pidGet();
 	}
 	
 	public void resetLastStrafeValue() {
@@ -706,6 +806,10 @@ public class DriveTrain {
 
 	public double getErrorFromStrafePID() {
 		return strafePID.getError();
+	}
+
+	public void disableSonicStrafePID() {
+		sonicStrafePID.disable();
 	}
 }
 

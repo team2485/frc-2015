@@ -9,6 +9,7 @@ public class DisableStrafePID implements SequencedItem {
 	public void run() {
 		Robot.drive.disableStrafePID();
 		Robot.drive.disableIMUPID();
+		Robot.drive.disableSonicStrafePID(); 
 	}
 	
 	@Override

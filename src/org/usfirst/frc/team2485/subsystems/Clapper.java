@@ -77,7 +77,9 @@ public class Clapper {
 		COOP_THREE_TOTES_SETPOINT								= LOWEST_POS + 370, 
 		SCORING_PLATFORM_HEIGHT									= LOWEST_POS + 25,
 		LIFT_BOTTOM_TOTE_TO_RAISE_STACK_OFF_RATCHET_SETPOINT	= LOWEST_POS + 100,
-		FIX_CONTAINER_IN_CLAW_POS								= LOWEST_POS + 125;
+		FIX_CONTAINER_IN_CLAW_POS								= LOWEST_POS + 125,
+		ABOVE_STEP_SETPOINT 									= LOWEST_POS + 215,
+		TOTE_HEIGHT 											= 255;
 	
 	public Clapper(CombinedSpeedController clapperLifter, Solenoid clapperActuator2, AnalogPotentiometer pot, 
 			DigitalInput toteDetectorLimitSwitch, DigitalInput bottomSafetyLimitSwitch) {

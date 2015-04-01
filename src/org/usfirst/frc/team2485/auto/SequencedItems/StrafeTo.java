@@ -36,9 +36,9 @@ public class StrafeTo implements SequencedItem {
 	@Override
 	public void run() {
 		if(customHeading)
-			finished = Robot.drive.strafeTo(inches);  
+			finished = Robot.drive.strafeToUsingSonicSensor(inches);  
 		else
-			finished = Robot.drive.strafeTo(inches, yawSetpoint);
+			finished = Robot.drive.strafeToUsingSonicSensor(inches, yawSetpoint);
 	}
 
 	@Override

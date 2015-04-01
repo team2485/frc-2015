@@ -68,19 +68,22 @@ public class SequencerFactory {
 		case STRAFE_TESTING:
 			return new Sequencer( new SequencedItem[] {
 					new ResetDriveEncoders(),
-					new StrafeTo(-25),
+					new StrafeTo(40, 1.25, 0),
 					new DisableStrafePID(),
-					new SequencedPause(.1),
-					new DriveStraight(25),
-					new SequencedPause(.5),
-					new DisableDriveStraightPID(),
-					new DisableStrafePID(),
+					new ResetLastStrafeValue(),
+					new SequencedPause(5),
+//					new DriveStraight(25),
+//					new SequencedPause(.5),
+//					new DisableDriveStraightPID(),
+//					new DisableStrafePID(),
 //					new ResetDriveEncoders(),
-					new StrafeTo(0),
-					new SequencedPause(1),
-					new DriveStraight(50),
+					new ResetDriveEncoders(),
+					new StrafeTo(-25, 1.5, 0),
+//					new SequencedPause(1),
+//					new DriveStraight(50),
 					new DisableStrafePID(),
-					new DisableDriveStraightPID(),
+					new ResetLastStrafeValue(),
+//					new DisableDriveStraightPID(),
 //					new ResetDriveEncoders()
 			});
 			
@@ -121,22 +124,25 @@ public class SequencerFactory {
 //					new RotateToAngle(angle)
 			});
 		case THREE_TOTE: 
-			double MIN_TIME_BETWEEN_MOVEMENT_TYPES = .25;
+			double MIN_TIME_BETWEEN_MOVEMENT_TYPES = .05;
 			double ANGLE_TO_ROTATE_AT_END = -80;
+			double offsetToWall = Robot.getAutoWallSonicOffset();
 			return new Sequencer(new SequencedItem[] {
 					
 					//Lift tote and drive around container dance...starts here...
 					new SequencedMultipleItem(
 							new InnerSequencer(createAutoToteLiftRoutinePartOne()), 
-							new StrafeTo(40, 1.25, 0) //distance untested
+							new StrafeTo(offsetToWall + 25, 1.25, 0) //distance untested
 						), 
 					new SequencedMultipleItem(
 //							new RunRollers(.4), 
 							new DisableStrafePID(),
 							new ResetLastStrafeValue(),
+							new ResetDriveEncoders(), 
 							new SequencedPause(MIN_TIME_BETWEEN_MOVEMENT_TYPES)
 						),
 					new SequencedMultipleItem(	
+							new DropCenterWheel(false),
 							new DriveStraight(50, 1.25, 0), //distance untested
 							new InnerSequencer(createAutoToteLiftRoutinePartTwo())
 						),
@@ -144,17 +150,19 @@ public class SequencerFactory {
 							new DisableDriveStraightPID(),
 							new SequencedPause(MIN_TIME_BETWEEN_MOVEMENT_TYPES)
 						),
-					new StrafeTo(20, 1.25, 0), // center up...the non-zero # compensates for error
+					new StrafeTo(offsetToWall, 1.25, 0), // center up...the non-zero # compensates for error
 					
 					//now drive up to the next tote, clappers open, rollers running
 					new SequencedMultipleItem(
 							new ResetLastStrafeValue(),
+							new ResetDriveEncoders(), 
 							new DisableStrafePID(), 
 							new OpenClapper(), 
 							new SequencedPause(MIN_TIME_BETWEEN_MOVEMENT_TYPES),
-							new RunRollers(.8)
+							new RunRollers(.8),
+							new DropCenterWheel(false)
 						),
-					new DriveStraight(100, 3, 0), //distance untested
+					new DriveStraight(20, 3, 0), //distance untested
 					
 					//close the clappers, letting the rollers run still for just a bit
 					new SequencedMultipleItem(
@@ -173,37 +181,38 @@ public class SequencerFactory {
 					//Lift tote and drive around container dance...starts here...
 					new SequencedMultipleItem(
 							new InnerSequencer(createAutoToteLiftRoutinePartOne()), 
-							new StrafeTo(45, 1.25, 0) //distance untested
+							new StrafeTo(Robot.getAutoWallSonicOffset() + 25, 1.25, 0) //distance untested
 						), 
 					new SequencedMultipleItem(
 //							new RunRollers(.4), 
 							new ResetLastStrafeValue(),
-							new DisableStrafePID(), 
+							new DisableStrafePID(),
+							new ResetDriveEncoders(), 
+							new DropCenterWheel(false),
 							new SequencedPause(MIN_TIME_BETWEEN_MOVEMENT_TYPES)
 						),
 
 					new InnerSequencer(createAutoToteLiftRoutinePartTwo()),
 					
-					
-					
-					new DriveStraight(150, 1.25, 0), //distance untested
-							
-
+					new DriveStraight(40, 1.25, 0), //distance untested
+	
 					new SequencedMultipleItem(
 							new DisableDriveStraightPID(),
 							new SequencedPause(MIN_TIME_BETWEEN_MOVEMENT_TYPES)
 						),
-					new StrafeTo(15, 1.25, 0), //center up...non-zero # is to compensate for error
+					new StrafeTo(Robot.getAutoWallSonicOffset(), 1.25, 0), //center up...non-zero # is to compensate for error
 					
 					//now drive up to the next tote, clappers open, rollers running
 					new SequencedMultipleItem(
 							new DisableStrafePID(), 
 							new ResetLastStrafeValue(),
+							new ResetDriveEncoders(), 
 							new OpenClapper(), 
+							new DropCenterWheel(false),
 							new SequencedPause(MIN_TIME_BETWEEN_MOVEMENT_TYPES),
 							new RunRollers(.8)
 						),
-					new DriveStraight(200, 3, 0), //distance untested
+					new DriveStraight(40, 3, 0), //distance untested
 					
 					//close the clappers, letting the rollers run still for just a bit
 					new SequencedMultipleItem(
@@ -220,16 +229,25 @@ public class SequencerFactory {
 					
 					//rollers are still running...see above
 					new DropCenterWheel(false),
-					new MoveClapperVertically(Clapper.LIFT_BOTTOM_TOTE_TO_RAISE_STACK_OFF_RATCHET_SETPOINT + 20, 0.1),
+					new DisableStrafePID(),
+					new DisableDriveStraightPID(),
+		//			new MoveClapperVertically(Clapper.LIFT_BOTTOM_TOTE_TO_RAISE_STACK_OFF_RATCHET_SETPOINT + 20, 0.1),
 					new RotateToAngle(ANGLE_TO_ROTATE_AT_END, 1),
 					new ResetDriveEncoders(),
 //					new MoveClapperConstantSpeed(.6, .1),
-					new SequencedMultipleItem(
+					
+//					new SequencedMultipleItem(
 //							new DriveStraight(-150, 1.5, ANGLE_TO_ROTATE_AT_END),
-							new RetractRatchet(), 
-							new MoveClapperVertically(Clapper.LOADING_SETPOINT, .2),
-							new DriveBackAndDropTotesForAuto(1, 2)
-						),
+//							new RetractRatchet(), 
+//							new MoveClapperVertically(Clapper.LOADING_SETPOINT, .2),
+							new DriveBackAndDropTotesForAuto(-1, 3), //encoderes were returning a positive error; proof of concept here is solid. 
+//						),
+//					new SequencedPause(.75), 
+					new RunRollers(0), 
+					new DriveAtSetSpeed(-.3, .03), 
+					new SequencedPause(.25), 
+					new DriveAtSetSpeed(0, .3), 
+
 //					new DriveAtSetSpeed(0, 0.03),
 //					new SequencedPause(.2),
 //					new OpenClapper(),
@@ -243,8 +261,6 @@ public class SequencerFactory {
 //							new DriveStraight(-160, 1, ANGLE_TO_ROTATE_AT_END),
 //							new OpenClapper()
 //							),
-					new RunRollers(0),
-					new DriveAtSetSpeed(0, .1),
 					 
 					
 					//Now we should have all three totes...lift and drive or just drive with the third one on the floor?
@@ -461,12 +477,12 @@ public class SequencerFactory {
 //									new MoveClawWithClapper(MoveClawWithClapper.UP)
 									),
 							new SequencedPause(.25), //change back to .5
+							new OpenClaw(), 
 							new SequencedMultipleItem(
 									new MoveClapperVertically(Clapper.LOADING_SETPOINT),
 //									new MoveClawWithClapper(MoveClawWithClapper.DOWN)),
 									new MoveClawVertically(clawSetpoint)
 									),
-							new OpenClaw(), 
 							new OpenClapper(),
 							new SequencedPause(.1), //change back to .1
 							new MoveClawVertically(Robot.claw.getPotValue() + 15)//  Claw.HIGHEST_POS - (Claw.POTS_PER_INCH * 1.5))
@@ -494,6 +510,44 @@ public class SequencerFactory {
 		
 		Robot.toteCounter.resetCount();
 		return returnSequence;
+	}
+	
+	public static Sequencer createPrepareCoopertitionStack(int numberOfTotesOnStep) {
+		
+		double clapperSetpoint = 0;
+		
+		switch (numberOfTotesOnStep) {
+			case 0:
+				clapperSetpoint = Clapper.ABOVE_STEP_SETPOINT;
+				break;
+			case 1:
+				clapperSetpoint = Clapper.ABOVE_STEP_SETPOINT + Clapper.TOTE_HEIGHT * 1;
+				break;
+			case 2:
+				clapperSetpoint = Clapper.ABOVE_STEP_SETPOINT + Clapper.TOTE_HEIGHT * 2;
+				break;
+		}
+		
+		return new Sequencer(new SequencedItem[] {
+				new RetractRatchet(),
+				new SequencedMultipleItem(
+						new MoveClapperVertically(clapperSetpoint),
+						new MoveClawVertically(Claw.HIGHEST_POS - 10)
+				)
+		});
+	}
+	public static Sequencer createCoopertitionStack() {
+		double setpoint = Robot.clapper.getPotValue() - 86;
+		
+		return new Sequencer(new SequencedItem[] {
+				new MoveClapperVertically(setpoint),
+				new SequencedMultipleItem(
+//						new DriveStraight(5),
+						new RunRollers(-0.7, 0.5)
+				),
+				new RunRollers(0),
+				new OpenClapper()
+		});
 	}
 
 	public static Sequencer createContainerRightingRoutine() {
@@ -553,6 +607,9 @@ public class SequencerFactory {
 				new OpenClaw(), 
 				new MoveClawVertically(Claw.TWO_TOTE_PLACEMENT_POS), 
 				new CloseClaw(),
+				new SequencedPause(.05),
+				new MoveClawVertically(Claw.TWO_TOTE_PLACEMENT_POS + Claw.POTS_PER_INCH * 4),
+				new SequencedPause(.05),
 				new MoveClawVertically(Claw.TWO_TOTE_PLACEMENT_POS + Claw.POTS_PER_INCH * 1)
 		}); 
 	}

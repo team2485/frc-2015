@@ -15,6 +15,7 @@ import org.usfirst.frc.team2485.util.Controllers;
 import org.usfirst.frc.team2485.util.DualEncoder;
 import org.usfirst.frc.team2485.util.ToteCounter;
 
+import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -28,6 +29,8 @@ import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.SpeedController;
 import edu.wpi.first.wpilibj.Talon;
+import edu.wpi.first.wpilibj.Ultrasonic;
+import edu.wpi.first.wpilibj.Ultrasonic.Unit;
 import edu.wpi.first.wpilibj.VictorSP;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -77,18 +80,28 @@ public class Robot extends IterativeRobot {
 	private DigitalInput clapperSafetyLimitSwitch;
 	private DigitalInput toteDetectorLimitSwitch;
 	private DigitalInput pressureSwitch;
-
+	
+	private Ultrasonic sonic;
+	private final int sonicPingChannel = 4, sonicEchoChannel = 5; 
+	
 	private AnalogPotentiometer clapperPot;
 	private AnalogPotentiometer clawPot;
 
 	// Tote Count
 	private long timeLastToteCountProcessed;
-	private long TOTE_COUNT_MIN_DELAY = 500;
+	private long BUTTON_MULTIPLE_CLICK_MIN_DELAY = 250;
+	
+	// Coopertition
+	private long timeLastDecreaseCoopStackProcessed;
+	private long timeLastIncreaseCoopStackProcessed;
+	private int numberOfTotesOnStep = 0;
 
 	// Sequences && Auto
 	private Sequencer autoSequence, currTeleopSequence, adjustContainerSequence;
 	private boolean finishedRotating = false;
 	private int degrees;
+	
+	private static double AUTO_WALL_SONIC_OFFSET; 
 
 	// Data
 	private double curPos, lastPos;
@@ -121,6 +134,9 @@ public class Robot extends IterativeRobot {
 		 leftEnc 	= new Encoder(0, 1);
 		 rightEnc 	= new Encoder(2, 3);
 		 centerEnc 	= new Encoder(21, 22); 
+		 
+		 sonic 		= new Ultrasonic(sonicPingChannel, sonicEchoChannel, Unit.kInches); 
+		 sonic.setAutomaticMode(true);
 
 		 leftEnc.setDistancePerPulse(.0414221608);
 		 rightEnc.setDistancePerPulse(.0414221608);
@@ -156,7 +172,7 @@ public class Robot extends IterativeRobot {
 //		  camServer.startAutomaticCapture("cam1");
 		//
 		toteCounter = new ToteCounter();
-		drive = new DriveTrain(leftDrive, rightDrive, centerDrive, centerWheelSuspension, imu, leftEnc, rightEnc, centerEnc);
+		drive = new DriveTrain(leftDrive, rightDrive, centerDrive, centerWheelSuspension, imu, leftEnc, rightEnc, centerEnc, sonic);
 		clapper = new Clapper(clapperLifter, clapperActuator, clapperPot, toteDetectorLimitSwitch, clapperSafetyLimitSwitch);
 		claw = new Claw(clawMotor, clawSolenoid, clawPot);
 		rollers = new Rollers(leftRoller, rightRoller);
@@ -180,6 +196,9 @@ public class Robot extends IterativeRobot {
 		// int autonomousType = (int) SmartDashboard.getNumber("autoMode",
 		// 				SequencerFactory.DRIVE_TO_AUTO_ZONE);
 		// autoSequence = SequencerFactory.createAuto(autonomousType);
+		
+		AUTO_WALL_SONIC_OFFSET = sonic.getRangeInches(); 
+		
 		autoSequence = SequencerFactory.createAuto(SequencerFactory.THREE_TOTE);
 	}
 
@@ -190,7 +209,7 @@ public class Robot extends IterativeRobot {
 				autoSequence = null;
 			}
 		}
-		System.out.println("center, left: " + centerEnc.getDistance() + ", " + leftEnc.getDistance());
+//		System.out.println("center, left: " + centerEnc.getDistance() + ", " + leftEnc.getDistance());
 		updateDashboard();
 
 	}
@@ -253,16 +272,42 @@ public class Robot extends IterativeRobot {
 		 */
     	long currTime = System.currentTimeMillis();
     	
-    	if (Controllers.getOperatorLeftJoystickButton(9) && currTime - timeLastToteCountProcessed > TOTE_COUNT_MIN_DELAY) {
+    	if (Controllers.getOperatorLeftJoystickButton(9) && currTime - timeLastToteCountProcessed > BUTTON_MULTIPLE_CLICK_MIN_DELAY) {
     		toteCounter.addTote(); 
     		timeLastToteCountProcessed = currTime;
     	}
-    	if (Controllers.getOperatorLeftJoystickButton(11) && currTime - timeLastToteCountProcessed > TOTE_COUNT_MIN_DELAY) {
+    	if (Controllers.getOperatorLeftJoystickButton(11) && currTime - timeLastToteCountProcessed > BUTTON_MULTIPLE_CLICK_MIN_DELAY) {
     		toteCounter.subtractTote();
     		timeLastToteCountProcessed = currTime;
     	}
     	if (Controllers.getOperatorLeftJoystickButton(7))
     			toteCounter.resetCount(); 
+    	
+    	/*
+    	 * Coopertition logic
+    	 */
+    	if (Controllers.getOperatorLeftJoystickButton(5) &&
+    			currTime - timeLastDecreaseCoopStackProcessed > BUTTON_MULTIPLE_CLICK_MIN_DELAY &&
+    			numberOfTotesOnStep > 0) {
+    		numberOfTotesOnStep--;
+    		timeLastDecreaseCoopStackProcessed = currTime;
+    	}
+    	
+    	if (Controllers.getOperatorLeftJoystickButton(6) &&
+    			currTime - timeLastIncreaseCoopStackProcessed > BUTTON_MULTIPLE_CLICK_MIN_DELAY &&
+    			numberOfTotesOnStep < 2) {
+    		numberOfTotesOnStep++;
+    		timeLastIncreaseCoopStackProcessed = currTime;
+    	}
+    	
+    	if (Controllers.getOperatorLeftJoystickButton(2) && currTeleopSequence == null) {
+    		currTeleopSequence = SequencerFactory.createPrepareCoopertitionStack(numberOfTotesOnStep);
+    	}
+    	
+    	if (Controllers.getOperatorLeftJoystickButton(8) && currTeleopSequence == null) {
+    		currTeleopSequence = SequencerFactory.createCoopertitionStack();
+    	}
+    	
         /*
          * Clapper and intake sequence controls
          */
@@ -425,6 +470,10 @@ public class Robot extends IterativeRobot {
 		rightEnc.reset();
 	}
 
+	public static double getAutoWallSonicOffset() {
+		return AUTO_WALL_SONIC_OFFSET; 
+	}
+	
 	private boolean finished = false; 
 	public void testPeriodic() {
 		
@@ -480,6 +529,7 @@ public class Robot extends IterativeRobot {
 		drive.disableIMUPID();
 		drive.disableStrafePID(); //keep this commented out as long as there is no center encoder
 		drive.setMotors(0.0, 0.0, 0.0);
+		drive.resetLastStrafeValue();
 
 		clapper.setManual();
 		clapper.liftManually(0.0);
@@ -509,6 +559,7 @@ public class Robot extends IterativeRobot {
 				.getBatteryVoltage());
 		SmartDashboard.putNumber("IMU PID Setpoint", drive.imuPID.getSetpoint());
 		SmartDashboard.putNumber("IMU PID Error", drive.imuPID.getError());
+		SmartDashboard.putNumber("IMU PID output", drive.imuPID.get());
 		SmartDashboard.putNumber("IMU yaw", drive.imu.getYaw());
 		// SmartDashboard.putBoolean("Disabled",
 		// DriverStation.getInstance().isDisabled());
@@ -535,5 +586,11 @@ public class Robot extends IterativeRobot {
 		// clapper.toteDetected());
 		 
 		SmartDashboard.putBoolean("Strongback enabled", strongback.isPIDEnabled());
+		SmartDashboard.putNumber("Totes on Step", numberOfTotesOnStep);
+		SmartDashboard.putNumber("Ultrasonic wrapper dist", drive.getUltrasonicDistance());
+		SmartDashboard.putNumber("Ultrasonic PID error", drive.sonicStrafePID.getError());
+		SmartDashboard.putNumber("Ultrasonic PID setpoint", drive.sonicStrafePID.getSetpoint());
+//		System.out.println("Sonic: " + drive.getUltrasonicDistance());
+		
 	}
 }
