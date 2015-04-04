@@ -74,7 +74,7 @@ public class MoveClawWithClapper implements SequencedItem {
 //			SmartDashboard.putNumber("Ideal distance: ", idealDistance);
 //			SmartDashboard.putNumber("actual distance ", actualDistance);
 //			
-			double topWinchSpeed = .6;
+			double topWinchSpeed = .55;
 			
 			double safetyTolerance = .5; 
 			

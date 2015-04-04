@@ -78,15 +78,17 @@ public class DriveTrain {
 		driveStraightEncoder_Kp = 0.025,  //was .0325, changed on 3/31
 		driveStraightEncoder_Ki = 0.0, 
 		driveStraightEncoder_Kd = 0.0;
+	
+	public static final double driveStraightEncoder_ONE_CONTAINER_Kp = 0.005;
 
 	private static final double 
 		strafeEncoder_Kp = 0.08,
 		strafeEncoder_Ki = 0.0,
 		strafeEncoder_Kd = 0.0,
-		STRAFE_MAX_SIGNAL_DELTA = .035;
+		STRAFE_MAX_SIGNAL_DELTA = .045;
 	
 	private static final double
-		sonicStrafe_Kp = 0.06, 
+		sonicStrafe_Kp = 0.075, 
 		sonicStrafe_Ki = 0, 
 		sonicStrafe_Kd = 0; 
 	
@@ -98,7 +100,7 @@ public class DriveTrain {
 		driveStraightImu_Kd = 0.01; 
 
 	private static final double
-		rotateImu_kP = 0.0125,
+		rotateImu_kP = 0.025,
 		rotateImu_kI = 0.00,
 		rotateImu_kD = 0.01;
 	
@@ -116,7 +118,7 @@ public class DriveTrain {
 		this.centerDrive	= center;
 		this.suspension 	= suspension;
 		this.imu            = imu;
-		this.centerEnc		= new InvertableEncoder(centerEnc);
+//		this.centerEnc		= new InvertableEncoder(centerEnc);
 		this.dualEncoder	= new DualEncoder(leftEnc, rightEnc); 
 		this.sonicSensorWrapper	= new UltrasonicWrapper(sonicSensor); //units set in UltraSonic constructor
 
@@ -392,7 +394,9 @@ public class DriveTrain {
 	}
 
 	public void disableStrafePID() {
-		strafePID.disable();
+		if (strafePID != null){
+			strafePID.disable();
+		}
 		setCenterWheel(0);
 		setLeftRight(0, 0);
 	}
@@ -536,7 +540,12 @@ public class DriveTrain {
 	}
 	
 	public double getDistanceFromCenterEncoders() {
-		return centerEnc.getDistance();
+		if (centerEnc != null){
+			return centerEnc.getDistance();
+		} else {
+			return -1;
+		}
+		
 	}
 	
 	public IMU getIMU() {
@@ -784,10 +793,10 @@ public class DriveTrain {
 		forcedNoStrafeMode = b; 
 		dropCenterWheel(!b);
 		
-    	if (b) 
-    		Robot.strongback.enablePid();
-    	else
-    		Robot.strongback.disablePid();
+//    	if (b) 
+//    		Robot.strongback.enablePid();
+//    	else
+//    		Robot.strongback.disablePid();
 	}
 
 	public void setOutputRange(double min, double max) {
@@ -810,6 +819,10 @@ public class DriveTrain {
 
 	public void disableSonicStrafePID() {
 		sonicStrafePID.disable();
+	}
+
+	public void setDriveStraightPID(double kP, int i, int j) {
+		driveStraightPID.setPID(kP, i, j);
 	}
 }
 

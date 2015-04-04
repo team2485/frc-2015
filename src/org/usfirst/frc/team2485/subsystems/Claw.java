@@ -20,6 +20,8 @@ import edu.wpi.first.wpilibj.VictorSP;
 /**
  * @author Aidan Fay
  * @author Ben Clark
+ * @author Anoushka Bose
+ * @author Patrick Wamsley
  */
 
 public class Claw {
@@ -33,20 +35,15 @@ public class Claw {
 //	public static final double kP_TEMP_AGGRESSIVE = 0.005;
 	private SpeedController winchMotor;
 	private Solenoid actuator;
-	private ScaledPot potScaled; 
+//	private ScaledPot potScaled; 
+	private InvertedPot potScaled;
 	private DummyOutput dummyWinch;
 	 
 	public static final double 
-						LOWEST_POS						= 60, //
-						MANUAL_SAFETY_ABOVE_RACHET_POS 	= LOWEST_POS + 233, //34.5	in
-						CONTAINER_ADJUSTMANT_POS		= LOWEST_POS + 480, 
-						ONE_AND_TWO_TOTE_RESTING_POS	= LOWEST_POS + 550, //56.5 	in
-						TWO_TOTE_PLACEMENT_POS			= LOWEST_POS + 280, //39.75	in; thats in value might be wrong 365
-						HIGHEST_POS						= 774; //
+						LOWEST_POS						= 210, 
+						HIGHEST_POS						= 925; 
 	
-//	private static final double LOWEST_POS    = 118; 	// 73 on Valkyrie
-//	private static final double PICKUP_POS	  = LOWEST_POS + 45;// top: 850 bottom: 112 FOR PRACTICE BOT: top: 35 bottom: 725
-	private static final double POT_RANGE     = HIGHEST_POS - LOWEST_POS; /// 
+	private static final double POT_RANGE     = HIGHEST_POS - LOWEST_POS; // 
 	public  static final double POT_TOLERANCE = 12;
 	private static final double INCH_RANGE    = 60; // 15.625 in from floor up to 74.5 in
 	private static final double INCH_LOW_POS = 15.625;
@@ -54,14 +51,18 @@ public class Claw {
 	public static final double POTS_PER_INCH = POT_RANGE/INCH_RANGE;
 	
 	public static final double
+						MANUAL_SAFETY_ABOVE_RACHET_POS 	= LOWEST_POS + 210, // AB - 4/2
+						CONTAINER_ADJUSTMANT_POS		= LOWEST_POS + 465, // AB - 4/2
+						ONE_AND_TWO_TOTE_RESTING_POS	= LOWEST_POS + 520, // AB - 4/2
+						TWO_TOTE_PLACEMENT_POS			= LOWEST_POS + 286, // AB - 4/2 
 						DROP_SEQ_POS_1					= LOWEST_POS + (POTS_PER_INCH * .5), 
-						DROP_SEQ_POS_2					= LOWEST_POS + 135, 
-						DROP_SEQ_POS_3					= LOWEST_POS + 255, 
-						DROP_SEQ_POS_4					= LOWEST_POS + 410, 
-						DROP_SEQ_POS_5					= LOWEST_POS + 440, 
+						DROP_SEQ_POS_2					= LOWEST_POS + 140, // AB - 4/2
+						DROP_SEQ_POS_3					= LOWEST_POS + 245, // AB - 4/2
+						DROP_SEQ_POS_4					= LOWEST_POS + 360, // AB - 4/2
+						DROP_SEQ_POS_5					= LOWEST_POS + 486, //CHECK
 						DROP_SEQ_POS_6					= HIGHEST_POS - (POTS_PER_INCH * .5); 
 
-//	
+//	675, 
 //	private static final double LOADING_RESTING_OFFSET = 50, FIRST_LOADING_RESTING_OFFSET = 200; 
 //	+6
 //	public static final double 
@@ -102,7 +103,7 @@ public class Claw {
 		this.winchMotor = new CombinedSpeedController(clawMotor);
 //		this.winchMotor.invertMotorDirection(true);
 		this.actuator 	= clawSolenoid;
-		this.potScaled	= new ScaledPot(pot); 
+		this.potScaled	= new InvertedPot(pot); 
 		this.dummyWinch = new DummyOutput();
 		
 		elevationPID = new PIDController(kP_LESS_POWER_ALLOWS_MORE_ERROR, kI, kD, potScaled, this.dummyWinch);
@@ -111,17 +112,17 @@ public class Claw {
 	}
 	
 	public void open() {
-		actuator.set(true);
+		actuator.set(false);
 //		actuator.set(DoubleSolenoid.Value.kForward);
 	}
 	
 	public void close() {
-		actuator.set(false);
+		actuator.set(true);
 //		actuator.set(DoubleSolenoid.Value.kReverse);
 	}
 	
 	public boolean isOpen() {
-		return actuator.get();
+		return !actuator.get();
 //		return actuator.get().equals(DoubleSolenoid.Value.kForward);
 	} 
 	

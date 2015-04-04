@@ -23,22 +23,24 @@ public class DriveBackAndDropTotesForAuto implements SequencedItem {
 	@Override
 	public void run() {
 		
-		error = Math.abs(Robot.drive.getDistanceFromEncoders() + 140); 
+		error = Math.abs(Robot.drive.getDistanceFromEncoders() + 155); 
 		
 		System.out.println("error in DriveBackAndDropTotesForAuto = " + error);
 		
 		if (error > 70) {
 			Robot.drive.setLeftRight(speed, speed);
-			Robot.clapper.setSetpoint(Clapper.ABOVE_RATCHET_SETPOINT + 20);
 			Robot.ratchet.retractRatchet();
 		}
 		
-		else if (error > 55) {
+		else if (error > 35) {
 			Robot.drive.setLeftRight(speed, speed);
+			Robot.clapper.setSetpoint(Clapper.ABOVE_RATCHET_SETPOINT + 20);
+		}
+		else if (error > 15) {
+			Robot.drive.setLeftRight(-.5, -.5);
 			Robot.clapper.setSetpoint(Clapper.LOADING_SETPOINT);
 		}
-		else if (error > 20) {
-			Robot.drive.setLeftRight(-.5, -.5);
+		else if (error > 7) {
 			Robot.rollers.reverseTote(.5); 
 		}
 		else if (error > 0) {

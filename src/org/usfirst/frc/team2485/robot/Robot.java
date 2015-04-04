@@ -82,7 +82,7 @@ public class Robot extends IterativeRobot {
 	private DigitalInput pressureSwitch;
 	
 	private Ultrasonic sonic;
-	private final int sonicPingChannel = 4, sonicEchoChannel = 5; 
+	private final int sonicPingChannel = 21, sonicEchoChannel = 22; 
 	
 	private AnalogPotentiometer clapperPot;
 	private AnalogPotentiometer clawPot;
@@ -115,25 +115,25 @@ public class Robot extends IterativeRobot {
 
 	public void robotInit() {
 
-		 leftDrive = new CombinedSpeedController(new Talon(14), new VictorSP(15));
-		 rightDrive = new CombinedSpeedController(new Talon(0), new VictorSP(2));
-		 centerDrive = new CombinedSpeedController(new Talon(11), new VictorSP(12)); 
-		 clapperLifter = new CombinedSpeedController(new VictorSP(6), new VictorSP(8));
-		 strongbackMotor = new Talon(3);
-		 leftRoller = new Talon(7);
-		 rightRoller = new Talon(9);
-		 clawMotor = new VictorSP(13);
+		 leftDrive = new CombinedSpeedController(new VictorSP(14), new VictorSP(15));
+		 rightDrive = new CombinedSpeedController(new VictorSP(0), new VictorSP(1));
+		 centerDrive = new CombinedSpeedController(new VictorSP(11), new VictorSP(7)); 
+		 clapperLifter = new CombinedSpeedController(new VictorSP(13), new VictorSP(3));
+		 strongbackMotor = new VictorSP(2);
+		 leftRoller = new VictorSP(6); 
+		 rightRoller = new VictorSP(9); 
+		 clawMotor = new VictorSP(12);
 
 		 centerWheelSuspension = new Solenoid(3);
-		 ratchetLatchActuator = new Solenoid(1);
-		 commandeererSolenoidLeft = new Solenoid(4);
-		 commandeererSolenoidRight = new Solenoid(5);
-		 clapperActuator	= new Solenoid(2);
-		 clawSolenoid 		= new Solenoid(0);
+		 ratchetLatchActuator = new Solenoid(2);
+		 commandeererSolenoidLeft = new Solenoid(1, 2);
+		 commandeererSolenoidRight = new Solenoid(1, 0);
+		 clapperActuator	= new Solenoid(6);
+		 clawSolenoid 		= new Solenoid(5);
  
 		 leftEnc 	= new Encoder(0, 1);
-		 rightEnc 	= new Encoder(2, 3);
-		 centerEnc 	= new Encoder(21, 22); 
+		 rightEnc 	= new Encoder(4, 5);
+//		 centerEnc 	= new Encoder(21, 22); 
 		 
 		 sonic 		= new Ultrasonic(sonicPingChannel, sonicEchoChannel, Unit.kInches); 
 		 sonic.setAutomaticMode(true);
@@ -158,12 +158,12 @@ public class Robot extends IterativeRobot {
 		
 		// clapperSafetyLimitSwitch = new DigitalInput(16);
 //		 toteDetectorLimitSwitch = new DigitalInput(23);
-		// pressureSwitch = new DigitalInput(10); //TODO: find port
+		 pressureSwitch = new DigitalInput(10); //TODO: find port
 		
 		 clawPot = new AnalogPotentiometer(0);
 		 clapperPot = new AnalogPotentiometer(1);
 		
-//		 compressorSpike = new Relay(0);
+		 compressorSpike = new Relay(0);
 		
 //		 camServer = CameraServer.getInstance();
 //		 camServer.setQuality(50);
@@ -193,13 +193,19 @@ public class Robot extends IterativeRobot {
 		imu.zeroYaw();
 		drive.resetEncoders();
 		
-		// int autonomousType = (int) SmartDashboard.getNumber("autoMode",
-		// 				SequencerFactory.DRIVE_TO_AUTO_ZONE);
-		// autoSequence = SequencerFactory.createAuto(autonomousType);
+//		 int autonomousType = (int) SmartDashboard.getNumber("autoMode", SequencerFactory.DRIVE_TO_AUTO_ZONE);
+		 int autonomousType = SequencerFactory.ONE_CONTAINER;
 		
-		AUTO_WALL_SONIC_OFFSET = sonic.getRangeInches(); 
+//		AUTO_WALL_SONIC_OFFSET = Robot.getAutoWallSonicOffset(); //TODO: Check this
 		
-		autoSequence = SequencerFactory.createAuto(SequencerFactory.THREE_TOTE);
+//		if(Math.abs(AUTO_WALL_SONIC_OFFSET - 30) > 10 && autonomousType == SequencerFactory.THREE_TOTE)
+//			autonomousType = SequencerFactory.DO_NOTHING;
+//			AUTO_WALL_SONIC_OFFSET = 32;
+		
+//		if(AUTO_WALL_SONIC_OFFSET < 1)
+//			AUTO_WALL_SONIC_OFFSET = 30;
+		
+		autoSequence = SequencerFactory.createAuto(autonomousType);
 	}
 
 	public void autonomousPeriodic() {
@@ -209,7 +215,7 @@ public class Robot extends IterativeRobot {
 				autoSequence = null;
 			}
 		}
-//		System.out.println("center, left: " + centerEnc.getDistance() + ", " + leftEnc.getDistance());
+//		System.out.println("left: " + leftEnc.getDistance());
 		updateDashboard();
 
 	}
@@ -218,7 +224,7 @@ public class Robot extends IterativeRobot {
 		resetAndDisableSystems();
 		
 		strongback.setSetpoint(Strongback.STANDARD_SETPOINT);
-		currTeleopSequence = null; //possibly change later
+		currTeleopSequence = null; //possibly change laterp/kk
 		containerCommandeerer.resetSol();
 	}
 
@@ -281,7 +287,7 @@ public class Robot extends IterativeRobot {
     		timeLastToteCountProcessed = currTime;
     	}
     	if (Controllers.getOperatorLeftJoystickButton(7))
-    			toteCounter.resetCount(); 
+    		toteCounter.resetCount(); 
     	
     	/*
     	 * Coopertition logic
@@ -323,9 +329,6 @@ public class Robot extends IterativeRobot {
        	if (Controllers.getOperatorLeftJoystickButton(1) && currTeleopSequence == null && toteCounter.getCount() < 5) {
        		currTeleopSequence = SequencerFactory.createToteLiftRoutine();
        	}
-       	if (Controllers.getOperatorRightJoystickButton(2) && currTeleopSequence == null) {
-    	}
-       	
        	if (Controllers.getOperatorLeftJoystickButton(3) || Controllers.getDriverRightJoystickButton(5))
        		clapper.openClapper();
        	if (Controllers.getOperatorLeftJoystickButton(4) || Controllers.getDriverRightJoystickButton(6))
@@ -380,19 +383,17 @@ public class Robot extends IterativeRobot {
        	
        	
        	if (Controllers.getOperatorRightJoystickButton(7)) {
-       		
        	}
        	
        	if (Controllers.getOperatorRightJoystickButton(9)) {
-
-       	}
+       		strongbackMotor.set(0.2);
+       	} else if (Controllers.getOperatorRightJoystickButton(7)) {
+       		strongbackMotor.set(-0.2);
+       	} else 
+       		strongbackMotor.set(0);
        	
        	if (Controllers.getOperatorRightJoystickButton(12) && currTeleopSequence == null) {
        		currTeleopSequence = SequencerFactory.createDropToteStackRoutine(true);//totes on the ratchet and one underneath
-       	}
-       	
-       	if (Controllers.getOperatorRightJoystickButton(10)) {
-
        	}
        	
        	if (Controllers.getOperatorRightJoystickButton(11) && currTeleopSequence == null) {
@@ -441,10 +442,6 @@ public class Robot extends IterativeRobot {
 	
 	}
 
-	public static double getCurrVelocity() {
-		return currVelocity;
-	}
-
 	public void disabledInit() {
 		resetAndDisableSystems();
 	}
@@ -461,62 +458,23 @@ public class Robot extends IterativeRobot {
 //		System.out.println("Clapper pot: " + clapperPot.get());
 		updateDashboard();
 	}
-
+	
 	public void testInit() {
 		resetAndDisableSystems();
 		finishedRotating = false;
-		centerEnc.reset();
+//		centerEnc.reset();
 		leftEnc.reset();
 		rightEnc.reset();
 	}
-
-	public static double getAutoWallSonicOffset() {
-		return AUTO_WALL_SONIC_OFFSET; 
-	}
 	
-	private boolean finished = false; 
 	public void testPeriodic() {
+//		drive.dropCenterWheel(true);
+//		System.out.println(centerEnc.get() + ", " + leftEnc.get());
 		
-		drive.dropCenterWheel(true);
-		System.out.println(centerEnc.get() + ", " + leftEnc.get());
-
-//		claw.setSetpoint(Claw.ONE_AND_TWO_TOTE_RESTING_POS);
-//		claw.elevationPID.enable(); 
-//		System.out.println(claw.elevationPID.getError() + " power sent to motor: " + claw.elevationPID.get());
-		
-//		if (!finished) {
-//			System.out.println(drive.driveStraightPID.getError());
-//			finished = drive.driveTo(-10); 
-//		}
-		
-//		strongbackMotor.set(.3);
-//		leftRoller.set(1); 
-//		rightRoller.set(1); 
-		
-//		rollers.intakeTote(1);
-		
-//		if (!pressureSwitch.get())
-//			compressorSpike.set(Relay.Value.kForward);
-//		else
-//			compressorSpike.set(Relay.Value.kOff);
-		// compressor.start();
-
-		// clapper.setSetpoint(Clapper.ON_RATCHET_SETPOINT);
-		// claw.close();
-		// claw.setSetpoint(Claw.ONE_TOTE_LOADING);
-		// claw.setSetpoint(Claw.ONE_TOTE_RESTING);
-
-		// drive.dropCenterWheel(false);
-
-		// if(!finishedRotating && drive.rotateTo(30)) {
-		// finishedRotating = true;
-		// System.out.println("just finished rotateTo inside of testPeriodic");
-		// }
-
-		// System.out.println("Imu yaw: " + imu.getYaw());
-		// System.out.println("Imu pitch: " + imu.getPitch());
-
-		// strongback.enablePid();
+		if (!pressureSwitch.get())
+			compressorSpike.set(Relay.Value.kForward);
+		else
+			compressorSpike.set(Relay.Value.kOff);
 	}
 
 	private void resetAndDisableSystems() {
@@ -527,7 +485,7 @@ public class Robot extends IterativeRobot {
 		drive.dropCenterWheel(false);
 		drive.disableDriveStraightPID();
 		drive.disableIMUPID();
-		drive.disableStrafePID(); //keep this commented out as long as there is no center encoder
+		drive.disableStrafePID(); 
 		drive.setMotors(0.0, 0.0, 0.0);
 		drive.resetLastStrafeValue();
 
@@ -546,6 +504,14 @@ public class Robot extends IterativeRobot {
 
 	}
 
+	public static double getCurrVelocity() {
+		return currVelocity;
+	}
+
+	public static double getAutoWallSonicOffset() {
+		return AUTO_WALL_SONIC_OFFSET; 
+	}
+	
 	public void updateDashboard() {
 		 SmartDashboard.putString("Clapper and Container",
 		 clapper.getPercentHeight() + "," + (int)claw.getPotValue() + ","+
@@ -557,36 +523,36 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putNumber("IPS", (int) drive.getAbsoluteRate());
 		SmartDashboard.putNumber("Battery", DriverStation.getInstance()
 				.getBatteryVoltage());
-		SmartDashboard.putNumber("IMU PID Setpoint", drive.imuPID.getSetpoint());
+//		SmartDashboard.putNumber("IMU PID Setpoint", drive.imuPID.getSetpoint());
 		SmartDashboard.putNumber("IMU PID Error", drive.imuPID.getError());
-		SmartDashboard.putNumber("IMU PID output", drive.imuPID.get());
-		SmartDashboard.putNumber("IMU yaw", drive.imu.getYaw());
+//		SmartDashboard.putNumber("IMU PID output", drive.imuPID.get());
+//		SmartDashboard.putNumber("IMU yaw", drive.imu.getYaw());
 		// SmartDashboard.putBoolean("Disabled",
 		// DriverStation.getInstance().isDisabled());
 		SmartDashboard.putNumber("Claw Pot", claw.getPotValue());
-		SmartDashboard.putNumber("CenterEncoderDistance", drive.getDistanceFromCenterEncoders());
-		SmartDashboard.putNumber("Center encoder error", drive.getErrorFromStrafePID());
-		SmartDashboard.putNumber("Encoder error", drive.getErrorFromDriveStraightPID());
-		SmartDashboard.putNumber("Encoder distance reported", drive.getDistanceFromEncoders());
+//		SmartDash`board.putNumber("CenterEncoderDistance", drive.getDistanceFromCenterEncoders());
+//		SmartDashboard.putNumber("Center encoder error", drive.getErrorFromStrafePID());
+//		SmartDashboard.putNumber("Encoder error", drive.getErrorFromDriveStraightPID());
+//		SmartDashboard.putNumber("Encoder distance reported", drive.getDistanceFromEncoders());
 		
 		// // System.out.println(claw.getPotValue());
 		SmartDashboard.putNumber("Clapper Pot", clapper.getPotValue());
-		SmartDashboard.putNumber("Tote Count", toteCounter.getCount());
-		SmartDashboard.putNumber("Error from Claw", claw.getError()); 
+		SmartDashboard.putNumber("Tote Count", toteCounter.getCount());//HUGE!
+//		SmartDashboard.putNumber("Error from Claw", claw.getError()); 
 		SmartDashboard.putNumber("IMU Roll", imu.getRoll());
 		// SmartDashboard.putNumber("Claw kP", claw.getP());
 		// //SmartDashboard.putBoolean("Clapper is manual: ",
 		// clapper.isManual());
-		 SmartDashboard.putNumber("Clapper Inches", clapper.getInchHeight());
-		 SmartDashboard.putNumber("Claw Inches", claw.getInchHeight());
+//		 SmartDashboard.putNumber("Clapper Inches", clapper.getInchHeight());
+//		 SmartDashboard.putNumber("Claw Inches", claw.getInchHeight());
 		// SmartDashboard.putNumber("Clapper change in height" ,
 		// (float)Robot.clapper.getChangeInHeightInInches());
-		 SmartDashboard.putNumber("Clapper Error", clapper.getError());
+//		 SmartDashboard.putNumber("Clapper Error", clapper.getError());
 		// SmartDashboard.putBoolean("Tote detected by limit switch",
 		// clapper.toteDetected());
 		 
-		SmartDashboard.putBoolean("Strongback enabled", strongback.isPIDEnabled());
-		SmartDashboard.putNumber("Totes on Step", numberOfTotesOnStep);
+//		SmartDashboard.putBoolean("Strongback enabled", strongback.isPIDEnabled());
+		SmartDashboard.putNumber("Step", numberOfTotesOnStep);
 		SmartDashboard.putNumber("Ultrasonic wrapper dist", drive.getUltrasonicDistance());
 		SmartDashboard.putNumber("Ultrasonic PID error", drive.sonicStrafePID.getError());
 		SmartDashboard.putNumber("Ultrasonic PID setpoint", drive.sonicStrafePID.getSetpoint());

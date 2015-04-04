@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.VictorSP;
  * @author Ben Clark
  * @author Aidan Fay
  * @author Patrick Wamsley
+ * @author Anoushka Bose
  */
 
 public class Clapper {
@@ -29,25 +30,25 @@ public class Clapper {
 	private boolean automatic;
 	private double lastHeight;
 
-	public static final double LOWEST_POS = 85; 	// NEED TO CHECK ON VALKYRIE
-	public static final double HIGHEST_POS = 883;	// NEEDS TO CHECK ON VALKYRIE 
+	public static final double LOWEST_POS = 207; 	// 204
+	public static final double HIGHEST_POS = 525;	// 525
 	private static final double POT_RANGE = HIGHEST_POS - LOWEST_POS; 
 	public static final double POT_TOLERANCE = 18;
 	public static final double INCH_LOW_POS = 6.125;
-	private static final double INCH_RANGE  = 38.875; // 6 and 1/8 in from floor to the top which is 45 in
+	private static final double INCH_RANGE  = 36.25; // 6 and 1/8 in from floor to the top which is 45 in
 	@SuppressWarnings("unused")
-	private static final double POTS_PER_INCH = POT_RANGE/INCH_RANGE;
+	public static final double POTS_PER_INCH = POT_RANGE/INCH_RANGE;
 	
 //	private static final double LIFT_DEADBAND = 0.5;
 	
 	private double pidOutputMin, pidOutputMinNormal = -0.2, pidOutputMax, pidOutputMaxNormal = 0.5;
 	
 	public static final double 
-		kP_1_TOTES_UP = 0.01,	
-		kP_2_TOTES_UP = 0.012,
-		kP_3_TOTES_UP = 0.015,
-		kP_4_TOTES_UP = 0.035,
-		kP_5_TOTES_UP = 0.05; //0.4
+		kP_1_TOTES_UP = 0.02, // 0.02	
+		kP_2_TOTES_UP = 0.025,
+		kP_3_TOTES_UP = 0.035,
+		kP_4_TOTES_UP = 0.045,
+		kP_5_TOTES_UP = 0.06; //0.4
 	
 	public static final double
 		kP_DEFAULT	= kP_1_TOTES_UP, 
@@ -64,22 +65,22 @@ public class Clapper {
 	*/	
 	
 	public static final double 
-		RIGHTING_CONTAINER_POS									= LOWEST_POS + 335, 
-		RIGHTING_CONTAINER_PRE_POS								= LOWEST_POS + 58, 
-		ABOVE_RATCHET_SETPOINT									= LOWEST_POS + 333, // 430, changed from 335 on 20 march because mechanical // UPDATE changed to 299 on 3/22/15
+		RIGHTING_CONTAINER_POS									= LOWEST_POS + 140, 
+		RIGHTING_CONTAINER_PRE_POS								= LOWEST_POS + 3, // lowest
+		ABOVE_RATCHET_SETPOINT									= LOWEST_POS + 160, // AB 4/2
 		DROP_OFF_POS_ON_ONE_TOTE								= ABOVE_RATCHET_SETPOINT,
-		ON_RATCHET_SETPOINT										= LOWEST_POS + 125, //changed from 125  
-		HOLDING_TOTE_SETPOINT									= LOWEST_POS + 235, // 387, changed from 262 on 20 mar bc mechanical
-		LOADING_SETPOINT										= LOWEST_POS + 5,
-		COOP_ZERO_TOTE_SETPOINT									= LOWEST_POS + 77, 
-		COOP_ONE_TOTE_SETPOINT									= LOWEST_POS + 175, 
-		COOP_TWO_TOTES_SETPOINT									= LOWEST_POS + 275,
-		COOP_THREE_TOTES_SETPOINT								= LOWEST_POS + 370, 
-		SCORING_PLATFORM_HEIGHT									= LOWEST_POS + 25,
-		LIFT_BOTTOM_TOTE_TO_RAISE_STACK_OFF_RATCHET_SETPOINT	= LOWEST_POS + 100,
-		FIX_CONTAINER_IN_CLAW_POS								= LOWEST_POS + 125,
-		ABOVE_STEP_SETPOINT 									= LOWEST_POS + 215,
-		TOTE_HEIGHT 											= 255;
+		ON_RATCHET_SETPOINT										= LOWEST_POS + ((125/800.0)*POT_RANGE),  
+		HOLDING_TOTE_SETPOINT									= LOWEST_POS + 95, // AB 4/2
+		LOADING_SETPOINT										= LOWEST_POS + 2, // AB 4/2
+//		COOP_ZERO_TOTE_SETPOINT									= LOWEST_POS + 86, 
+//		COOP_ONE_TOTE_SETPOINT									= LOWEST_POS + ((175/800.0)*POT_RANGE), 
+//		COOP_TWO_TOTES_SETPOINT									= LOWEST_POS + ((275/800.0)*POT_RANGE),
+//		COOP_THREE_TOTES_SETPOINT								= LOWEST_POS + ((370/800.0)*POT_RANGE), 
+		SCORING_PLATFORM_HEIGHT									= LOWEST_POS + ((25/800.0)*POT_RANGE),
+		LIFT_BOTTOM_TOTE_TO_RAISE_STACK_OFF_RATCHET_SETPOINT	= LOWEST_POS + 50, // AB 4/2
+//		FIX_CONTAINER_IN_CLAW_POS								= LOWEST_POS + ((125/800.0)*POT_RANGE),
+		ABOVE_STEP_SETPOINT 									= LOWEST_POS + 96,
+		TOTE_HEIGHT 											= 11.5 * POTS_PER_INCH; // AB 4/2
 	
 	public Clapper(CombinedSpeedController clapperLifter, Solenoid clapperActuator2, AnalogPotentiometer pot, 
 			DigitalInput toteDetectorLimitSwitch, DigitalInput bottomSafetyLimitSwitch) {
@@ -184,19 +185,19 @@ public class Clapper {
 	}
 	
 	public void openClapper() {
-		clapperActuator.set(true);
+		clapperActuator.set(false);
 //		clapperActuator.set(DoubleSolenoid.Value.kReverse);
 		open = true;
 	}
 
 	public void closeClapper() {
-		clapperActuator.set(false);
+		clapperActuator.set(true);
 //		clapperActuator.set(DoubleSolenoid.Value.kForward);
 		open = false;
 	}
 
 	public boolean isOpen() {
-		return clapperActuator.get();
+		return !clapperActuator.get();
 	}
 	
 	public double getPercentHeight() {
@@ -260,7 +261,7 @@ public class Clapper {
 			speed = -1;
 		
 		
-		//System.out.println("in lift manually, adjustSpeed is " + adjustedSpeed);
+		System.out.println("in lift manually, adjustSpeed is " + speed);
 		clapperLifter.set(speed);
 		
 //		System.out.println(speed + " | " + adjustedSpeed);
@@ -275,12 +276,12 @@ public class Clapper {
 		return clapperPID.getError();
 	}
 
-	public void checkSafety() {
-		if (bottomSafetyLimitSwitch.get())
-			clapperPID.setOutputRange(0.0, pidOutputMax);
-		else
-			clapperPID.setOutputRange(pidOutputMin, pidOutputMax);
-	}
+//	public void checkSafety() {
+//		if (bottomSafetyLimitSwitch.get())
+//			clapperPID.setOutputRange(0.0, pidOutputMax);
+//		else
+//			clapperPID.setOutputRange(pidOutputMin, pidOutputMax);
+//	}
 	
 	public boolean toteDetected() {
 		if(!toteDetectorLimitSwitch.get())
@@ -303,6 +304,8 @@ public class Clapper {
 			setPID(kP_5_TOTES_UP, kI_DEFAULT, kD_DEFAULT);
 		
 		pidOutputMin = pidOutputMinNormal + .02 * toteCount;
+		if (pidOutputMin > 0)
+			pidOutputMin = 0.0;
 		pidOutputMax = pidOutputMaxNormal + .05 * toteCount;
 		this.clapperPID.setOutputRange(pidOutputMin, pidOutputMax);
 	}

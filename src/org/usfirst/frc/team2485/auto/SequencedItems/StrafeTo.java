@@ -35,6 +35,8 @@ public class StrafeTo implements SequencedItem {
 	
 	@Override
 	public void run() {
+		
+		System.out.println("Strafe setpoint: " + inches);
 		if(customHeading)
 			finished = Robot.drive.strafeToUsingSonicSensor(inches);  
 		else

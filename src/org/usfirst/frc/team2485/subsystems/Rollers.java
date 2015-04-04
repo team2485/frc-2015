@@ -14,22 +14,22 @@ public class Rollers {
 	}
 	
 	public void intakeTote(double speed) {
-		rightWheel.set(-speed);
-		leftWheel.set(speed);
+		rightWheel.set(speed);
+		leftWheel.set(-speed);
 	}
 	
 	public void reverseTote(double speed) {
-		rightWheel.set(speed);
-		leftWheel.set(-speed);
+		rightWheel.set(-speed);
+		leftWheel.set(speed);
 	}
 	
 	public void rotateToteClockwise(double speed) {
-		rightWheel.set(-speed);
-		leftWheel.set(-speed);
+		rightWheel.set(speed);
+		leftWheel.set(speed);
 	}
 	
 	public void rotateToteCounterclockwise(double speed) {
-		rightWheel.set(speed);
-		leftWheel.set(speed);
+		rightWheel.set(-speed);
+		leftWheel.set(-speed);
 	}
 }

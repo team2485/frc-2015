@@ -17,7 +17,7 @@ public class UltrasonicWrapper implements PIDSource {
 	public double pidGet() {
 		double currValue = theHedgehog.getRangeInches();
 		
-		if (lastGoodValue == -1 || Math.abs(currValue - lastGoodValue) < 30 ) {
+		if (lastGoodValue == -1 || Math.abs(currValue - lastGoodValue) < 40 ) {
 			lastGoodValue = currValue;
 			return lastGoodValue;
 		}
