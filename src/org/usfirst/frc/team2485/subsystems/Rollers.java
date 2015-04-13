@@ -4,6 +4,12 @@ import edu.wpi.first.wpilibj.SpeedController;
 import edu.wpi.first.wpilibj.VictorSP;
 
 
+/**
+ * Intake wheels on the end of the clapper. 
+ * 
+ * @author Ben Clark
+ */
+
 public class Rollers {
 	
 	private SpeedController rightWheel, leftWheel;

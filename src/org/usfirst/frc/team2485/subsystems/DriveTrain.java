@@ -113,13 +113,13 @@ public class DriveTrain {
 	public DriveTrain(CombinedSpeedController leftDrive, CombinedSpeedController rightDrive, CombinedSpeedController center, Solenoid suspension, 
 			IMU imu, Encoder leftEnc, Encoder rightEnc, Encoder centerEnc, Ultrasonic sonicSensor) {
 
-		this.leftDrive 		= leftDrive; 
-		this.rightDrive     = rightDrive; 
-		this.centerDrive	= center;
-		this.suspension 	= suspension;
-		this.imu            = imu;
-//		this.centerEnc		= new InvertableEncoder(centerEnc);
-		this.dualEncoder	= new DualEncoder(leftEnc, rightEnc); 
+		this.leftDrive 			= leftDrive; 
+		this.rightDrive   		= rightDrive; 
+		this.centerDrive		= center;
+		this.suspension 		= suspension;
+		this.imu            	= imu;
+//		this.centerEnc			= new InvertableEncoder(centerEnc);
+		this.dualEncoder		= new DualEncoder(leftEnc, rightEnc); 
 		this.sonicSensorWrapper	= new UltrasonicWrapper(sonicSensor); //units set in UltraSonic constructor
 
 		if (this.imu != null) 
@@ -143,11 +143,11 @@ public class DriveTrain {
 	
 	public void warlordDrive(double translateX, double translateY, double rotation) {
 		
-		translateX = ThresholdHandler.deadbandAndScale(translateX, TRANSLATE_X_DEADBAND, 0.1, 1); //TODO:  min prob wont be zero. 
+		translateX = ThresholdHandler.deadbandAndScale(translateX, TRANSLATE_X_DEADBAND, 0.1, 1);   
 		translateY = -ThresholdHandler.deadbandAndScale(translateY, TRANSLATE_Y_DEADBAND, 0.1, 1);
 		rotation   =  ThresholdHandler.deadbandAndScale(rotation, ROTATION_DEADBAND, 0.1, 1);
 		
-		if(strafeOnlyMode) {
+		if (strafeOnlyMode) {
 			translateY = 0;
 			rotation = 0;
 		} else if (slowStrafeOnlyMode) {
@@ -217,9 +217,6 @@ public class DriveTrain {
 				imuPID.setSetpoint(desiredHeading);
 				imuPID.enable();
 			}
-			else {
-				
-			}
 			strafeDrive(translateX, translateY);
 		} else
 			Robot.drive.setMotors(0, 0, 0);
@@ -249,16 +246,6 @@ public class DriveTrain {
 			leftDriveOutput = -1; 
 		
 		setLeftRight(leftDriveOutput, rightDriveOutput);
-	}
-
-	public void setImuForDrivingStraight() {
-		imuPID.setPID(driveStraightImu_Kp, driveStraightImu_Ki, driveStraightImu_Kd);
-		imuPID.setAbsoluteTolerance(absTolerance_Imu_DriveStraight);
-	}
-
-	public void setImuForRotating() {
-		imuPID.setPID(rotateImu_kP, rotateImu_kI, rotateImu_kD);
-		imuPID.setAbsoluteTolerance(absTolerance_Imu_TurnTo);
 	}
 
 	public void strafeDrive(double xInput, double yInput) {
@@ -291,6 +278,16 @@ public class DriveTrain {
 
 	}
 
+	public void setImuForDrivingStraight() {
+		imuPID.setPID(driveStraightImu_Kp, driveStraightImu_Ki, driveStraightImu_Kd);
+		imuPID.setAbsoluteTolerance(absTolerance_Imu_DriveStraight);
+	}
+
+	public void setImuForRotating() {
+		imuPID.setPID(rotateImu_kP, rotateImu_kI, rotateImu_kD);
+		imuPID.setAbsoluteTolerance(absTolerance_Imu_TurnTo);
+	}
+	
 	private double clamp(double d) {	
 		if (d > 1)
 			return 1; 

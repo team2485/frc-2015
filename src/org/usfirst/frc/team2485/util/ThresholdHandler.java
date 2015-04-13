@@ -1,19 +1,14 @@
 package org.usfirst.frc.team2485.util;
 
 /**
+ * 
+ * Utililty class for handling inputs from controllers. 
+ * 
  * @author Patrick Wamsley
  * @author Anoushka Bose
  * @author Aidan Fay
  */
 public class ThresholdHandler { 
-	
-	/**
-	 * Non lossy thresholding.
-	 * If the threshold is 0.1 than and val is 0.1 than it will return 0
-	 * @param val
-	 * @param threshold
-	 * @return
-	 */
 	
 	public static final double STANDARD_THRESHOLD = 0.1; 
 	

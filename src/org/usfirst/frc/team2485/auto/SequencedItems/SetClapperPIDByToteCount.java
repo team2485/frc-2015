@@ -3,6 +3,10 @@ package org.usfirst.frc.team2485.auto.SequencedItems;
 import org.usfirst.frc.team2485.auto.SequencedItem;
 import org.usfirst.frc.team2485.robot.Robot;
 
+/**
+ * @author Anoushka Bose
+ */
+
 public class SetClapperPIDByToteCount implements SequencedItem {
 
 	private boolean done = false;

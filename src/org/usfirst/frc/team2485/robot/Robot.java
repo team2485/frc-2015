@@ -10,10 +10,10 @@ import org.usfirst.frc.team2485.subsystems.DriveTrain;
 import org.usfirst.frc.team2485.subsystems.RatchetSystem;
 import org.usfirst.frc.team2485.subsystems.Rollers;
 import org.usfirst.frc.team2485.subsystems.Strongback;
+import org.usfirst.frc.team2485.subsystems.ToteCounter;
 import org.usfirst.frc.team2485.util.CombinedSpeedController;
 import org.usfirst.frc.team2485.util.Controllers;
 import org.usfirst.frc.team2485.util.DualEncoder;
-import org.usfirst.frc.team2485.util.ToteCounter;
 
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
@@ -38,22 +38,22 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 /**
  * @author Anoushka Bose
  * @author Aidan Fay
- * @author Ben Clark
  * @author Patrick Wamsley
+ * @author Ben Clark
  * @author Camille Considine
  * @author Mike Maunu
+ * @author Todor Fay
  */
 
-//0 ON PCM IS THE CLAW
 public class Robot extends IterativeRobot {
 
 	// Subsystems
 	public static DriveTrain drive;
-	public static Strongback strongback;
 	public static Clapper clapper;
-	public static Rollers rollers;
-	public static RatchetSystem ratchet;
 	public static Claw claw;
+	public static Rollers rollers;
+	public static Strongback strongback;
+	public static RatchetSystem ratchet;
 	public static ContainerCommandeerer containerCommandeerer;
 	public static ToteCounter toteCounter;
 	// private CameraServer camServer;
@@ -67,13 +67,11 @@ public class Robot extends IterativeRobot {
 	// Solenoids
 	private Solenoid centerWheelSuspension;
 	private Solenoid ratchetLatchActuator;
-	private Solenoid shortFingerActuators, longFingerActuators;
 	private Solenoid commandeererSolenoidRight, commandeererSolenoidLeft;
 	private Solenoid clapperActuator, clawSolenoid;
 
 	// Sensors
 	private Encoder leftEnc, rightEnc, centerEnc;
-	private DualEncoder dualEncoderVelCalc;
 
 	private IMUAdvanced imu;
 
@@ -81,7 +79,7 @@ public class Robot extends IterativeRobot {
 	private DigitalInput toteDetectorLimitSwitch;
 	private DigitalInput pressureSwitch;
 	
-	private Ultrasonic sonic;
+	private Ultrasonic sonic; //Used for strafing PID. Center belt slips so encoder values are not reliable. 
 	private final int sonicPingChannel = 21, sonicEchoChannel = 22; 
 	
 	private AnalogPotentiometer clapperPot;
@@ -98,8 +96,6 @@ public class Robot extends IterativeRobot {
 
 	// Sequences && Auto
 	private Sequencer autoSequence, currTeleopSequence, adjustContainerSequence;
-	private boolean finishedRotating = false;
-	private int degrees;
 	
 	private static double AUTO_WALL_SONIC_OFFSET; 
 
@@ -115,34 +111,34 @@ public class Robot extends IterativeRobot {
 
 	public void robotInit() {
 
-		 leftDrive = new CombinedSpeedController(new VictorSP(14), new VictorSP(15));
-		 rightDrive = new CombinedSpeedController(new VictorSP(0), new VictorSP(1));
-		 centerDrive = new CombinedSpeedController(new VictorSP(11), new VictorSP(7)); 
-		 clapperLifter = new CombinedSpeedController(new VictorSP(13), new VictorSP(3));
-		 strongbackMotor = new VictorSP(2);
-		 leftRoller = new VictorSP(6); 
-		 rightRoller = new VictorSP(9); 
-		 clawMotor = new VictorSP(12);
-
-		 centerWheelSuspension = new Solenoid(3);
-		 ratchetLatchActuator = new Solenoid(2);
-		 commandeererSolenoidLeft = new Solenoid(1, 2);
-		 commandeererSolenoidRight = new Solenoid(1, 0);
-		 clapperActuator	= new Solenoid(6);
-		 clawSolenoid 		= new Solenoid(5);
+		 leftDrive 			= new CombinedSpeedController(new VictorSP(14), new VictorSP(15));
+		 rightDrive 		= new CombinedSpeedController(new VictorSP(0), new VictorSP(1));
+		 centerDrive 		= new CombinedSpeedController(new VictorSP(11), new VictorSP(7)); 
+		 clapperLifter 		= new CombinedSpeedController(new VictorSP(13), new VictorSP(3));
+		 clawMotor 			= new VictorSP(12);
+		 strongbackMotor	= new VictorSP(2);
+		 leftRoller 		= new VictorSP(6); 
+		 rightRoller 		= new VictorSP(9); 
+		 
+		 centerWheelSuspension 		= new Solenoid(3);
+		 ratchetLatchActuator		= new Solenoid(2);
+		 commandeererSolenoidLeft 	= new Solenoid(1, 2);
+		 commandeererSolenoidRight	= new Solenoid(1, 0);
+		 clapperActuator			= new Solenoid(6);
+		 clawSolenoid 				= new Solenoid(5);
  
 		 leftEnc 	= new Encoder(0, 1);
 		 rightEnc 	= new Encoder(4, 5);
 //		 centerEnc 	= new Encoder(21, 22); 
 		 
-		 sonic 		= new Ultrasonic(sonicPingChannel, sonicEchoChannel, Unit.kInches); 
+		 sonic = new Ultrasonic(sonicPingChannel, sonicEchoChannel, Unit.kInches); 
 		 sonic.setAutomaticMode(true);
 
 		 leftEnc.setDistancePerPulse(.0414221608);
 		 rightEnc.setDistancePerPulse(.0414221608);
 		 
 		 if (centerEnc != null)
-			 centerEnc.setDistancePerPulse(0.03066181); // TODO: test
+			 centerEnc.setDistancePerPulse(0.03066181);
 
 		 try {
 			byte update_rate_hz = 50;
@@ -160,7 +156,7 @@ public class Robot extends IterativeRobot {
 //		 toteDetectorLimitSwitch = new DigitalInput(23);
 		 pressureSwitch = new DigitalInput(10); //TODO: find port
 		
-		 clawPot = new AnalogPotentiometer(0);
+		 clawPot 	= new AnalogPotentiometer(0);
 		 clapperPot = new AnalogPotentiometer(1);
 		
 		 compressorSpike = new Relay(0);
@@ -170,15 +166,18 @@ public class Robot extends IterativeRobot {
 //		 //the camera name (ex "cam0") can be found through the roborio web
 ////		 interface
 //		  camServer.startAutomaticCapture("cam1");
-		//
-		toteCounter = new ToteCounter();
-		drive = new DriveTrain(leftDrive, rightDrive, centerDrive, centerWheelSuspension, imu, leftEnc, rightEnc, centerEnc, sonic);
-		clapper = new Clapper(clapperLifter, clapperActuator, clapperPot, toteDetectorLimitSwitch, clapperSafetyLimitSwitch);
-		claw = new Claw(clawMotor, clawSolenoid, clawPot);
-		rollers = new Rollers(leftRoller, rightRoller);
-		ratchet = new RatchetSystem(ratchetLatchActuator);
-		strongback = new Strongback(strongbackMotor, imu);
-		containerCommandeerer = new ContainerCommandeerer(commandeererSolenoidLeft, commandeererSolenoidRight);
+		
+		 
+		drive 					= new DriveTrain(leftDrive, rightDrive, centerDrive, centerWheelSuspension, 
+									imu, leftEnc, rightEnc, centerEnc, sonic);
+		clapper		 			= new Clapper(clapperLifter, clapperActuator, clapperPot, toteDetectorLimitSwitch, clapperSafetyLimitSwitch);
+		claw	 				= new Claw(clawMotor, clawSolenoid, clawPot);
+		rollers 				= new Rollers(leftRoller, rightRoller);
+		strongback				= new Strongback(strongbackMotor, imu);
+		ratchet 				= new RatchetSystem(ratchetLatchActuator);
+		containerCommandeerer 	= new ContainerCommandeerer(commandeererSolenoidLeft, commandeererSolenoidRight);
+		toteCounter 			= new ToteCounter();
+		
 		drive.setImu(imu);
 
 		Controllers.set(new Joystick(0), new Joystick(1), new Joystick(2), new Joystick(3));
@@ -196,36 +195,36 @@ public class Robot extends IterativeRobot {
 //		 int autonomousType = (int) SmartDashboard.getNumber("autoMode", SequencerFactory.DRIVE_TO_AUTO_ZONE);
 		 int autonomousType = SequencerFactory.ONE_CONTAINER;
 		
-//		AUTO_WALL_SONIC_OFFSET = Robot.getAutoWallSonicOffset(); //TODO: Check this
+		 
+		//---3 tote auto and sonic sensor checks---// 
+		AUTO_WALL_SONIC_OFFSET = Robot.getAutoWallSonicOffset(); 
 		
-//		if(Math.abs(AUTO_WALL_SONIC_OFFSET - 30) > 10 && autonomousType == SequencerFactory.THREE_TOTE)
-//			autonomousType = SequencerFactory.DO_NOTHING;
-//			AUTO_WALL_SONIC_OFFSET = 32;
+		if (Math.abs(AUTO_WALL_SONIC_OFFSET - 30) > 10 && autonomousType == SequencerFactory.THREE_TOTE) //Sonic's value is bad
+			autonomousType = SequencerFactory.DO_NOTHING; 
+			AUTO_WALL_SONIC_OFFSET = 32;
 		
-//		if(AUTO_WALL_SONIC_OFFSET < 1)
-//			AUTO_WALL_SONIC_OFFSET = 30;
+		if (AUTO_WALL_SONIC_OFFSET < 1)
+			AUTO_WALL_SONIC_OFFSET = 30;
 		
 		autoSequence = SequencerFactory.createAuto(autonomousType);
 	}
 
 	public void autonomousPeriodic() {
 
-		if (autoSequence != null) {
-			if (autoSequence.run()) {
+		if (autoSequence != null) 
+			if (autoSequence.run()) 
 				autoSequence = null;
-			}
-		}
-//		System.out.println("left: " + leftEnc.getDistance());
+		
 		updateDashboard();
-
 	}
 
 	public void teleopInit() {
 		resetAndDisableSystems();
 		
 		strongback.setSetpoint(Strongback.STANDARD_SETPOINT);
-		currTeleopSequence = null; //possibly change laterp/kk
 		containerCommandeerer.resetSol();
+		
+		currTeleopSequence = null; 
 	}
 
 	public void teleopPeriodic() {
@@ -248,7 +247,6 @@ public class Robot extends IterativeRobot {
        		drive.setStrafeOnlyMode(false);  	 
        		drive.setForcedNoStrafeMode(false);
        	}
-       	
        	
         if (Controllers.getDriverRightJoystickAxis(Controllers.JOYSTICK_AXIS_THROTTLE) > 0)
         	drive.setNormalSpeed();
@@ -311,24 +309,21 @@ public class Robot extends IterativeRobot {
     	}
     	
     	if (Controllers.getOperatorLeftJoystickButton(8) && currTeleopSequence == null) {
-    		currTeleopSequence = SequencerFactory.createCoopertitionStack();
+    		currTeleopSequence = SequencerFactory.createCoopertitionStackRoutine();
     	}
     	
         /*
          * Clapper and intake sequence controls
          */
-    	
-       	if (Controllers.getOperatorLeftJoystickAxis(Controllers.JOYSTICK_AXIS_Y,(float) 0.1) != 0) {//if the joystick is moved
-    		clapper.liftManually((Controllers.getOperatorLeftJoystickAxis(Controllers.JOYSTICK_AXIS_Y,(float) 0.1))); //back is up
-    	} else if (clapper.isManual()){
+       	if (Controllers.getOperatorLeftJoystickAxis(Controllers.JOYSTICK_AXIS_Y, .1f) != 0) //if the joystick is moved
+    		clapper.liftManually((Controllers.getOperatorLeftJoystickAxis(Controllers.JOYSTICK_AXIS_Y, .1f))); //back is up
+    	else if (clapper.isManual())
     		clapper.setSetpoint(clapper.getPotValue()); //set the setpoint to where ever it left off
-    	}
-       	
+    		
        	clapper.updateToteCount(toteCounter.getCount());
        	
-       	if (Controllers.getOperatorLeftJoystickButton(1) && currTeleopSequence == null && toteCounter.getCount() < 5) {
-       		currTeleopSequence = SequencerFactory.createToteLiftRoutine();
-       	}
+       	if (Controllers.getOperatorLeftJoystickButton(1) && currTeleopSequence == null && toteCounter.getCount() < 5) 
+       		currTeleopSequence = SequencerFactory.createToteLiftRoutine(); 	
        	if (Controllers.getOperatorLeftJoystickButton(3) || Controllers.getDriverRightJoystickButton(5))
        		clapper.openClapper();
        	if (Controllers.getOperatorLeftJoystickButton(4) || Controllers.getDriverRightJoystickButton(6))
@@ -347,12 +342,10 @@ public class Robot extends IterativeRobot {
        	/*
        	 * Ratchet Controls
        	 */
-       	if (Controllers.getOperatorLeftJoystickButton(10)) {
+       	if (Controllers.getOperatorLeftJoystickButton(10)) 
        		ratchet.extendRatchet();
-       	}
-       	if (Controllers.getOperatorLeftJoystickButton(12)) {
+       	if (Controllers.getOperatorLeftJoystickButton(12)) 
        		ratchet.retractRatchet();
-       	}
 
        	/*
        	 * Claw Logic
@@ -461,7 +454,6 @@ public class Robot extends IterativeRobot {
 	
 	public void testInit() {
 		resetAndDisableSystems();
-		finishedRotating = false;
 //		centerEnc.reset();
 		leftEnc.reset();
 		rightEnc.reset();

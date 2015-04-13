@@ -1,7 +1,7 @@
 package org.usfirst.frc.team2485.subsystems;
 
 import org.usfirst.frc.team2485.util.CombinedSpeedController;
-import org.usfirst.frc.team2485.util.InvertedPot;
+import org.usfirst.frc.team2485.util.InvertedScaledPot;
 import org.usfirst.frc.team2485.util.ScaledPot;
 
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
@@ -30,25 +30,28 @@ public class Clapper {
 	private boolean automatic;
 	private double lastHeight;
 
-	public static final double LOWEST_POS = 207; 	// 204
-	public static final double HIGHEST_POS = 525;	// 525
+	public static final double 	LOWEST_POS 	= 207, 
+								HIGHEST_POS	= 525;	
+	
 	private static final double POT_RANGE = HIGHEST_POS - LOWEST_POS; 
+	
 	public static final double POT_TOLERANCE = 18;
-	public static final double INCH_LOW_POS = 6.125;
-	private static final double INCH_RANGE  = 36.25; // 6 and 1/8 in from floor to the top which is 45 in
+	
+	public static final double INCH_LOW_POS	 = 6.125;
+	private static final double INCH_RANGE	 = 36.25; 
+	
 	@SuppressWarnings("unused")
 	public static final double POTS_PER_INCH = POT_RANGE/INCH_RANGE;
 	
-//	private static final double LIFT_DEADBAND = 0.5;
 	
 	private double pidOutputMin, pidOutputMinNormal = -0.2, pidOutputMax, pidOutputMaxNormal = 0.5;
 	
 	public static final double 
-		kP_1_TOTES_UP = 0.02, // 0.02	
+		kP_1_TOTES_UP = 0.02, 
 		kP_2_TOTES_UP = 0.025,
 		kP_3_TOTES_UP = 0.035,
 		kP_4_TOTES_UP = 0.045,
-		kP_5_TOTES_UP = 0.06; //0.4
+		kP_5_TOTES_UP = 0.06; 
 	
 	public static final double
 		kP_DEFAULT	= kP_1_TOTES_UP, 
@@ -137,7 +140,7 @@ public class Clapper {
 	}
 	
 	public void updateLastHeight() {
-		lastHeight = getPotValue(); //need to map to inches?  
+		lastHeight = getPotValue(); 
 	}
 	public double getPotValue() {
 		return potScaled.pidGet();
@@ -244,9 +247,6 @@ public class Clapper {
 		return !automatic;
 	}
 	
-	/*
-	 * Assuming that a positive speed moves the clapper down
-	 */
 	public void liftManually(double speed) {
 		
 		setManual();

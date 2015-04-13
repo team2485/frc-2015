@@ -21,7 +21,7 @@ public class Strongback {
 	private SpeedController leadScrew; 
 	private IMUAdvanced imu; 
 	private PIDController leadScrewImuPID;
-	public static final double STANDARD_SETPOINT = 1; // THIS IS CHANGED
+	public static final double STANDARD_SETPOINT = 1; 
 	private double absToleranceLeadScrew = 0.25; //degrees 
 	
 	private IMURollPIDSource rollPIDSource; 
@@ -51,7 +51,6 @@ public class Strongback {
 	}
 	
 	public void enablePid() {
-		leadScrewImuPID.setSetpoint(STANDARD_SETPOINT);
 		leadScrewImuPID.enable();
 	}
 	
@@ -82,7 +81,6 @@ public class Strongback {
 	}
 
 	public boolean isPIDEnabled() {
-		// TODO Auto-generated method stub
 		return leadScrewImuPID.isEnable();
 	}
 }

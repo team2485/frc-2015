@@ -1,9 +1,19 @@
-package org.usfirst.frc.team2485.util;
+package org.usfirst.frc.team2485.subsystems;
+
  
 /**
-  * @author Ben Clark
-  * @author Patrick Wamsley
-  */
+ * 
+ * Used to keep track of the current number of totes the robot is holding. 
+ * 
+ * Tote count effects stregnth of kP in PID loops for lifting the Clapper and Claw during automated sequences.
+ * Tote count also acts as a safety. Automated Sequences will only run if the current tote count logically makes sense. 
+ * 
+ * @see SequencerFactory
+ * @see Clapper
+ * @see Claw
+ * 
+ * @author Ben Clark
+ */
 public class ToteCounter {
 	
 	private int numTotes;

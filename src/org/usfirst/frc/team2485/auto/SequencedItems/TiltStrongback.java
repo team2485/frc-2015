@@ -3,6 +3,9 @@ package org.usfirst.frc.team2485.auto.SequencedItems;
 import org.usfirst.frc.team2485.auto.SequencedItem;
 import org.usfirst.frc.team2485.robot.Robot;
 
+/**
+ * @autor Anoushka Bose
+ */
 public class TiltStrongback implements SequencedItem {
 
 	private double setpoint;
@@ -10,7 +13,6 @@ public class TiltStrongback implements SequencedItem {
 	public TiltStrongback(double setpoint) {
 		this.setpoint = setpoint;
 		Robot.strongback.setSetpoint(setpoint);
-//		Robot.strongback.enablePid();
 	}
 	
 	@Override

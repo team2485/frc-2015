@@ -28,6 +28,7 @@ public class MoveClawWithClapper implements SequencedItem {
 			this.direction = direction; 
 		else
 			throw new IllegalArgumentException("direction must be up or down"); 
+		
 		finished = false;
 	}
 	
@@ -85,7 +86,7 @@ public class MoveClawWithClapper implements SequencedItem {
 					if (winchOutput < 0 ||  Math.abs(claw.getPotValue() - Claw.HIGHEST_POS) <
 							Claw.POTS_PER_INCH * safetyTolerance)
 						winchOutput = 0; 
-					claw.setWinch(winchOutput); //might have to change to .1
+					claw.setWinch(winchOutput); 
 				}
 				else 
 					claw.setWinch(topWinchSpeed);

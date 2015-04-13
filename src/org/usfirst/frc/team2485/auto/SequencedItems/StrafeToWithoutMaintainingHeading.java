@@ -6,8 +6,6 @@ import org.usfirst.frc.team2485.robot.Robot;
 /**
  * @author Patrick Wamsley
  */
-
-//Need a center encoder to do this. 
 public class StrafeToWithoutMaintainingHeading implements SequencedItem {
 
 	private final double distance; 
@@ -24,7 +22,7 @@ public class StrafeToWithoutMaintainingHeading implements SequencedItem {
 
 	@Override
 	public double duration() {
-		return finished ? 0 : 2; //2 not tested 
+		return finished ? 0 : 3; 
 	}
 
 }

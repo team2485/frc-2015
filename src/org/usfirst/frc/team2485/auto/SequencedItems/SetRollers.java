@@ -11,18 +11,16 @@ public class SetRollers implements SequencedItem {
 
 	public static final int INTAKE = 0, REVERSE = 1, OFF = 2, LEFT = 3, RIGHT = 4; 
 	private int type; 
-	private double timing, speed;
-	private boolean done;
+	private double speed;
 	
 //	private static int numTotes = 0; 
 	
-	public SetRollers(int type, double timing, double speed) {
+	public SetRollers(int type, double speed) {
 		if (type == INTAKE || type == REVERSE || type == OFF || type == LEFT || type == RIGHT)
 			this.type = type;
 		else
 			throw new IllegalArgumentException("Must send rollers intake or reverse or off"); 
 		this.speed = speed;
-		this.timing = timing; 
 		
 //		numTotes++; 
 	}
@@ -47,7 +45,7 @@ public class SetRollers implements SequencedItem {
 
 	@Override
 	public double duration() {
-		return done ? 0 : timing;
+		return .05;
 	}
 
 	

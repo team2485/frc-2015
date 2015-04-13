@@ -5,6 +5,8 @@ import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.PIDSource.PIDSourceParameter;
 
 /**
+ * Used to easily correct encoder direction to prevent rewiring. 
+ * 
  * @author Aidan Fay
  */
 
@@ -12,22 +14,20 @@ public class InvertableEncoder implements PIDSource {
 	
 	private Encoder encoder;
 	
+	private int signFlip; 
 	
-	private int signFlipHackForPracticeBot = -1;	//TODO: check changing this back to +1 for Valkyrie
-	
-	//right incoder vals are neg, left pos
-	
-	public InvertableEncoder (Encoder encoder) {
-		this.encoder = encoder;		
+	public InvertableEncoder (Encoder encoder, int signFlip) {
+		this.encoder = encoder;	
+		this.signFlip = signFlip; 
 	}
 	
 	@Override
 	public double pidGet() {
-		return signFlipHackForPracticeBot * encoder.getDistance();
+		return signFlip * encoder.getDistance();
 	}
 	
 	public double getRate() {
-		return signFlipHackForPracticeBot * encoder.getRate();
+		return signFlip * encoder.getRate();
 	}
 	
 	public double getAbsoluteRate() {
@@ -35,12 +35,11 @@ public class InvertableEncoder implements PIDSource {
 	}
 	
 	public void reset() {
-		System.out.println("Reset method called from InvertableEncoder");
 		encoder.reset();
 	}
 	
 	public double getDistance() {
-		return signFlipHackForPracticeBot * encoder.getDistance();
+		return signFlip * encoder.getDistance();
 	}
 
 }

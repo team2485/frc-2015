@@ -7,7 +7,6 @@ import org.usfirst.frc.team2485.robot.Robot;
  * @author Patrick Wamsley
  */
 
-//Need a center encoder to do this. 
 public class StrafeTo implements SequencedItem {
 
 	private double inches, yawSetpoint; 
@@ -37,7 +36,8 @@ public class StrafeTo implements SequencedItem {
 	public void run() {
 		
 		System.out.println("Strafe setpoint: " + inches);
-		if(customHeading)
+		
+		if (customHeading)
 			finished = Robot.drive.strafeToUsingSonicSensor(inches);  
 		else
 			finished = Robot.drive.strafeToUsingSonicSensor(inches, yawSetpoint);

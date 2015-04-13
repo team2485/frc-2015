@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.PIDSource.PIDSourceParameter;
 
 /**
+ * @see InvertedEncoder
  * @author Aidan Fay
  */
 
@@ -13,7 +14,7 @@ public class DualEncoder implements PIDSource {
 	private Encoder leftEncoder;
 	private Encoder rightEncoder;
 	
-	private int signFlipHackForPracticeBot = -1;	//TODO: change back to +1 for Valkyrie
+	private int directionCorrection = -1;
 	
 	//right incoder vals are neg, left pos
 	
@@ -24,11 +25,11 @@ public class DualEncoder implements PIDSource {
 	
 	@Override
 	public double pidGet() {
-		return (signFlipHackForPracticeBot * leftEncoder.getDistance() - signFlipHackForPracticeBot * rightEncoder.getDistance()) / 2;//check if distances are in both positive
+		return (directionCorrection * leftEncoder.getDistance() - directionCorrection * rightEncoder.getDistance()) / 2;//check if distances are in both positive
 	}
 	
 	public double getRate() {
-		return (signFlipHackForPracticeBot * leftEncoder.getRate() - signFlipHackForPracticeBot * rightEncoder.getRate()) / 2;
+		return (directionCorrection * leftEncoder.getRate() - directionCorrection * rightEncoder.getRate()) / 2;
 	}
 	
 	public double getAbsoluteRate() {
@@ -41,7 +42,7 @@ public class DualEncoder implements PIDSource {
 	}
 	
 	public double getDistance() {
-		return (signFlipHackForPracticeBot * leftEncoder.getDistance() - signFlipHackForPracticeBot * rightEncoder.getDistance()) / 2;
+		return (directionCorrection * leftEncoder.getDistance() - directionCorrection * rightEncoder.getDistance()) / 2;
 	}
 
 }

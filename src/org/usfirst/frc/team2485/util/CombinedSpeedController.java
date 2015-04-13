@@ -4,6 +4,9 @@ import edu.wpi.first.wpilibj.SpeedController;
 import edu.wpi.first.wpilibj.VictorSP;
 
 /**
+ * 
+ * Used to act on multible speed controllers at once, or to treat many speed controllers as one. 
+ * 
  * @author Ben Clark
  * @author Patrick Wamsley
  * @author Anoushka Bose
@@ -54,7 +57,5 @@ public class CombinedSpeedController implements SpeedController {
 	}
 		
 	public void disable() {}
-
-	
 
 }

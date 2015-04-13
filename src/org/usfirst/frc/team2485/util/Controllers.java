@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import java.util.Hashtable;
 
 /**
- * This utility class assists in obtaining values accurately from operator
+ * This utility class assists in obtaining values accurately from 
  * controls. Controller pointers must be configured before use using. 
  * Any Controllers objects not being used should be set to null. <p>     
  *  <code>Controllers.set(driver360, operator, null);</code> or <br>
@@ -22,9 +22,9 @@ import java.util.Hashtable;
 public final class Controllers {
 	
 	// stores controller objects
-	private static Joystick	driverController 	= null,
-							driverJoystickRight	= null, 
-							driverJoystickLeft	= null,
+	private static Joystick	driverController 		= null,
+							driverJoystickRight		= null, 
+							driverJoystickLeft		= null,
 							operatorJoystickLeft	= null, 
 							operatorJoystickRight 	= null;
 	
@@ -45,7 +45,7 @@ public final class Controllers {
 	 * @see edu.wpi.first.wpilibj.Joystick
 	 */
 	public static void set(Joystick driverController, Joystick operatorJoystick1, Joystick operatorJoystick2) {
-		Controllers.driverController	= driverController;
+		Controllers.driverController		= driverController;
 		Controllers.operatorJoystickLeft	= operatorJoystick1;
 		Controllers.operatorJoystickRight	= operatorJoystick2;
 	}
@@ -64,8 +64,8 @@ public final class Controllers {
 	public static void set(Joystick driverJoystickLeft, Joystick driverJoystickRight, 
 			Joystick operatorJoystickLeft, Joystick operatorJoystickRight) {
 		
-		Controllers.driverJoystickLeft 	= driverJoystickLeft; 
-		Controllers.driverJoystickRight = driverJoystickRight; 
+		Controllers.driverJoystickLeft 		= driverJoystickLeft; 
+		Controllers.driverJoystickRight		= driverJoystickRight; 
 		Controllers.operatorJoystickLeft	= operatorJoystickLeft; 
 		Controllers.operatorJoystickRight	= operatorJoystickRight; 
 	}
@@ -585,8 +585,7 @@ public final class Controllers {
 		/**
 		 * Constructs a {@code ControllerNullException} with no detail message.
 		 */
-		public ControllerNullException() {
-		}
+		public ControllerNullException() {}
 		
 		/**
 		 * Constructs a {@code ControllerNullException} with the specified
