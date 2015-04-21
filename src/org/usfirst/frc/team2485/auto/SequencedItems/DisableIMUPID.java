@@ -13,7 +13,6 @@ public class DisableIMUPID implements SequencedItem {
 
 	@Override
 	public double duration() {
-		// TODO Auto-generated method stub
 		return 0.03;
 	}
 

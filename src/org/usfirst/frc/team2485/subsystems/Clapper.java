@@ -26,7 +26,6 @@ public class Clapper {
 	private ScaledPot potScaled;
 	private DigitalInput toteDetectorLimitSwitch, bottomSafetyLimitSwitch;
 
-	private boolean open;
 	private boolean automatic;
 	private double lastHeight;
 
@@ -102,11 +101,9 @@ public class Clapper {
 		this.clapperPID.setOutputRange(pidOutputMin, pidOutputMax); // positive is up
 		
 		this.automatic				= false;
-		this.open					= true;
 		
 		this.toteDetectorLimitSwitch = toteDetectorLimitSwitch;
 		this.bottomSafetyLimitSwitch = bottomSafetyLimitSwitch;
-		//clapperLifter.invertMotorDirection(true);
 		
 		lastHeight = getPotValue(); 
 	}
@@ -189,14 +186,10 @@ public class Clapper {
 	
 	public void openClapper() {
 		clapperActuator.set(false);
-//		clapperActuator.set(DoubleSolenoid.Value.kReverse);
-		open = true;
 	}
 
 	public void closeClapper() {
 		clapperActuator.set(true);
-//		clapperActuator.set(DoubleSolenoid.Value.kForward);
-		open = false;
 	}
 
 	public boolean isOpen() {
@@ -208,7 +201,6 @@ public class Clapper {
 	}
 	
 	public double getInchHeight() {
-		// TODO: Test
 		return(potScaled.pidGet() - LOWEST_POS) / (POT_RANGE) * INCH_RANGE + INCH_LOW_POS;
 	}
 	
@@ -251,10 +243,6 @@ public class Clapper {
 		
 		setManual();
 		
-//		if ((potScaled.pidGet() < LOWEST_POS  && speed > 0) || (potScaled.pidGet() > LOWEST_POS + POS_RANGE && speed < 0))
-//			return; 
-		
-		//double adjustedSpeed = ThresholdHandler.handleThreshold(speed, LIFT_DEADBAND)/2;
 		if (speed > 1)
 			speed = 1;
 		else if (speed < -1)
@@ -263,9 +251,6 @@ public class Clapper {
 		
 		System.out.println("in lift manually, adjustSpeed is " + speed);
 		clapperLifter.set(speed);
-		
-//		System.out.println(speed + " | " + adjustedSpeed);
-
 	}
 
 	public double getMotorOutput() {
@@ -275,20 +260,9 @@ public class Clapper {
 	public double getError() {
 		return clapperPID.getError();
 	}
-
-//	public void checkSafety() {
-//		if (bottomSafetyLimitSwitch.get())
-//			clapperPID.setOutputRange(0.0, pidOutputMax);
-//		else
-//			clapperPID.setOutputRange(pidOutputMin, pidOutputMax);
-//	}
 	
 	public boolean toteDetected() {
-		if(!toteDetectorLimitSwitch.get())
-			System.out.println("tote detected");
-//		else
-//			System.out.println("tote detected");
-		return !(toteDetectorLimitSwitch.get()); 
+		return !toteDetectorLimitSwitch.get(); 
 	}
 	
 	public void updateToteCount(int toteCount) {
@@ -304,10 +278,12 @@ public class Clapper {
 			setPID(kP_5_TOTES_UP, kI_DEFAULT, kD_DEFAULT);
 		
 		pidOutputMin = pidOutputMinNormal + .02 * toteCount;
+		
 		if (pidOutputMin > 0)
 			pidOutputMin = 0.0;
 		pidOutputMax = pidOutputMaxNormal + .05 * toteCount;
-		this.clapperPID.setOutputRange(pidOutputMin, pidOutputMax);
+		
+		clapperPID.setOutputRange(pidOutputMin, pidOutputMax);
 	}
 
 	public boolean isMoving() {
@@ -318,6 +294,3 @@ public class Clapper {
 		clapperPID.enable();
 	}
 }
-
-	//  two belts for intake, pneumatic for finger, pneumatic for opens and closes whole intake, one pneumatic for open/closes 
-	//	the belts, sensors for detecting tote

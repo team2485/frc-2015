@@ -1,21 +1,15 @@
 package org.usfirst.frc.team2485.subsystems;
 
-import org.usfirst.frc.team2485.auto.SequencedItems.SetClawPID;
 import org.usfirst.frc.team2485.robot.Robot;
 import org.usfirst.frc.team2485.util.CombinedSpeedController;
 import org.usfirst.frc.team2485.util.DummyOutput;
 import org.usfirst.frc.team2485.util.InvertedScaledPot;
-import org.usfirst.frc.team2485.util.ScaledPot;
 import org.usfirst.frc.team2485.util.ThresholdHandler;
 
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
-import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.SpeedController;
-import edu.wpi.first.wpilibj.util.BoundaryException;
 import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.Solenoid;
-import edu.wpi.first.wpilibj.VictorSP;
 
 /**
  * @author Aidan Fay
@@ -61,17 +55,13 @@ public class Claw {
 						DROP_SEQ_POS_4					= LOWEST_POS + 360, // AB - 4/2
 						DROP_SEQ_POS_5					= LOWEST_POS + 486, //CHECK
 						DROP_SEQ_POS_6					= HIGHEST_POS - (POTS_PER_INCH * .5); 
-	 	
-	// top of the claw: 870
-	// bottom of the claw: 118
-	
+	 
 	public PIDController elevationPID;
 	
 	private boolean automatic = true;
 
 	public Claw(SpeedController clawMotor, Solenoid clawSolenoid, AnalogPotentiometer pot) {
 		this.winchMotor = new CombinedSpeedController(clawMotor);
-//		this.winchMotor.invertMotorDirection(true);
 		this.actuator 	= clawSolenoid;
 		this.potScaled	= new InvertedScaledPot(pot); 
 		this.dummyWinch = new DummyOutput();
@@ -83,17 +73,14 @@ public class Claw {
 	
 	public void open() {
 		actuator.set(false);
-//		actuator.set(DoubleSolenoid.Value.kForward);
 	}
 	
 	public void close() {
 		actuator.set(true);
-//		actuator.set(DoubleSolenoid.Value.kReverse);
 	}
 	
 	public boolean isOpen() {
 		return !actuator.get();
-//		return actuator.get().equals(DoubleSolenoid.Value.kForward);
 	} 
 	
 	/**
@@ -103,8 +90,9 @@ public class Claw {
 	public void liftManually(double speed) {
 		
 		setManual();
-		double adjustedSpeed = ThresholdHandler.deadbandAndScale(speed, ThresholdHandler.STANDARD_THRESHOLD, 0 , 1); //TODO: instead of 0 and 1, find wanted values
-		//System.out.println(speed + " | " + adjustedSpeed);
+		
+		double adjustedSpeed = ThresholdHandler.deadbandAndScale(speed, ThresholdHandler.STANDARD_THRESHOLD, .1 , 1); 
+	
 		if (adjustedSpeed > 1)
 			adjustedSpeed = 1;
 		else if (adjustedSpeed < -1)
@@ -114,16 +102,9 @@ public class Claw {
 			winchMotor.set(0);
 		 else 
 			winchMotor.set(adjustedSpeed);
-		
-//		System.out.println("Winch speed: " + adjustedSpeed);
-		
 	}
 	
 	public void setPID(double kP, double kI, double kD) {
-//		this.kP = kP;
-//		this.kI = kI;
-//		this.kD = kD;
-		
 		elevationPID.setPID(kP, kI, kD);
 	}
 	
@@ -133,13 +114,8 @@ public class Claw {
 	}
 	
 	public void updateWinchPeriodic() {
-		if (isAutomatic()) {
-			double dummyInput = dummyWinch.get();
-//			double deltaHeight = Robot.clapper.getChangeInHeightInInches();
-
-			winchMotor.set(dummyInput);  // + 0.2 * deltaHeight); //TODO: take data and then derive formula
-	//		System.out.println(" " + dummyInput + ", " + deltaHeight);
-		}
+		if (isAutomatic()) 
+			winchMotor.set(dummyWinch.get());  
 	}
 
 	public double getP() {

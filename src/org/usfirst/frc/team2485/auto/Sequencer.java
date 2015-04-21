@@ -22,8 +22,7 @@ public class Sequencer {
     /**
      * Creates a new {@code Sequencer} with no sequenced items.
      */
-    public Sequencer() {
-    }
+    public Sequencer() {}
 
     /**
      * Creates a new {@code Sequencer} with the specified sequence's items.
@@ -52,12 +51,9 @@ public class Sequencer {
      * @see SequencedPause
      */
     public Sequencer(SequencedItem[] initial) {
-        for (int i = 0; i < initial.length; i++) {
+        for (int i = 0; i < initial.length; i++) 
             sequenced.addElement(initial[i]);
-        }
     }
-
-    // <editor-fold defaultstate="collapsed" desc="Underlying array access">
 
     /**
      * Gets the sequenced items in {@code SequencedItem[]} array form.
@@ -94,9 +90,8 @@ public class Sequencer {
      * @see SequencedPause
      */
     public Sequencer add(SequencedItem[] items) {
-        for (int i = 0; i < items.length; i++) {
+        for (int i = 0; i < items.length; i++) 
             sequenced.addElement(items[i]);
-        }
         return this;
     }
 
@@ -133,8 +128,6 @@ public class Sequencer {
         sequenced.removeAllElements();
         return this;
     }
-
-    // </editor-fold>
 
     /**
      * Starts a run by setting run state variables.
@@ -176,10 +169,9 @@ public class Sequencer {
             // execute next
             ((SequencedItem)sequenced.elementAt(currIndex)).run();
         }
-        else {
+        else 
             currItem.run();
-        }
-
+        
         return false;
     }
 

@@ -35,7 +35,7 @@ public class Strongback {
 		this.leadScrew = strongbackMotor; 
 		this.imu = imu; 
 				
-		rollPIDSource = new IMURollPIDSource(this.imu,true); 
+		rollPIDSource = new IMURollPIDSource(this.imu, true); 
 		
 		leadScrewImuPID = new PIDController(leadScrew_kP, leadScrew_kI, leadscrew_kD, rollPIDSource, this.leadScrew); 
 		leadScrewImuPID.setAbsoluteTolerance(absToleranceLeadScrew );

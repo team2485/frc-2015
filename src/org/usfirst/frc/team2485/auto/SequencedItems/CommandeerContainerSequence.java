@@ -10,7 +10,11 @@ import org.usfirst.frc.team2485.robot.Robot;
 public class CommandeerContainerSequence implements SequencedItem {
 	
 	private int	direction;
-	public static final int LEFT = 0, RIGHT = 1, BOTH = 2, RETRACT_BOTH = 3;
+	
+	public static final int LEFT			= 0, 
+							RIGHT			= 1,
+							BOTH			= 2, 
+							RETRACT_BOTH 	= 3;
 
 	public CommandeerContainerSequence(int direction) {
 		this.direction = direction;

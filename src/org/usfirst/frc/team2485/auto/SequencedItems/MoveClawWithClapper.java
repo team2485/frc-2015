@@ -4,14 +4,14 @@ import org.usfirst.frc.team2485.auto.SequencedItem;
 import org.usfirst.frc.team2485.robot.Robot;
 import org.usfirst.frc.team2485.subsystems.Claw;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * @author Patrick Wamsley
+ * @author Anoushka Bose
  */
 public class MoveClawWithClapper implements SequencedItem {
 
-	private static final double slopeForOutputRamp = 0.6; 
+	private static final double SLOPE_FOR_OUTPUT_RAMP = 0.6; 
 	private static final double 
 			DISTANCE_BETWEEN_CLAW_AND_CLAPPER_STANDARD = 12.25, 
 			TOTE_OFFSET								   = 6.5; 
@@ -43,18 +43,9 @@ public class MoveClawWithClapper implements SequencedItem {
 			claw.setSetpoint(Claw.ONE_AND_TWO_TOTE_RESTING_POS);
 			return;
 		}
-		
-		System.out.println("From MoveClawWithClapper; clapper pid on target = " + finished + " duration " + duration());
-		
-//		if (toteCount >3) {
-//			claw.setSetpoint(Claw.HIGHEST_POS - 5);
-//			return; //DELETE THIS ONCE THE LOGIC GETS FIXED SO THAT INTAKING THE 5TH TOTE WORKS
-//		}
 	
-		if (finished) {
-			//claw.setSetpoint(Claw.magicSetpointPositionofawesome * toteCountMaybe; 
-			System.out.println("finished in MoveClawWithClapper");
-		} else {
+		if (!finished) {
+			
 			claw.setManual();
 			
 			/*
@@ -71,10 +62,7 @@ public class MoveClawWithClapper implements SequencedItem {
 			double actualDistance = Robot.claw.getInchHeight() - Robot.clapper.getInchHeight(); 
 			
 			double error = idealDistance - actualDistance; 
-//			
-//			SmartDashboard.putNumber("Ideal distance: ", idealDistance);
-//			SmartDashboard.putNumber("actual distance ", actualDistance);
-//			
+			
 			double topWinchSpeed = .55;
 			
 			double safetyTolerance = .5; 
@@ -82,7 +70,7 @@ public class MoveClawWithClapper implements SequencedItem {
 			if (direction == UP) {
 				if (error < 0 || Math.abs(claw.getPotValue() - Claw.HIGHEST_POS) < 
 						Claw.POTS_PER_INCH * safetyTolerance) {
-					double winchOutput = topWinchSpeed + slopeForOutputRamp * error; 
+					double winchOutput = topWinchSpeed + SLOPE_FOR_OUTPUT_RAMP * error; 
 					if (winchOutput < 0 ||  Math.abs(claw.getPotValue() - Claw.HIGHEST_POS) <
 							Claw.POTS_PER_INCH * safetyTolerance)
 						winchOutput = 0; 
@@ -95,7 +83,7 @@ public class MoveClawWithClapper implements SequencedItem {
 				if (error < 0 && claw.getPotValue() > Claw.MANUAL_SAFETY_ABOVE_RACHET_POS) 
 					claw.setWinch(-topWinchSpeed);
 				else {
-					double winchOutput = -topWinchSpeed + slopeForOutputRamp * error; 
+					double winchOutput = -topWinchSpeed + SLOPE_FOR_OUTPUT_RAMP * error; 
 					if (winchOutput > 0)
 						winchOutput = 0; 
 					claw.setWinch(winchOutput);
@@ -106,8 +94,6 @@ public class MoveClawWithClapper implements SequencedItem {
 
 	@Override
 	public double duration() {
-//		System.out.println("isMoving: " + Robot.clapper.isMoving());
 		return finished ? 0.03 : 1.5;	
-		}
-
+	}
 }

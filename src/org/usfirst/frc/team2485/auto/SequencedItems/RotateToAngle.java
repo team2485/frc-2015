@@ -14,9 +14,10 @@ public class RotateToAngle implements SequencedItem {
 	private final double timeout; 
 	
 	public RotateToAngle(double angle, double timeout) {
-		this.angle = angle; 
-		finished = false;
-		this.timeout = timeout;
+		this.angle	  = angle; 
+		this.timeout  = timeout;
+		this.finished = false;
+		
 	}
 	
 	public RotateToAngle(double angle) {
@@ -32,6 +33,4 @@ public class RotateToAngle implements SequencedItem {
 	public double duration() {
 		return finished ? 0 : timeout; 
 	}
-	
-	
 }

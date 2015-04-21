@@ -9,11 +9,12 @@ import org.usfirst.frc.team2485.robot.Robot;
 
 public class IncrementToteCount implements SequencedItem {
 
-	private boolean done = false;
 	private int amount; 
+	private boolean finished; 
 	
 	public IncrementToteCount(int amount) {
 		this.amount = amount; 
+		finished = false; 
 	}
 	
 	public IncrementToteCount() {
@@ -22,14 +23,14 @@ public class IncrementToteCount implements SequencedItem {
 	
 	@Override
 	public void run() {
-		if (!done)
+		if (!finished)
 			Robot.toteCounter.addTote(amount);
-		done = true;
+		finished = true;
 	}
 
 	@Override
 	public double duration() {
-		return done ? 0 : .05;
+		return .03;
 	}
 
 }

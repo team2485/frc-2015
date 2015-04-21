@@ -15,17 +15,17 @@ public class StrafeTo implements SequencedItem {
 	private double timeout; 
 	
 	public StrafeTo(double inches, double timeout, double yawSetpoint) {
-		this.inches = inches;
-		this.timeout = timeout;
-		customHeading = true;
+		this.inches 	 = inches;
+		this.timeout 	 = timeout;
 		this.yawSetpoint = yawSetpoint;
+		customHeading	 = true;
 	}
 	
 	public StrafeTo(double inches, double timeout) {
-		this.inches = inches; 
-		finished = false; 
-		customHeading = false;
-		this.timeout = timeout;
+		this.inches		= inches; 
+		this.timeout 	= timeout;
+		this.finished 	= false; 
+		customHeading 	= false;
 	}
 	
 	public StrafeTo(double inches) {
@@ -35,8 +35,6 @@ public class StrafeTo implements SequencedItem {
 	@Override
 	public void run() {
 		
-		System.out.println("Strafe setpoint: " + inches);
-		
 		if (customHeading)
 			finished = Robot.drive.strafeToUsingSonicSensor(inches);  
 		else
@@ -45,7 +43,7 @@ public class StrafeTo implements SequencedItem {
 
 	@Override
 	public double duration() {
-		return finished ? 0.03 : timeout; //2 not tested 
+		return finished ? 0.03 : timeout; 
 	}
 
 }

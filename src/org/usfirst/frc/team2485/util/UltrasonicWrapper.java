@@ -38,5 +38,4 @@ public class UltrasonicWrapper implements PIDSource {
 			return lastGoodValue;
 		}		
 	}
-	
 }

@@ -1,7 +1,6 @@
 package org.usfirst.frc.team2485.util;
 
 import edu.wpi.first.wpilibj.SpeedController;
-import edu.wpi.first.wpilibj.VictorSP;
 
 /**
  * 

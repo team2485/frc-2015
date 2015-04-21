@@ -13,21 +13,17 @@ public class SetRollers implements SequencedItem {
 	private int type; 
 	private double speed;
 	
-//	private static int numTotes = 0; 
-	
 	public SetRollers(int type, double speed) {
 		if (type == INTAKE || type == REVERSE || type == OFF || type == LEFT || type == RIGHT)
 			this.type = type;
 		else
 			throw new IllegalArgumentException("Must send rollers intake or reverse or off"); 
-		this.speed = speed;
 		
-//		numTotes++; 
+		this.speed = speed;
+
 	}
 	@Override
 	public void run() {
-		
-//		done = Robot.clapper.toteDetected();
 		
 		if (type == INTAKE)
 			Robot.rollers.intakeTote(speed); 
@@ -35,9 +31,9 @@ public class SetRollers implements SequencedItem {
 			Robot.rollers.reverseTote(speed);
 		else if (type == OFF)
 			Robot.rollers.intakeTote(0); 
-		else if(type == LEFT)
+		else if (type == LEFT)
 			Robot.rollers.rotateToteClockwise(speed);
-		else if(type == RIGHT)
+		else if (type == RIGHT)
 			Robot.rollers.rotateToteCounterclockwise(speed);
 		else
 			throw new IllegalStateException("Finger rollers can only go intake, reverse, or off");
@@ -48,5 +44,4 @@ public class SetRollers implements SequencedItem {
 		return .05;
 	}
 
-	
 }

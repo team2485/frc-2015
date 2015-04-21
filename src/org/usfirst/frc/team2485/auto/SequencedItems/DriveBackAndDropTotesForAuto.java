@@ -4,8 +4,11 @@ import org.usfirst.frc.team2485.auto.SequencedItem;
 import org.usfirst.frc.team2485.robot.Robot;
 import org.usfirst.frc.team2485.subsystems.Clapper;
 
-public class DriveBackAndDropTotesForAuto implements SequencedItem {
+/**
+ * @author Patrick Wamsley
+ */
 
+public class DriveBackAndDropTotesForAuto implements SequencedItem {
 	
 	private boolean finished = false;
 	private double speed, error, timeout; 
@@ -13,7 +16,7 @@ public class DriveBackAndDropTotesForAuto implements SequencedItem {
 	public DriveBackAndDropTotesForAuto(double maxSpeed, double timeout) {
 		this.speed = maxSpeed;
 		this.timeout = timeout;
-		this.error = 50; //testing the drop seq; this needs to be about 150
+		this.error = 50; 
 	}
 	
 	public DriveBackAndDropTotesForAuto(double speed) {
@@ -30,25 +33,19 @@ public class DriveBackAndDropTotesForAuto implements SequencedItem {
 		if (error > 70) {
 			Robot.drive.setLeftRight(speed, speed);
 			Robot.ratchet.retractRatchet();
-		}
-		
-		else if (error > 35) {
+		} else if (error > 35) {
 			Robot.drive.setLeftRight(speed, speed);
 			Robot.clapper.setSetpoint(Clapper.ABOVE_RATCHET_SETPOINT + 20);
-		}
-		else if (error > 15) {
+		} else if (error > 15) {
 			Robot.drive.setLeftRight(-.5, -.5);
 			Robot.clapper.setSetpoint(Clapper.LOADING_SETPOINT);
-		}
-		else if (error > 7) {
+		} else if (error > 7) {
 			Robot.rollers.reverseTote(.5); 
-		}
-		else if (error > 0) {
+		} else if (error > 0) {
 			Robot.drive.setLeftRight(-.3, -.3);
 			Robot.clapper.openClapper(); 
 			finished = true; 
-		}
-		else 
+		} else 
 			Robot.drive.setLeftRight(0, 0); //happiness
 	}
 
@@ -57,5 +54,4 @@ public class DriveBackAndDropTotesForAuto implements SequencedItem {
 		return finished ? .1 : timeout;
 	}
 
-	
 }

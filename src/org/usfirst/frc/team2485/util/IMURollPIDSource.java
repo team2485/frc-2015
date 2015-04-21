@@ -1,6 +1,5 @@
 package org.usfirst.frc.team2485.util;
 
-import org.usfirst.frc.com.kauailabs.nav6.frc.IMU;
 import org.usfirst.frc.com.kauailabs.nav6.frc.IMUAdvanced;
 import org.usfirst.frc.team2485.robot.Robot;
 
@@ -128,8 +127,7 @@ public class IMURollPIDSource implements PIDSource {
 				return roll;// It wont't fall through in Java, just wait until the next cycle
 			case rs_RACING:
 				// We are currently going too fast. Check to see if we've slowed down enough.
-				if (velocity < RACING_VELOCITY_THRESHOLD)
-				{
+				if (velocity < RACING_VELOCITY_THRESHOLD) {
 					// Dropped out of the racing state.
 					myState = rs_SLOWING;
 					timeinState = 0;
@@ -140,8 +138,7 @@ public class IMURollPIDSource implements PIDSource {
 				return 0;//Essentially just make the strongback happy
 			case rs_SLOWING:
 				// First, check to see if we've sped up enough to be back in RACING.
-				if (velocity > RACING_VELOCITY_THRESHOLD)
-				{
+				if (velocity > RACING_VELOCITY_THRESHOLD) {
 					// We must be racing, so set the state.
 					myState = rs_RACING;
 					timeInState = 0;
@@ -150,8 +147,7 @@ public class IMURollPIDSource implements PIDSource {
 				// Note that we test both that the Roll is below a minimum and that the difference between this and the last
 				// roll is also below that minimum. This ensures that we aren't just transitioning across 0 with a fast 
 				// moving Roll going positive or negative. That would not be a calmed state.
-				else if ((timeInState > MAX_SLOWING_TIME) || ((Math.abs(roll) < MIN_ROLL) && (Math.abs(roll - lastRoll) < MIN_ROLL)))
-				{
+				else if ((timeInState > MAX_SLOWING_TIME) || ((Math.abs(roll) < MIN_ROLL) && (Math.abs(roll - lastRoll) < MIN_ROLL))) {
 					myState = rs_NORMAL;
 					timeinState = 0;
 					lastRoll = roll;
@@ -162,7 +158,6 @@ public class IMURollPIDSource implements PIDSource {
 			default:
 				return roll;
 			}
-			
 //			if (Math.abs(encoderRate) > .02)
 //				System.out.println(imu.getRoll() +  " \t:\t " + encoderRate * ROLL_CORRECTION_SCALAR);
 //			return (imu.getRoll() - encoderRate * MAGIC_ROLL_CORRECTION_SCALAR);// returns a value adjusted by equation found by Todor
